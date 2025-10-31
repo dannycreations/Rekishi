@@ -91,7 +91,7 @@ export function App(): JSX.Element {
               <p>Error loading history: {error}</p>
             </div>
           ) : (
-            <HistoryListView {...activityViewProps} />
+            <HistoryListView {...activityViewProps} scrollContainerRef={mainContentRef} />
           )}
         </main>
 

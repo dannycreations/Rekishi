@@ -7,7 +7,7 @@ import { HistoryItemGroup as HistoryItemGroupComponent } from './HistoryItemGrou
 import { SearchIcon } from './Icons';
 import { Skeleton } from './Skeleton';
 
-import type { JSX } from 'react';
+import type { JSX, RefObject } from 'react';
 import type { ChromeHistoryItem, HistoryItemGroup } from '../app/types';
 
 interface HistoryListViewProps {
@@ -17,6 +17,7 @@ interface HistoryListViewProps {
   isLoadingMore: boolean;
   loadMore: () => void;
   onDelete: (id: string) => void;
+  scrollContainerRef: RefObject<HTMLElement>;
 }
 
 const groupHistoryByHour = (items: ChromeHistoryItem[]): HistoryItemGroup[] => {
@@ -139,7 +140,15 @@ export const HistoryListViewSkeleton = memo(function HistoryListViewSkeleton() {
   );
 });
 
-function HistoryListViewFn({ deleteHistoryItems, hasMore, historyItems, isLoadingMore, loadMore, onDelete }: HistoryListViewProps): JSX.Element {
+function HistoryListViewFn({
+  deleteHistoryItems,
+  hasMore,
+  historyItems,
+  isLoadingMore,
+  loadMore,
+  onDelete,
+  scrollContainerRef,
+}: HistoryListViewProps): JSX.Element {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -236,17 +245,26 @@ function HistoryListViewFn({ deleteHistoryItems, hasMore, historyItems, isLoadin
         observer.current.disconnect();
       }
 
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          loadMore();
-        }
-      });
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasMore) {
+            loadMore();
+          }
+        },
+        {
+          root: scrollContainerRef.current,
+          // Trigger when the last element is 500px away from the bottom of the viewport.
+          // This makes loading feel faster as new content is fetched before the user
+          // scrolls to the very end.
+          rootMargin: '0px 0px 500px 0px',
+        },
+      );
 
       if (node) {
         observer.current.observe(node);
       }
     },
-    [isLoadingMore, hasMore, loadMore],
+    [isLoadingMore, hasMore, loadMore, scrollContainerRef],
   );
 
   if (processedDailyGroups.length === 0 && !isLoadingMore) {

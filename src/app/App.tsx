@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BlacklistView } from '../components/blacklist/BlacklistView';
 import { DeviceView } from '../components/device/DeviceView';
@@ -6,6 +6,7 @@ import { ExportView } from '../components/export/ExportView';
 import { HistoryView, HistoryViewSkeleton } from '../components/history/HistoryView';
 import { Header } from '../components/main/Header';
 import { SettingView } from '../components/setting/SettingView';
+import { ScrollToTop } from '../components/shared/ScrollToTop';
 import { ViewModal } from '../components/shared/ViewModal';
 import { useHistory } from '../hooks/useHistory';
 import { useHistoryDates } from '../hooks/useHistoryDates';
@@ -47,6 +48,7 @@ const ModalContent = ({ view }: { view: ViewType }): JSX.Element | null => {
 
 export const App = (): JSX.Element => {
   const [activeModal, setActiveModal] = useState<ViewType | null>(null);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
   const mainContentRef = useRef<HTMLElement>(null);
 
   const { isRegex, searchQuery, selectedDate, setIsRegex, setSearchQuery, setSelectedDate } = useHistoryStore();
@@ -56,6 +58,27 @@ export const App = (): JSX.Element => {
   useEffect(() => {
     mainContentRef.current?.scrollTo(0, 0);
   }, [searchQuery, selectedDate]);
+
+  useEffect(() => {
+    const mainContent = mainContentRef.current;
+    if (!mainContent) {
+      return;
+    }
+
+    const handleScroll = (): void => {
+      setShowScrollToTop(mainContent.scrollTop > 300);
+    };
+
+    mainContent.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      mainContent.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const handleScrollToTop = useCallback(() => {
+    mainContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const activityViewProps = useMemo(
     () => ({
@@ -106,6 +129,8 @@ export const App = (): JSX.Element => {
           </ViewModal>
         )}
       </div>
+
+      <ScrollToTop isVisible={showScrollToTop} onClick={handleScrollToTop} />
     </div>
   );
 };

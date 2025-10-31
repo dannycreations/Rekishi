@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from 'react';
 
-import { ConfirmationModal } from '../components/shared/ConfirmationModal';
+import { ConfirmModal } from '../components/shared/ConfirmModal';
 
 import type { JSX, ReactNode } from 'react';
 
@@ -37,7 +37,7 @@ export const useConfirm = () => {
     }
 
     return (
-      <ConfirmationModal
+      <ConfirmModal
         cancelText={options.cancelText}
         confirmButtonClass={options.confirmButtonClass}
         confirmText={options.confirmText}

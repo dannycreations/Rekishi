@@ -202,3 +202,11 @@ export const TrashIcon = createIcon((props: IconProps): JSX.Element => {
     </svg>
   );
 });
+
+export const ArrowUpIcon = createIcon((props: IconProps): JSX.Element => {
+  return (
+    <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path d="M12 19.5v-15m-6.75 6.75L12 4.5l6.75 6.75" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+});

@@ -5,7 +5,7 @@ import { CloseIcon } from './Icons';
 
 import type { ReactNode, ReactPortal } from 'react';
 
-interface ConfirmationModalProps {
+interface ConfirmModalProps {
   cancelText?: string;
   confirmButtonClass?: string;
   confirmText?: string;
@@ -16,7 +16,7 @@ interface ConfirmationModalProps {
   title: string;
 }
 
-export const ConfirmationModal = memo(
+export const ConfirmModal = memo(
   ({
     isOpen,
     onClose,
@@ -26,7 +26,7 @@ export const ConfirmationModal = memo(
     confirmText = 'Confirm',
     cancelText = 'Cancel',
     confirmButtonClass = 'bg-slate-800 hover:bg-slate-700',
-  }: ConfirmationModalProps): ReactPortal | null => {
+  }: ConfirmModalProps): ReactPortal | null => {
     const modalRef = useRef<HTMLDivElement>(null);
 
     if (!isOpen) {

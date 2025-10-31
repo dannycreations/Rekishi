@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { AdvancedExportView } from '../components/AdvancedExportView';
-import { BlacklistDomainView } from '../components/BlacklistDomainView';
-import { DevicesView } from '../components/DevicesView';
-import { Header } from '../components/Header';
-import { HistoryListView, HistoryListViewSkeleton } from '../components/HistoryListView';
-import { SettingsView } from '../components/SettingsView';
-import { ViewModal } from '../components/ViewModal';
+import { BlacklistView } from '../components/blacklist/BlacklistView';
+import { DeviceView } from '../components/device/DeviceView';
+import { ExportView } from '../components/export/ExportView';
+import { HistoryView, HistoryViewSkeleton } from '../components/history/HistoryView';
+import { Header } from '../components/main/Header';
+import { SettingView } from '../components/setting/SettingView';
+import { ViewModal } from '../components/shared/ViewModal';
 import { useHistory } from '../hooks/useHistory';
 import { useHistoryDates } from '../hooks/useHistoryDates';
 import { useHistorySettingsStore } from '../hooks/useHistorySettingsStore';
@@ -29,23 +29,23 @@ const VIEW_MODAL_SIZES: Partial<Record<ViewType, 'md' | 'lg' | 'xl' | '2xl' | '3
   settings: 'lg',
 };
 
-function ModalContent({ view }: { view: ViewType }): JSX.Element | null {
+const ModalContent = ({ view }: { view: ViewType }): JSX.Element | null => {
   switch (view) {
     case 'devices':
-      return <DevicesView />;
+      return <DeviceView />;
     case 'blacklist':
-      return <BlacklistDomainView />;
+      return <BlacklistView />;
     case 'export':
-      return <AdvancedExportView />;
+      return <ExportView />;
     case 'settings':
-      return <SettingsView />;
+      return <SettingView />;
     case 'activity':
     default:
       return null;
   }
-}
+};
 
-export function App(): JSX.Element {
+export const App = (): JSX.Element => {
   const [activeModal, setActiveModal] = useState<ViewType | null>(null);
   const mainContentRef = useRef<HTMLElement>(null);
 
@@ -85,13 +85,13 @@ export function App(): JSX.Element {
         />
         <main ref={mainContentRef} className="flex-1 min-h-0 p-3 overflow-y-auto">
           {isLoading ? (
-            <HistoryListViewSkeleton />
+            <HistoryViewSkeleton />
           ) : error ? (
             <div className="flex items-center justify-center h-full text-red-500">
               <p>Error loading history: {error}</p>
             </div>
           ) : (
-            <HistoryListView {...activityViewProps} scrollContainerRef={mainContentRef} />
+            <HistoryView {...activityViewProps} scrollContainerRef={mainContentRef} />
           )}
         </main>
 
@@ -108,4 +108,4 @@ export function App(): JSX.Element {
       </div>
     </div>
   );
-}
+};

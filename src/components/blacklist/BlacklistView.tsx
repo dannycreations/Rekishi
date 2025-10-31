@@ -1,17 +1,17 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 
-import { useBlacklist } from '../hooks/useBlacklist';
-import { RegexIcon, TrashIcon } from './Icons';
+import { useBlacklist } from '../../hooks/useBlacklist';
+import { RegexIcon, TrashIcon } from '../shared/Icons';
 
 import type { FormEvent, JSX } from 'react';
-import type { BlacklistItem } from '../hooks/useBlacklist';
+import type { BlacklistItem } from '../../hooks/useBlacklist';
 
-interface DomainListItemProps {
+interface BlacklistItemProps {
   item: BlacklistItem;
   onRemove: (value: string) => void;
 }
 
-function DomainListItemFn({ item, onRemove }: DomainListItemProps) {
+const BlacklistItem = memo(({ item, onRemove }: BlacklistItemProps) => {
   const handleRemove = useCallback(() => {
     onRemove(item.value);
   }, [item.value, onRemove]);
@@ -27,11 +27,9 @@ function DomainListItemFn({ item, onRemove }: DomainListItemProps) {
       </button>
     </li>
   );
-}
+});
 
-const DomainListItem = memo(DomainListItemFn);
-
-function BlacklistDomainViewFn(): JSX.Element {
+export const BlacklistView = memo((): JSX.Element => {
   const { addDomain, blacklistedItems, removeDomain } = useBlacklist();
   const [newDomain, setNewDomain] = useState('');
   const [isRegex, setIsRegex] = useState(false);
@@ -109,7 +107,7 @@ function BlacklistDomainViewFn(): JSX.Element {
         {sortedItems.length > 0 ? (
           <ul className="space-y-1">
             {sortedItems.map((item) => (
-              <DomainListItem key={item.value} item={item} onRemove={handleRemoveDomain} />
+              <BlacklistItem key={item.value} item={item} onRemove={handleRemoveDomain} />
             ))}
           </ul>
         ) : (
@@ -118,6 +116,4 @@ function BlacklistDomainViewFn(): JSX.Element {
       </div>
     </div>
   );
-}
-
-export const BlacklistDomainView = memo(BlacklistDomainViewFn);
+});

@@ -1,4 +1,4 @@
-import { getHostnameFromUrl } from '../utilities/url';
+import { getHostnameFromUrl } from '../utilities/urlUtil';
 
 declare const chrome: any;
 

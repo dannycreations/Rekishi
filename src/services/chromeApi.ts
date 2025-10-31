@@ -1,4 +1,4 @@
-import * as fakeApi from './fakeApi';
+import { deleteAllHistory as fakeDeleteAllHistory, deleteUrl as fakeDeleteUrl, getDevices as fakeGetDevices, search as fakeSearch } from './fakeApi';
 
 import type { ChromeHistoryItem, Device } from '../app/types';
 
@@ -9,41 +9,6 @@ interface SearchParams {
   readonly startTime?: number;
   readonly endTime?: number;
   readonly maxResults?: number;
-}
-
-export function search(params: SearchParams): Promise<ChromeHistoryItem[]> {
-  if (typeof chrome !== 'undefined' && chrome.history?.search) {
-    return new Promise((resolve) => {
-      chrome.history.search(
-        {
-          text: params.text,
-          startTime: params.startTime,
-          endTime: params.endTime,
-          maxResults: params.maxResults ?? 100,
-        },
-        (results: ChromeHistoryItem[]) => {
-          resolve(results);
-        },
-      );
-    });
-  }
-  return fakeApi.search(params);
-}
-
-export function deleteUrl(details: { url: string }): Promise<void> {
-  if (typeof chrome !== 'undefined' && chrome.history?.deleteUrl) {
-    return new Promise((resolve, reject) => {
-      chrome.history.deleteUrl(details, () => {
-        if (chrome.runtime.lastError) {
-          console.error('Error deleting history item:', chrome.runtime.lastError.message);
-          reject(chrome.runtime.lastError);
-        } else {
-          resolve();
-        }
-      });
-    });
-  }
-  return fakeApi.deleteUrl(details);
 }
 
 function getDeviceTypeFromName(name: string): Device['type'] {
@@ -97,6 +62,41 @@ function formatTimeAgo(timestamp: number): string {
   return `${years} year${years > 1 ? 's' : ''} ago`;
 }
 
+export function search(params: SearchParams): Promise<ChromeHistoryItem[]> {
+  if (typeof chrome !== 'undefined' && chrome.history?.search) {
+    return new Promise((resolve) => {
+      chrome.history.search(
+        {
+          text: params.text,
+          startTime: params.startTime,
+          endTime: params.endTime,
+          maxResults: params.maxResults ?? 100,
+        },
+        (results: ChromeHistoryItem[]) => {
+          resolve(results);
+        },
+      );
+    });
+  }
+  return fakeSearch(params);
+}
+
+export function deleteUrl(details: { url: string }): Promise<void> {
+  if (typeof chrome !== 'undefined' && chrome.history?.deleteUrl) {
+    return new Promise((resolve, reject) => {
+      chrome.history.deleteUrl(details, () => {
+        if (chrome.runtime.lastError) {
+          console.error('Error deleting history item:', chrome.runtime.lastError.message);
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+  return fakeDeleteUrl(details);
+}
+
 export function getDevices(): Promise<Device[]> {
   if (typeof chrome !== 'undefined' && chrome.sessions?.getDevices) {
     return new Promise((resolve) => {
@@ -119,7 +119,7 @@ export function getDevices(): Promise<Device[]> {
       });
     });
   }
-  return fakeApi.getDevices();
+  return fakeGetDevices();
 }
 
 export function deleteAllHistory(): Promise<void> {
@@ -135,5 +135,5 @@ export function deleteAllHistory(): Promise<void> {
       });
     });
   }
-  return fakeApi.deleteAllHistory();
+  return fakeDeleteAllHistory();
 }

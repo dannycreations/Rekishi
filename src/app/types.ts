@@ -6,15 +6,15 @@ export interface ChromeHistoryItem {
   visitCount: number;
 }
 
-export interface HistoryItemGroup {
-  time: string;
-  items: ChromeHistoryItem[];
-}
-
 export interface Device {
   name: string;
   type: 'laptop' | 'phone' | 'desktop';
   lastSync: string;
+}
+
+export interface HistoryItemGroup {
+  time: string;
+  items: ChromeHistoryItem[];
 }
 
 export type ViewType = 'activity' | 'devices' | 'blacklist' | 'export' | 'settings';

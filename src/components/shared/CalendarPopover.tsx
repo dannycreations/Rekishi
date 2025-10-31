@@ -1,6 +1,6 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 
-import { isSameDay } from '../utilities/date';
+import { isSameDay } from '../../utilities/dateUtil';
 import { ChevronLeftIcon, ChevronRightIcon } from './Icons';
 import { Skeleton } from './Skeleton';
 
@@ -15,7 +15,7 @@ interface CalendarPopoverProps {
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-function CalendarSkeletonFn() {
+const CalendarSkeleton = memo(() => {
   return (
     <div className="absolute right-0 z-10 p-2 mt-2 bg-white border rounded-lg shadow-lg top-full w-72 border-slate-200">
       <div className="flex items-center justify-between mb-2">
@@ -37,10 +37,9 @@ function CalendarSkeletonFn() {
       </div>
     </div>
   );
-}
-const CalendarSkeleton = memo(CalendarSkeletonFn);
+});
 
-function CalendarPopoverFn({ selectedDate, onDateSelect, datesWithHistory, isLoading }: CalendarPopoverProps): JSX.Element {
+export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHistory, isLoading }: CalendarPopoverProps): JSX.Element => {
   const [displayDate, setDisplayDate] = useState(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
 
   const today = useMemo(() => {
@@ -131,6 +130,4 @@ function CalendarPopoverFn({ selectedDate, onDateSelect, datesWithHistory, isLoa
       </div>
     </div>
   );
-}
-
-export const CalendarPopover = memo(CalendarPopoverFn);
+});

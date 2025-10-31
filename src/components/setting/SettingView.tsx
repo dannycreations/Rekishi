@@ -1,19 +1,19 @@
 import { memo, useState } from 'react';
 
-import { useSettingsStore } from '../hooks/useSettings';
-import { deleteAllHistory } from '../services/chromeApi';
-import { ConfirmationModal } from './ConfirmationModal';
-import { ToggleSwitch } from './ToggleSwitch';
+import { useSettingsStore } from '../../hooks/useSettings';
+import { deleteAllHistory } from '../../services/chromeApi';
+import { ConfirmationModal } from '../shared/ConfirmationModal';
+import { ToggleSwitch } from '../shared/ToggleSwitch';
 
 import type { JSX, ReactNode } from 'react';
 
-interface SettingsRowProps {
+interface SettingRowProps {
   children: ReactNode;
   description: string;
   title: string;
 }
 
-const SettingsRow = memo(function SettingsRow({ title, description, children }: SettingsRowProps): JSX.Element {
+const SettingRow = memo(({ title, description, children }: SettingRowProps): JSX.Element => {
   return (
     <div className="flex items-center justify-between p-3 bg-white border rounded-lg border-slate-200">
       <div>
@@ -25,12 +25,12 @@ const SettingsRow = memo(function SettingsRow({ title, description, children }: 
   );
 });
 
-interface SettingsSectionProps {
+interface SettingSectionProps {
   children: ReactNode;
   title: string;
 }
 
-const SettingsSection = memo(function SettingsSection({ title, children }: SettingsSectionProps): JSX.Element {
+const SettingSection = memo(({ title, children }: SettingSectionProps): JSX.Element => {
   return (
     <div>
       <h3 className="mb-2 text-lg font-bold text-slate-800">{title}</h3>
@@ -39,7 +39,7 @@ const SettingsSection = memo(function SettingsSection({ title, children }: Setti
   );
 });
 
-function SettingsViewFn(): JSX.Element {
+export const SettingView = memo((): JSX.Element => {
   const { syncEnabled, dataRetention, setSyncEnabled, setDataRetention } = useSettingsStore();
   const [isClearHistoryModalOpen, setIsClearHistoryModalOpen] = useState(false);
 
@@ -63,11 +63,11 @@ function SettingsViewFn(): JSX.Element {
           <p className="mt-1 text-slate-500">Customize your Rekishi experience.</p>
         </div>
 
-        <SettingsSection title="Data & Sync">
-          <SettingsRow description="Sync settings across your signed-in devices." title="Sync settings">
-            <ToggleSwitch enabled={syncEnabled} id="sync" setEnabled={setSyncEnabled} />
-          </SettingsRow>
-          <SettingsRow description="How long to keep your browsing history." title="History Retention">
+        <SettingSection title="Data & Sync">
+          <SettingRow description="Sync settings across your signed-in devices." title="Sync settings">
+            <ToggleSwitch enabled={syncEnabled} setEnabled={setSyncEnabled} />
+          </SettingRow>
+          <SettingRow description="How long to keep your browsing history." title="History Retention">
             <select
               className="p-2 text-sm bg-white text-slate-900 border rounded-lg outline-none transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
               onChange={(e) => setDataRetention(e.target.value)}
@@ -78,10 +78,10 @@ function SettingsViewFn(): JSX.Element {
               <option value="365">1 year</option>
               <option value="forever">Forever</option>
             </select>
-          </SettingsRow>
-        </SettingsSection>
+          </SettingRow>
+        </SettingSection>
 
-        <SettingsSection title="Actions">
+        <SettingSection title="Actions">
           <div className="flex items-center justify-between p-3 bg-white border border-red-200 rounded-lg">
             <div>
               <h4 className="font-semibold text-red-800">Clear All History</h4>
@@ -96,7 +96,7 @@ function SettingsViewFn(): JSX.Element {
               </button>
             </div>
           </div>
-        </SettingsSection>
+        </SettingSection>
       </div>
       <ConfirmationModal
         confirmButtonClass="bg-red-600 hover:bg-red-700"
@@ -114,6 +114,4 @@ function SettingsViewFn(): JSX.Element {
       />
     </>
   );
-}
-
-export const SettingsView = memo(SettingsViewFn);
+});

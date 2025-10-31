@@ -1,10 +1,10 @@
 import { memo, useCallback, useState } from 'react';
 
-import { search } from '../services/chromeApi';
-import { LoadingSpinnerIcon } from './Icons';
+import { search } from '../../services/chromeApi';
+import { LoadingSpinnerIcon } from '../shared/Icons';
 
 import type { JSX } from 'react';
-import type { ChromeHistoryItem } from '../app/types';
+import type { ChromeHistoryItem } from '../../app/types';
 
 type ExportFormat = 'json' | 'csv';
 
@@ -55,7 +55,7 @@ function downloadFile(content: string, format: ExportFormat, startDate: string, 
   URL.revokeObjectURL(url);
 }
 
-function AdvancedExportViewFn(): JSX.Element {
+export const ExportView = memo((): JSX.Element => {
   const [format, setFormat] = useState<ExportFormat>('json');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -196,6 +196,4 @@ function AdvancedExportViewFn(): JSX.Element {
       </div>
     </div>
   );
-}
-
-export const AdvancedExportView = memo(AdvancedExportViewFn);
+});

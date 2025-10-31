@@ -1,13 +1,13 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 
-import { useBlacklist } from '../hooks/useBlacklist';
-import { useHistorySettingsStore } from '../hooks/useHistorySettingsStore';
-import { getHostnameFromUrl } from '../utilities/url';
-import { ConfirmationModal } from './ConfirmationModal';
-import { BlacklistDomainIcon, CheckIcon, ExternalLinkIcon, GlobeIcon, SearchIcon, TrashIcon } from './Icons';
+import { useBlacklist } from '../../hooks/useBlacklist';
+import { useHistorySettingsStore } from '../../hooks/useHistorySettingsStore';
+import { getHostnameFromUrl } from '../../utilities/urlUtil';
+import { ConfirmationModal } from '../shared/ConfirmationModal';
+import { BlacklistDomainIcon, CheckIcon, ExternalLinkIcon, GlobeIcon, SearchIcon, TrashIcon } from '../shared/Icons';
 
 import type { JSX, MouseEvent } from 'react';
-import type { ChromeHistoryItem } from '../app/types';
+import type { ChromeHistoryItem } from '../../app/types';
 
 interface HistoryItemProps {
   isChecked: boolean;
@@ -16,7 +16,7 @@ interface HistoryItemProps {
   onToggleSelection: (id: string) => void;
 }
 
-function HistoryItemFn({ item, onDelete, isChecked, onToggleSelection }: HistoryItemProps): JSX.Element {
+export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection }: HistoryItemProps): JSX.Element => {
   const { id, lastVisitTime, title, url } = item;
   const { addDomain } = useBlacklist();
   const { setSearchQuery } = useHistorySettingsStore();
@@ -96,20 +96,8 @@ function HistoryItemFn({ item, onDelete, isChecked, onToggleSelection }: History
         ${isChecked ? 'bg-slate-100' : 'hover:bg-white'}
       `}
         onClick={handleToggle}
-        onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleToggle()}
-        role="button"
-        tabIndex={0}
       >
         <div className="relative mr-2 flex h-4 w-4 flex-shrink-0 items-center justify-center">
-          <input
-            checked={isChecked}
-            className="sr-only"
-            id={`checkbox-${id}`}
-            onChange={handleToggle}
-            onClick={stopPropagation}
-            type="checkbox"
-            tabIndex={-1}
-          />
           <div
             className={`flex h-4 w-4 items-center justify-center rounded border-2 transition-colors ${
               isChecked ? 'border-slate-800 bg-slate-800' : 'border-slate-300 group-hover:border-slate-400'
@@ -188,6 +176,4 @@ function HistoryItemFn({ item, onDelete, isChecked, onToggleSelection }: History
       />
     </>
   );
-}
-
-export const HistoryItem = memo(HistoryItemFn);
+});

@@ -1,12 +1,12 @@
 import { memo } from 'react';
 
-import { useDevices } from '../hooks/useDevices';
-import { DesktopIcon, DevicesIcon, LaptopIcon } from './Icons';
-import { Skeleton } from './Skeleton';
+import { useDevices } from '../../hooks/useDevices';
+import { DesktopIcon, DevicesIcon, LaptopIcon } from '../shared/Icons';
+import { Skeleton } from '../shared/Skeleton';
 
 import type { JSX, MemoExoticComponent } from 'react';
-import type { Device } from '../app/types';
-import type { IconProps } from './Icons';
+import type { Device } from '../../app/types';
+import type { IconProps } from '../shared/Icons';
 
 const ICONS: Record<Device['type'], MemoExoticComponent<(props: IconProps) => JSX.Element>> = {
   laptop: LaptopIcon,
@@ -14,7 +14,7 @@ const ICONS: Record<Device['type'], MemoExoticComponent<(props: IconProps) => JS
   desktop: DesktopIcon,
 };
 
-function DeviceCardSkeleton(): JSX.Element {
+const DeviceCardSkeleton = (): JSX.Element => {
   return (
     <div className="flex items-center p-3 space-x-3 bg-white border rounded-lg shadow-sm border-slate-200">
       <Skeleton className="w-14 h-14 rounded-full" />
@@ -24,9 +24,9 @@ function DeviceCardSkeleton(): JSX.Element {
       </div>
     </div>
   );
-}
+};
 
-function DevicesViewFn(): JSX.Element {
+export const DeviceView = memo((): JSX.Element => {
   const { devices, isLoading, error } = useDevices();
 
   return (
@@ -66,6 +66,4 @@ function DevicesViewFn(): JSX.Element {
       )}
     </div>
   );
-}
-
-export const DevicesView = memo(DevicesViewFn);
+});

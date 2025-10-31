@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { deleteUrl, search } from '../services/chromeApi';
-import { isSameDay } from '../utilities/date';
-import { getHostnameFromUrl } from '../utilities/url';
+import { isSameDay } from '../utilities/dateUtil';
+import { getHostnameFromUrl } from '../utilities/urlUtil';
 import { useBlacklist } from './useBlacklist';
 import { useHistorySettingsStore } from './useHistorySettingsStore';
 

@@ -2,11 +2,11 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CalendarPopover } from '../shared/CalendarPopover';
 import {
-  AdvancedExportIcon,
   BlacklistDomainIcon,
   CalendarIcon,
   CloseIcon,
   DevicesIcon,
+  ExportIcon,
   LogoIcon,
   RegexIcon,
   SearchIcon,
@@ -28,6 +28,8 @@ const NavButton = memo(({ icon, onClick }: NavButtonProps): JSX.Element => {
     </button>
   );
 });
+
+NavButton.displayName = 'NavButton';
 
 interface HeaderProps {
   datesWithHistory: Set<string>;
@@ -65,7 +67,7 @@ export const Header = memo(
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent): void => {
-        if (calendarContainerRef.current && !calendarContainerRef.current.contains(event.target as Node)) {
+        if (calendarContainerRef.current && event.target instanceof Node && !calendarContainerRef.current.contains(event.target)) {
           setIsCalendarOpen(false);
         }
       };
@@ -112,7 +114,7 @@ export const Header = memo(
     }, [selectedDate]);
 
     return (
-      <header className="flex items-center justify-between md:justify-center flex-shrink-0 p-3 bg-white border-b border-slate-200 gap-3 flex-wrap md:relative md:flex-nowrap">
+      <header className="relative z-20 flex items-center justify-between md:justify-center flex-shrink-0 p-3 bg-white border-b border-slate-200 gap-3 flex-wrap md:flex-nowrap">
         <div className="flex items-center space-x-2 md:absolute md:left-3 md:top-1/2 md:-translate-y-1/2">
           <LogoIcon className="w-6 h-6 text-slate-800" />
           <h1 className="text-xl font-bold text-slate-800">Rekishi</h1>
@@ -126,7 +128,7 @@ export const Header = memo(
             <input
               className="w-full py-2 pl-8 pr-12 text-sm text-slate-900 bg-white border rounded-lg outline-none transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
               onChange={handleSearchChange}
-              placeholder={isRegex ? 'Search with Regex' : 'Search title or URL'}
+              placeholder={isRegex ? 'Search with Regex' : 'Search with Regex'}
               type="text"
               value={localSearchQuery}
             />
@@ -175,10 +177,12 @@ export const Header = memo(
         <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2">
           <NavButton icon={<DevicesIcon className="w-5 h-5" />} onClick={() => onOpenModal('devices')} />
           <NavButton icon={<BlacklistDomainIcon className="w-5 h-5" />} onClick={() => onOpenModal('blacklist')} />
-          <NavButton icon={<AdvancedExportIcon className="w-5 h-5" />} onClick={() => onOpenModal('export')} />
+          <NavButton icon={<ExportIcon className="w-5 h-5" />} onClick={() => onOpenModal('export')} />
           <NavButton icon={<SettingsIcon className="w-5 h-5" />} onClick={() => onOpenModal('settings')} />
         </div>
       </header>
     );
   },
 );
+
+Header.displayName = 'Header';

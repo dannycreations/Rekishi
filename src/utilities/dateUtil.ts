@@ -3,24 +3,10 @@ export function isSameDay(d1: Date, d2: Date): boolean {
 }
 
 export function formatDayHeader(date: Date): string {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'long' });
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
 
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  if (isSameDay(date, today)) {
-    return 'Today';
-  }
-
-  if (isSameDay(date, yesterday)) {
-    return 'Yesterday';
-  }
-
-  return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  return `${weekday}, ${year}/${month}/${day}`;
 }

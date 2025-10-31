@@ -36,7 +36,8 @@ export const useHistoryDates = (): UseHistoryDatesReturn => {
           dates.add(dateString);
         }
         setDatesWithHistory(dates);
-      } catch (e) {
+      } catch (e: unknown) {
+        console.error('Failed to load history dates:', e);
         setError('Failed to load history dates.');
       } finally {
         setIsLoading(false);

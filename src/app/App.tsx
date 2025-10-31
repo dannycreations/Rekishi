@@ -18,8 +18,8 @@ import type { ViewType } from './types';
 const VIEW_TITLES: Record<ViewType, string> = {
   activity: 'Activity',
   devices: 'Devices',
-  blacklist: 'Blacklist Domain',
-  export: 'Advanced Export',
+  blacklist: 'Blacklist',
+  export: 'Export',
   settings: 'Settings',
 };
 
@@ -106,11 +106,12 @@ export const App = (): JSX.Element => {
           setIsRegex={setIsRegex}
           setSelectedDate={setSelectedDate}
         />
-        <main ref={mainContentRef} className="flex-1 min-h-0 p-3 overflow-y-auto">
+
+        <main ref={mainContentRef} className="flex-1 min-h-0 overflow-y-auto">
           {isLoading ? (
             <HistoryViewSkeleton />
           ) : error ? (
-            <div className="flex items-center justify-center h-full text-red-500">
+            <div className="flex items-center justify-center h-full p-3 text-red-500">
               <p>Error loading history: {error}</p>
             </div>
           ) : (

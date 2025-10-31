@@ -4,10 +4,10 @@ import { useBlacklistStore } from '../../stores/useBlacklistStore';
 import { RegexIcon, TrashIcon } from '../shared/Icons';
 
 import type { FormEvent, JSX } from 'react';
-import type { BlacklistItem } from '../../utilities/blacklistUtil';
+import type { BlacklistItem as BlacklistItemType } from '../../utilities/blacklistUtil';
 
 interface BlacklistItemProps {
-  item: BlacklistItem;
+  item: BlacklistItemType;
   onRemove: (value: string) => void;
 }
 
@@ -28,6 +28,8 @@ const BlacklistItem = memo(({ item, onRemove }: BlacklistItemProps) => {
     </li>
   );
 });
+
+BlacklistItem.displayName = 'BlacklistItem';
 
 export const BlacklistView = memo((): JSX.Element => {
   const { addDomain, blacklistedItems, removeDomain } = useBlacklistStore();
@@ -67,11 +69,6 @@ export const BlacklistView = memo((): JSX.Element => {
 
   return (
     <div className="space-y-3">
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">Blacklist Domains</h2>
-        <p className="mt-1 text-slate-500">Prevent domains from appearing in your history using plain text or regular expressions.</p>
-      </div>
-
       <form className="flex items-center p-3 space-x-2 bg-white border rounded-lg shadow-sm border-slate-200" onSubmit={handleAddDomain}>
         <div className="relative flex-grow">
           <input
@@ -117,3 +114,5 @@ export const BlacklistView = memo((): JSX.Element => {
     </div>
   );
 });
+
+BlacklistView.displayName = 'BlacklistView';

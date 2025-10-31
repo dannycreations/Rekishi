@@ -2,32 +2,30 @@ import { createBlacklistMatchers, isDomainBlacklisted } from '../utilities/black
 import { getHostnameFromUrl } from '../utilities/urlUtil';
 
 import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
-
-declare const chrome: any;
-
-interface ChromeHistoryItem {
-  id: string;
-  url?: string;
-  title?: string;
-  lastVisitTime?: number;
-  visitCount?: number;
-}
+import type { ChromeHistoryItem } from './types';
 
 interface BlacklistData {
   items: BlacklistItem[];
   json: string | null;
 }
 
+type StoredBlacklist = {
+  state?: {
+    blacklistedItems?: BlacklistItem[];
+  };
+};
+
 function getBlacklistFromStorage(): Promise<string | null> {
   return new Promise((resolve) => {
     if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-      chrome.storage.local.get(['rekishi-blacklist'], (result: { [key: string]: string | undefined }) => {
-        resolve(result['rekishi-blacklist'] ?? null);
+      chrome.storage.local.get(['rekishi-blacklist'], (result: { [key: string]: unknown }) => {
+        const value = result['rekishi-blacklist'];
+        resolve(typeof value === 'string' ? value : null);
       });
     } else {
       try {
         resolve(localStorage.getItem('rekishi-blacklist'));
-      } catch (e) {
+      } catch (e: unknown) {
         console.error('Could not access localStorage', e);
         resolve(null);
       }
@@ -39,11 +37,11 @@ async function getBlacklist(): Promise<BlacklistData> {
   const storageValue = await getBlacklistFromStorage();
   if (storageValue) {
     try {
-      const parsed = JSON.parse(storageValue);
+      const parsed: StoredBlacklist = JSON.parse(storageValue);
       if (parsed.state?.blacklistedItems) {
         return { items: parsed.state.blacklistedItems, json: storageValue };
       }
-    } catch (e) {
+    } catch (e: unknown) {
       console.error('Failed to parse blacklist from storage', e);
     }
   }
@@ -61,7 +59,7 @@ function isBlacklisted(domain: string, blacklistedItems: BlacklistItem[], json: 
   return isDomainBlacklisted(domain, cachedMatchers);
 }
 
-async function handleVisited(historyItem: ChromeHistoryItem): Promise<void> {
+async function handleVisited(historyItem: chrome.history.HistoryItem): Promise<void> {
   if (!historyItem.url) {
     return;
   }
@@ -82,8 +80,17 @@ async function handleVisited(historyItem: ChromeHistoryItem): Promise<void> {
       });
     }
   } else if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
+    const { id, url, title, lastVisitTime, visitCount } = historyItem;
+    const payload: ChromeHistoryItem = {
+      id,
+      url: url ?? '',
+      title: title ?? url ?? '',
+      lastVisitTime: lastVisitTime ?? Date.now(),
+      visitCount: visitCount ?? 0,
+    };
+
     chrome.runtime.sendMessage({
-      payload: historyItem,
+      payload,
       type: 'NEW_HISTORY_ITEM',
     });
   }

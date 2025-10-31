@@ -2,8 +2,6 @@ import { deleteAllHistory as fakeDeleteAllHistory, deleteUrl as fakeDeleteUrl, g
 
 import type { ChromeHistoryItem, Device } from '../app/types';
 
-declare const chrome: any;
-
 interface SearchParams {
   readonly text: string;
   readonly startTime?: number;
@@ -72,8 +70,17 @@ export function search(params: SearchParams): Promise<ChromeHistoryItem[]> {
           endTime: params.endTime,
           maxResults: params.maxResults ?? 100,
         },
-        (results: ChromeHistoryItem[]) => {
-          resolve(results);
+        (results: chrome.history.HistoryItem[]) => {
+          const validResults: ChromeHistoryItem[] = results
+            .map((item) => ({
+              id: item.id,
+              url: item.url ?? '',
+              title: item.title ?? item.url ?? '',
+              lastVisitTime: item.lastVisitTime ?? 0,
+              visitCount: item.visitCount ?? 0,
+            }))
+            .filter((item) => item.url);
+          resolve(validResults);
         },
       );
     });
@@ -85,9 +92,10 @@ export function deleteUrl(details: { url: string }): Promise<void> {
   if (typeof chrome !== 'undefined' && chrome.history?.deleteUrl) {
     return new Promise((resolve, reject) => {
       chrome.history.deleteUrl(details, () => {
-        if (chrome.runtime.lastError) {
-          console.error('Error deleting history item:', chrome.runtime.lastError.message);
-          reject(chrome.runtime.lastError);
+        const lastError: chrome.runtime.LastError | undefined = chrome.runtime.lastError;
+        if (lastError) {
+          console.error('Error deleting history item:', lastError.message);
+          reject(new Error(lastError.message));
         } else {
           resolve();
         }
@@ -100,13 +108,13 @@ export function deleteUrl(details: { url: string }): Promise<void> {
 export function getDevices(): Promise<Device[]> {
   if (typeof chrome !== 'undefined' && chrome.sessions?.getDevices) {
     return new Promise((resolve) => {
-      chrome.sessions.getDevices((devices: any[]) => {
+      chrome.sessions.getDevices((devices: chrome.sessions.Device[] | undefined) => {
         if (!devices) {
           resolve([]);
           return;
         }
         const mappedDevices = devices.map((d) => {
-          const lastModifiedTimes = d.sessions.flatMap((s: any) => s.window?.tabs.map((t: any) => t.timestamp) ?? []);
+          const lastModifiedTimes = d.sessions.flatMap((s) => s.window?.tabs?.map((t) => t.timestamp) ?? []);
           const mostRecent = Math.max(0, ...lastModifiedTimes);
 
           return {
@@ -126,9 +134,10 @@ export function deleteAllHistory(): Promise<void> {
   if (typeof chrome !== 'undefined' && chrome.history?.deleteAll) {
     return new Promise((resolve, reject) => {
       chrome.history.deleteAll(() => {
-        if (chrome.runtime.lastError) {
-          console.error('Error deleting all history:', chrome.runtime.lastError.message);
-          reject(chrome.runtime.lastError);
+        const lastError: chrome.runtime.LastError | undefined = chrome.runtime.lastError;
+        if (lastError) {
+          console.error('Error deleting all history:', lastError.message);
+          reject(new Error(lastError.message));
         } else {
           resolve();
         }

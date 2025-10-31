@@ -4,9 +4,13 @@ import type { FC, JSX, SVGProps } from 'react';
 
 export type IconProps = SVGProps<SVGSVGElement>;
 
-const createIcon = (Component: FC<IconProps>): FC<IconProps> => memo(Component);
+const createIcon = (Component: FC<IconProps>) => {
+  const MemoizedComponent = memo(Component);
+  MemoizedComponent.displayName = `${Component.name || 'Icon'}`;
+  return MemoizedComponent;
+};
 
-export const AdvancedExportIcon = createIcon((props: IconProps): JSX.Element => {
+export const ExportIcon = createIcon((props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path

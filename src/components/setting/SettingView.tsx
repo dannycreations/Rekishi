@@ -5,7 +5,7 @@ import { deleteAllHistory } from '../../services/chromeApi';
 import { useSettingStore } from '../../stores/useSettingStore';
 import { ToggleSwitch } from '../shared/ToggleSwitch';
 
-import type { JSX, ReactNode } from 'react';
+import type { ChangeEvent, JSX, ReactNode } from 'react';
 
 interface SettingRowProps {
   children: ReactNode;
@@ -25,6 +25,8 @@ const SettingRow = memo(({ title, description, children }: SettingRowProps): JSX
   );
 });
 
+SettingRow.displayName = 'SettingRow';
+
 interface SettingSectionProps {
   children: ReactNode;
   title: string;
@@ -39,6 +41,8 @@ const SettingSection = memo(({ title, children }: SettingSectionProps): JSX.Elem
   );
 });
 
+SettingSection.displayName = 'SettingSection';
+
 export const SettingView = memo((): JSX.Element => {
   const { syncEnabled, dataRetention, setSyncEnabled, setDataRetention } = useSettingStore();
   const { Modal: ClearHistoryModal, openModal: openClearHistoryModal } = useConfirm();
@@ -48,7 +52,7 @@ export const SettingView = memo((): JSX.Element => {
       await deleteAllHistory();
       alert('All history has been cleared.');
       window.location.reload();
-    } catch (e) {
+    } catch (e: unknown) {
       alert('Failed to clear history. Please try again.');
       console.error(e);
     }
@@ -72,11 +76,6 @@ export const SettingView = memo((): JSX.Element => {
   return (
     <>
       <div className="space-y-3">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Settings</h2>
-          <p className="mt-1 text-slate-500">Customize your Rekishi experience.</p>
-        </div>
-
         <SettingSection title="Data & Sync">
           <SettingRow description="Sync settings across your signed-in devices." title="Sync settings">
             <ToggleSwitch enabled={syncEnabled} setEnabled={setSyncEnabled} />
@@ -84,7 +83,7 @@ export const SettingView = memo((): JSX.Element => {
           <SettingRow description="How long to keep your browsing history." title="History Retention">
             <select
               className="p-2 text-sm bg-white text-slate-900 border rounded-lg outline-none transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
-              onChange={(e) => setDataRetention(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => setDataRetention(e.target.value)}
               value={dataRetention}
             >
               <option value="30">30 days</option>
@@ -116,3 +115,5 @@ export const SettingView = memo((): JSX.Element => {
     </>
   );
 });
+
+SettingView.displayName = 'SettingView';

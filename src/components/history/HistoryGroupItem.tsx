@@ -10,13 +10,14 @@ import type { HistoryItemGroup as HistoryItemGroupType } from '../../app/types';
 interface HistoryGroupItemProps {
   deleteHistoryItems: (ids: string[]) => void;
   group: HistoryItemGroupType;
+  isSticky?: boolean;
   onDelete: (id: string) => void;
   onToggleSelection: (id: string) => void;
   selectedItems: Set<string>;
 }
 
 export const HistoryGroupItem = memo(
-  ({ deleteHistoryItems, group, onDelete, onToggleSelection, selectedItems }: HistoryGroupItemProps): JSX.Element => {
+  ({ deleteHistoryItems, group, onDelete, onToggleSelection, selectedItems, isSticky }: HistoryGroupItemProps): JSX.Element => {
     const { Modal: DeleteModal, openModal: openDeleteModal } = useConfirm();
 
     const handleConfirmDelete = useCallback(() => {
@@ -42,7 +43,14 @@ export const HistoryGroupItem = memo(
     return (
       <>
         <section>
-          <div className="flex items-center justify-between mb-1">
+          <div
+            className="flex items-center justify-between px-2 mb-1"
+            style={{
+              visibility: isSticky ? 'hidden' : 'visible',
+              height: isSticky ? 0 : 'auto',
+              overflow: 'hidden',
+            }}
+          >
             <h2 className="text-sm font-semibold text-slate-800">{group.time}</h2>
             <button
               className="flex items-center px-2 py-1 text-xs font-medium text-red-600 transition-colors bg-red-50 border border-red-200 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
@@ -69,3 +77,5 @@ export const HistoryGroupItem = memo(
     );
   },
 );
+
+HistoryGroupItem.displayName = 'HistoryGroupItem';

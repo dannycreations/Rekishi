@@ -31,10 +31,6 @@ export const DeviceView = memo((): JSX.Element => {
 
   return (
     <div className="space-y-3">
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">Your Devices</h2>
-        <p className="mt-1 text-slate-500">History is synced across all your signed-in devices.</p>
-      </div>
       {isLoading ? (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           <DeviceCardSkeleton />
@@ -75,3 +71,5 @@ export const DeviceView = memo((): JSX.Element => {
     </div>
   );
 });
+
+DeviceView.displayName = 'DeviceView';

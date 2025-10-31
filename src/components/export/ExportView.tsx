@@ -96,7 +96,7 @@ export const ExportView = memo((): JSX.Element => {
 
       const fileContent = generateFileContent(historyItems, format);
       downloadFile(fileContent, format, startDate, endDate);
-    } catch (err) {
+    } catch (err: unknown) {
       setError('An error occurred during export. Please try again.');
       console.error(err);
     } finally {
@@ -106,10 +106,6 @@ export const ExportView = memo((): JSX.Element => {
 
   return (
     <div className="space-y-3">
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">Advanced Export</h2>
-        <p className="mt-1 text-slate-500">Export your browsing history to a file.</p>
-      </div>
       <div className="p-3 space-y-3 bg-white border rounded-lg shadow-sm border-slate-200">
         <div>
           <h3 className="text-lg font-semibold text-slate-800">Date Range</h3>
@@ -197,3 +193,5 @@ export const ExportView = memo((): JSX.Element => {
     </div>
   );
 });
+
+ExportView.displayName = 'ExportView';

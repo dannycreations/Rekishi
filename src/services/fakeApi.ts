@@ -7,7 +7,7 @@ interface SearchParams {
   readonly maxResults?: number;
 }
 
-const FAKE_DATA_STORE: { [key: string]: ChromeHistoryItem } = {};
+const FAKE_DATA_STORE: Record<string, ChromeHistoryItem> = {};
 let FAKE_DATA_INITIALIZED = false;
 
 const generateFakeHistoryItem = (timestamp: number, index: number): ChromeHistoryItem => {

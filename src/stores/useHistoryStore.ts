@@ -25,7 +25,7 @@ export const useHistoryStore = create<HistoryState>()(
     {
       name: 'rekishi-history',
       storage: createJSONStorage(() => chromeLocalStorage, {
-        reviver: (key, value) => {
+        reviver: (key: string, value: unknown) => {
           if (key === 'selectedDate' && typeof value === 'string') {
             return new Date(value);
           }

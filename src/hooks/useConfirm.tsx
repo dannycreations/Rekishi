@@ -49,7 +49,8 @@ export const useConfirm = () => {
       />
     );
   });
-  Modal.displayName = 'MemoizedConfirmationModal';
+
+  Modal.displayName = 'ConfirmationModal';
 
   return { Modal, openModal };
 };

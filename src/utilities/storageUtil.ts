@@ -1,7 +1,5 @@
 import type { StateStorage } from 'zustand/middleware';
 
-declare const chrome: any;
-
 type StorageArea = 'local' | 'sync';
 
 const createChromeStorage = (area: StorageArea): StateStorage => {
@@ -11,7 +9,8 @@ const createChromeStorage = (area: StorageArea): StateStorage => {
     getItem: async (name: string): Promise<string | null> => {
       if (chromeStorageArea) {
         const result = await chromeStorageArea.get([name]);
-        return result[name] ?? null;
+        const value = result[name];
+        return typeof value === 'string' ? value : null;
       }
       return localStorage.getItem(name);
     },

@@ -8,8 +8,6 @@ import { getHostnameFromUrl } from '../utilities/urlUtil';
 
 import type { ChromeHistoryItem } from '../app/types';
 
-declare const chrome: any;
-
 const SEARCH_PAGE_SIZE = 100;
 
 function applyRegexFilter(
@@ -23,7 +21,7 @@ function applyRegexFilter(
     const regex = new RegExp(searchQuery, 'i');
     const filteredItems = items.filter((item) => regex.test(item.title) || regex.test(item.url));
     return { filteredItems, error: null };
-  } catch (e) {
+  } catch (e: unknown) {
     console.error('Invalid regex provided:', e);
     return { filteredItems: [], error: 'Invalid regular expression.' };
   }
@@ -76,7 +74,8 @@ export const useHistory = (): UseHistoryReturn => {
         text: '',
       });
       setRawHistory(newItems);
-    } catch {
+    } catch (err: unknown) {
+      console.error('Failed to fetch initial daily history:', err);
       setError('Failed to fetch history data.');
     } finally {
       setIsLoading(false);
@@ -108,7 +107,8 @@ export const useHistory = (): UseHistoryReturn => {
       if (filteredItems.length < SEARCH_PAGE_SIZE) {
         setHasMoreSearchResults(false);
       }
-    } catch {
+    } catch (err: unknown) {
+      console.error('Failed to fetch initial search history:', err);
       setError('Failed to fetch history data.');
     } finally {
       setIsLoading(false);
@@ -208,7 +208,8 @@ export const useHistory = (): UseHistoryReturn => {
         setRawHistory((prev) => [...prev, ...newItems]);
         setLastLoadedDate(nextDate);
       }
-    } catch {
+    } catch (err: unknown) {
+      console.error('Failed to load more history:', err);
       setError('Failed to fetch more history data.');
     } finally {
       setIsLoadingMore(false);
@@ -223,7 +224,8 @@ export const useHistory = (): UseHistoryReturn => {
           await deleteUrl({ url: urlToDelete });
           setRawHistory((prev) => prev.filter((item) => item.id !== id));
         }
-      } catch {
+      } catch (err: unknown) {
+        console.error('Failed to delete history item:', err);
         setError('Failed to delete history item.');
       }
     },
@@ -240,7 +242,8 @@ export const useHistory = (): UseHistoryReturn => {
 
         await Promise.all(deletePromises);
         setRawHistory((prev) => prev.filter((item) => !idsToDelete.has(item.id)));
-      } catch {
+      } catch (err: unknown) {
+        console.error('Failed to delete history items:', err);
         setError('Failed to delete history items.');
       }
     },

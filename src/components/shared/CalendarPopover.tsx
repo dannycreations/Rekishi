@@ -39,6 +39,8 @@ const CalendarSkeleton = memo(() => {
   );
 });
 
+CalendarSkeleton.displayName = 'CalendarSkeleton';
+
 export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHistory, isLoading }: CalendarPopoverProps): JSX.Element => {
   const [displayDate, setDisplayDate] = useState(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
 
@@ -131,3 +133,5 @@ export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHist
     </div>
   );
 });
+
+CalendarPopover.displayName = 'CalendarPopover';

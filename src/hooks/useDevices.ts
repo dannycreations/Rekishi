@@ -22,7 +22,7 @@ export const useDevices = (): UseDevicesReturn => {
       try {
         const deviceList = await getDevices();
         setDevices(deviceList);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Failed to fetch devices:', err);
         setError('Could not load device information.');
       } finally {

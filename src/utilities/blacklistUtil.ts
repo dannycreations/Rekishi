@@ -16,7 +16,7 @@ export function createBlacklistMatchers(items: BlacklistItem[]): BlacklistMatche
     if (item.isRegex) {
       try {
         regex.push(new RegExp(item.value, 'i'));
-      } catch (e) {
+      } catch (e: unknown) {
         console.error(`Invalid regex in blacklist: ${item.value}`, e);
       }
     } else {

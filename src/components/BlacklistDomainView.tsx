@@ -1,0 +1,123 @@
+import { memo, useCallback, useMemo, useState } from 'react';
+
+import { useBlacklist } from '../hooks/useBlacklist';
+import { RegexIcon, TrashIcon } from './Icons';
+
+import type { FormEvent, JSX } from 'react';
+import type { BlacklistItem } from '../hooks/useBlacklist';
+
+interface DomainListItemProps {
+  item: BlacklistItem;
+  onRemove: (value: string) => void;
+}
+
+function DomainListItemFn({ item, onRemove }: DomainListItemProps) {
+  const handleRemove = useCallback(() => {
+    onRemove(item.value);
+  }, [item.value, onRemove]);
+
+  return (
+    <li className="flex items-center justify-between p-2 rounded-md hover:bg-slate-50">
+      <div className="flex items-center space-x-2">
+        <span className="text-sm text-slate-600">{item.value}</span>
+        {item.isRegex && <span className="px-2 py-1 text-xs font-mono font-semibold rounded-md bg-slate-200 text-slate-600">REGEX</span>}
+      </div>
+      <button className="p-1 rounded-md text-slate-400 hover:bg-red-100 hover:text-red-500" onClick={handleRemove}>
+        <TrashIcon className="w-4 h-4" />
+      </button>
+    </li>
+  );
+}
+
+const DomainListItem = memo(DomainListItemFn);
+
+function BlacklistDomainViewFn(): JSX.Element {
+  const { addDomain, blacklistedItems, removeDomain } = useBlacklist();
+  const [newDomain, setNewDomain] = useState('');
+  const [isRegex, setIsRegex] = useState(false);
+
+  const sortedItems = useMemo(() => [...blacklistedItems].sort((a, b) => a.value.localeCompare(b.value)), [blacklistedItems]);
+
+  const handleAddDomain = useCallback(
+    (e: FormEvent): void => {
+      e.preventDefault();
+      const trimmedDomain = newDomain.trim();
+      if (!trimmedDomain) {
+        return;
+      }
+
+      if (isRegex) {
+        try {
+          new RegExp(trimmedDomain);
+        } catch (error) {
+          alert('Invalid Regular Expression');
+          return;
+        }
+      }
+      addDomain(trimmedDomain, isRegex);
+      setNewDomain('');
+    },
+    [newDomain, isRegex, addDomain],
+  );
+
+  const handleRemoveDomain = useCallback(
+    (valueToRemove: string): void => {
+      removeDomain(valueToRemove);
+    },
+    [removeDomain],
+  );
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <h2 className="text-2xl font-bold text-slate-800">Blacklist Domains</h2>
+        <p className="mt-1 text-slate-500">Prevent domains from appearing in your history using plain text or regular expressions.</p>
+      </div>
+
+      <form className="flex items-center p-3 space-x-2 bg-white border rounded-lg shadow-sm border-slate-200" onSubmit={handleAddDomain}>
+        <div className="relative flex-grow">
+          <input
+            className="w-full py-2 pl-4 pr-12 text-sm bg-white text-slate-900 border rounded-lg outline-none transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
+            onChange={(e) => setNewDomain(e.target.value)}
+            placeholder="e.g., example.com or .*\\.bad-site\\.com"
+            type="text"
+            value={newDomain}
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+            <button
+              className={`p-1 rounded-md transition-colors ${
+                isRegex ? 'bg-slate-800 text-white hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
+              }`}
+              onClick={() => setIsRegex((prev) => !prev)}
+              type="button"
+            >
+              <RegexIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+        <button
+          className="px-2 py-2 text-sm font-semibold text-white transition-colors rounded-lg bg-slate-800 hover:bg-slate-700 disabled:bg-slate-500 disabled:cursor-not-allowed"
+          disabled={!newDomain.trim()}
+          type="submit"
+        >
+          Add
+        </button>
+      </form>
+
+      <div className="p-3 bg-white border rounded-lg shadow-sm border-slate-200">
+        <h3 className="mb-2 font-semibold text-slate-800">Blacklisted Items ({sortedItems.length})</h3>
+        {sortedItems.length > 0 ? (
+          <ul className="space-y-1">
+            {sortedItems.map((item) => (
+              <DomainListItem key={item.value} item={item} onRemove={handleRemoveDomain} />
+            ))}
+          </ul>
+        ) : (
+          <p className="py-4 text-sm text-center text-slate-500">Your blacklist is empty. Add domains using the form above.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export const BlacklistDomainView = memo(BlacklistDomainViewFn);

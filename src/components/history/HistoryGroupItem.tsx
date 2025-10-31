@@ -1,6 +1,6 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback } from 'react';
 
-import { ConfirmationModal } from '../shared/ConfirmationModal';
+import { useConfirm } from '../../hooks/useConfirm';
 import { TrashIcon } from '../shared/Icons';
 import { HistoryItem } from './HistoryItem';
 
@@ -17,17 +17,27 @@ interface HistoryGroupItemProps {
 
 export const HistoryGroupItem = memo(
   ({ deleteHistoryItems, group, onDelete, onToggleSelection, selectedItems }: HistoryGroupItemProps): JSX.Element => {
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-    const handleOpenDeleteModal = useCallback(() => {
-      setIsDeleteModalOpen(true);
-    }, []);
+    const { Modal: DeleteModal, openModal: openDeleteModal } = useConfirm();
 
     const handleConfirmDelete = useCallback(() => {
       const idsToDelete = group.items.map((item) => item.id);
       deleteHistoryItems(idsToDelete);
-      setIsDeleteModalOpen(false);
     }, [group.items, deleteHistoryItems]);
+
+    const handleOpenDeleteModal = useCallback(() => {
+      openDeleteModal({
+        confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+        confirmText: `Delete ${group.items.length} items`,
+        message: (
+          <>
+            Are you sure you want to permanently delete all <strong>{group.items.length}</strong> history items from this time block? This action
+            cannot be undone.
+          </>
+        ),
+        onConfirm: handleConfirmDelete,
+        title: 'Delete History Items',
+      });
+    }, [openDeleteModal, group.items.length, handleConfirmDelete]);
 
     return (
       <>
@@ -54,20 +64,7 @@ export const HistoryGroupItem = memo(
             ))}
           </div>
         </section>
-        <ConfirmationModal
-          confirmButtonClass="bg-red-600 hover:bg-red-700"
-          confirmText={`Delete ${group.items.length} items`}
-          isOpen={isDeleteModalOpen}
-          message={
-            <>
-              Are you sure you want to permanently delete all <strong>{group.items.length}</strong> history items from this time block? This action
-              cannot be undone.
-            </>
-          }
-          onClose={() => setIsDeleteModalOpen(false)}
-          onConfirm={handleConfirmDelete}
-          title="Delete History Items"
-        />
+        <DeleteModal />
       </>
     );
   },

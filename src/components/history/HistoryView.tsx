@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
+import { useConfirm } from '../../hooks/useConfirm';
 import { formatDayHeader } from '../../utilities/dateUtil';
-import { ConfirmationModal } from '../shared/ConfirmationModal';
 import { SearchIcon } from '../shared/Icons';
 import { Skeleton } from '../shared/Skeleton';
 import { HistoryGroupHeader } from './HistoryGroupHeader';
@@ -143,7 +143,7 @@ export const HistoryViewSkeleton = memo(() => {
 export const HistoryView = memo(
   ({ deleteHistoryItems, hasMore, historyItems, isLoadingMore, loadMore, onDelete, scrollContainerRef }: HistoryViewProps): JSX.Element => {
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const { Modal: DeleteModal, openModal: openDeleteModal } = useConfirm();
 
     const handleToggleSelection = useCallback((id: string): void => {
       setSelectedItems((prev) => {
@@ -157,19 +157,29 @@ export const HistoryView = memo(
       });
     }, []);
 
-    const handleOpenDeleteModal = useCallback(() => {
-      if (selectedItems.size > 0) {
-        setIsDeleteModalOpen(true);
-      }
-    }, [selectedItems.size]);
-
     const handleConfirmDelete = useCallback(() => {
       if (selectedItems.size > 0) {
         deleteHistoryItems(Array.from(selectedItems));
         setSelectedItems(new Set());
       }
-      setIsDeleteModalOpen(false);
     }, [selectedItems, deleteHistoryItems]);
+
+    const handleOpenDeleteModal = useCallback(() => {
+      if (selectedItems.size > 0) {
+        openDeleteModal({
+          confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+          confirmText: `Delete ${selectedItems.size} items`,
+          message: (
+            <>
+              Are you sure you want to permanently delete the <strong>{selectedItems.size}</strong> selected history items? This action cannot be
+              undone.
+            </>
+          ),
+          onConfirm: handleConfirmDelete,
+          title: 'Delete Selected Items',
+        });
+      }
+    }, [selectedItems, openDeleteModal, handleConfirmDelete]);
 
     const handleToggleDaySelection = useCallback(
       (dayItems: ChromeHistoryItem[]) => {
@@ -308,20 +318,7 @@ export const HistoryView = memo(
             <HistoryViewGroupSkeleton />
           </div>
         )}
-        <ConfirmationModal
-          confirmButtonClass="bg-red-600 hover:bg-red-700"
-          confirmText={`Delete ${selectedItems.size} items`}
-          isOpen={isDeleteModalOpen}
-          message={
-            <>
-              Are you sure you want to permanently delete the <strong>{selectedItems.size}</strong> selected history items? This action cannot be
-              undone.
-            </>
-          }
-          onClose={() => setIsDeleteModalOpen(false)}
-          onConfirm={handleConfirmDelete}
-          title="Delete Selected Items"
-        />
+        <DeleteModal />
       </div>
     );
   },

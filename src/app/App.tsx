@@ -9,7 +9,7 @@ import { SettingView } from '../components/setting/SettingView';
 import { ViewModal } from '../components/shared/ViewModal';
 import { useHistory } from '../hooks/useHistory';
 import { useHistoryDates } from '../hooks/useHistoryDates';
-import { useHistorySettingsStore } from '../hooks/useHistorySettingsStore';
+import { useHistoryStore } from '../stores/useHistoryStore';
 
 import type { JSX } from 'react';
 import type { ViewType } from './types';
@@ -49,7 +49,7 @@ export const App = (): JSX.Element => {
   const [activeModal, setActiveModal] = useState<ViewType | null>(null);
   const mainContentRef = useRef<HTMLElement>(null);
 
-  const { isRegex, searchQuery, selectedDate, setIsRegex, setSearchQuery, setSelectedDate } = useHistorySettingsStore();
+  const { isRegex, searchQuery, selectedDate, setIsRegex, setSearchQuery, setSelectedDate } = useHistoryStore();
   const { deleteHistoryItem, deleteHistoryItems, error, hasMore, history, isLoading, isLoadingMore, loadMore } = useHistory();
   const { datesWithHistory, isLoading: isLoadingDates } = useHistoryDates();
 

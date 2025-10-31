@@ -1,8 +1,8 @@
-import { memo, useState } from 'react';
+import { memo, useCallback } from 'react';
 
-import { useSettingsStore } from '../../hooks/useSettings';
+import { useConfirm } from '../../hooks/useConfirm';
 import { deleteAllHistory } from '../../services/chromeApi';
-import { ConfirmationModal } from '../shared/ConfirmationModal';
+import { useSettingStore } from '../../stores/useSettingStore';
 import { ToggleSwitch } from '../shared/ToggleSwitch';
 
 import type { JSX, ReactNode } from 'react';
@@ -40,11 +40,10 @@ const SettingSection = memo(({ title, children }: SettingSectionProps): JSX.Elem
 });
 
 export const SettingView = memo((): JSX.Element => {
-  const { syncEnabled, dataRetention, setSyncEnabled, setDataRetention } = useSettingsStore();
-  const [isClearHistoryModalOpen, setIsClearHistoryModalOpen] = useState(false);
+  const { syncEnabled, dataRetention, setSyncEnabled, setDataRetention } = useSettingStore();
+  const { Modal: ClearHistoryModal, openModal: openClearHistoryModal } = useConfirm();
 
-  const handleConfirmClearHistory = async (): Promise<void> => {
-    setIsClearHistoryModalOpen(false);
+  const handleConfirmClearHistory = useCallback(async (): Promise<void> => {
     try {
       await deleteAllHistory();
       alert('All history has been cleared.');
@@ -53,7 +52,22 @@ export const SettingView = memo((): JSX.Element => {
       alert('Failed to clear history. Please try again.');
       console.error(e);
     }
-  };
+  }, []);
+
+  const handleOpenClearHistoryModal = useCallback(() => {
+    openClearHistoryModal({
+      confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+      confirmText: 'Yes, Clear All Data',
+      message: (
+        <>
+          Are you sure you want to permanently delete <strong>all</strong> of your browsing history? This action cannot be undone and will affect all
+          synced devices.
+        </>
+      ),
+      onConfirm: handleConfirmClearHistory,
+      title: 'Clear All History',
+    });
+  }, [openClearHistoryModal, handleConfirmClearHistory]);
 
   return (
     <>
@@ -90,7 +104,7 @@ export const SettingView = memo((): JSX.Element => {
             <div>
               <button
                 className="px-2 py-2 text-sm font-semibold text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700"
-                onClick={() => setIsClearHistoryModalOpen(true)}
+                onClick={handleOpenClearHistoryModal}
               >
                 Clear Data
               </button>
@@ -98,20 +112,7 @@ export const SettingView = memo((): JSX.Element => {
           </div>
         </SettingSection>
       </div>
-      <ConfirmationModal
-        confirmButtonClass="bg-red-600 hover:bg-red-700"
-        confirmText="Yes, Clear All Data"
-        isOpen={isClearHistoryModalOpen}
-        message={
-          <>
-            Are you sure you want to permanently delete <strong>all</strong> of your browsing history? This action cannot be undone and will affect
-            all synced devices.
-          </>
-        }
-        onClose={() => setIsClearHistoryModalOpen(false)}
-        onConfirm={handleConfirmClearHistory}
-        title="Clear All History"
-      />
+      <ClearHistoryModal />
     </>
   );
 });

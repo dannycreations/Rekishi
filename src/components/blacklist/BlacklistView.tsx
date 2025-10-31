@@ -1,10 +1,10 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 
-import { useBlacklist } from '../../hooks/useBlacklist';
+import { useBlacklistStore } from '../../stores/useBlacklistStore';
 import { RegexIcon, TrashIcon } from '../shared/Icons';
 
 import type { FormEvent, JSX } from 'react';
-import type { BlacklistItem } from '../../hooks/useBlacklist';
+import type { BlacklistItem } from '../../utilities/blacklistUtil';
 
 interface BlacklistItemProps {
   item: BlacklistItem;
@@ -30,7 +30,7 @@ const BlacklistItem = memo(({ item, onRemove }: BlacklistItemProps) => {
 });
 
 export const BlacklistView = memo((): JSX.Element => {
-  const { addDomain, blacklistedItems, removeDomain } = useBlacklist();
+  const { addDomain, blacklistedItems, removeDomain } = useBlacklistStore();
   const [newDomain, setNewDomain] = useState('');
   const [isRegex, setIsRegex] = useState(false);
 

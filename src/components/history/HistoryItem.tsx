@@ -1,9 +1,9 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 
-import { useBlacklist } from '../../hooks/useBlacklist';
-import { useHistorySettingsStore } from '../../hooks/useHistorySettingsStore';
+import { useConfirm } from '../../hooks/useConfirm';
+import { useBlacklistStore } from '../../stores/useBlacklistStore';
+import { useHistoryStore } from '../../stores/useHistoryStore';
 import { getHostnameFromUrl } from '../../utilities/urlUtil';
-import { ConfirmationModal } from '../shared/ConfirmationModal';
 import { BlacklistDomainIcon, CheckIcon, ExternalLinkIcon, GlobeIcon, SearchIcon, TrashIcon } from '../shared/Icons';
 
 import type { JSX, MouseEvent } from 'react';
@@ -18,11 +18,11 @@ interface HistoryItemProps {
 
 export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection }: HistoryItemProps): JSX.Element => {
   const { id, lastVisitTime, title, url } = item;
-  const { addDomain } = useBlacklist();
-  const { setSearchQuery } = useHistorySettingsStore();
-  const [isBlacklistModalOpen, setIsBlacklistModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const { addDomain } = useBlacklistStore();
+  const { setSearchQuery } = useHistoryStore();
   const [faviconError, setFaviconError] = useState(false);
+  const { Modal: BlacklistModal, openModal: openBlacklistModal } = useConfirm();
+  const { Modal: DeleteModal, openModal: openDeleteModal } = useConfirm();
 
   const hostname = useMemo(() => getHostnameFromUrl(url), [url]);
 
@@ -48,35 +48,54 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
     e.stopPropagation();
   }, []);
 
+  const handleConfirmDelete = useCallback((): void => {
+    onDelete(id);
+  }, [id, onDelete]);
+
   const handleOpenDeleteModal = useCallback(
     (e: MouseEvent): void => {
       stopPropagation(e);
-      setIsDeleteModalOpen(true);
+      openDeleteModal({
+        confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+        confirmText: 'Delete',
+        message: (
+          <>
+            Are you sure you want to permanently delete <strong>{title || url}</strong> from your history? This action cannot be undone.
+          </>
+        ),
+        onConfirm: handleConfirmDelete,
+        title: 'Delete History Item',
+      });
     },
-    [stopPropagation],
-  );
-
-  const handleConfirmDelete = useCallback((): void => {
-    onDelete(id);
-    setIsDeleteModalOpen(false);
-  }, [id, onDelete]);
-
-  const handleOpenBlacklistModal = useCallback(
-    (e: MouseEvent): void => {
-      stopPropagation(e);
-      if (hostname) {
-        setIsBlacklistModalOpen(true);
-      }
-    },
-    [hostname, stopPropagation],
+    [stopPropagation, openDeleteModal, title, url, handleConfirmDelete],
   );
 
   const handleConfirmBlacklist = useCallback((): void => {
     if (hostname) {
       addDomain(hostname, false);
     }
-    setIsBlacklistModalOpen(false);
   }, [hostname, addDomain]);
+
+  const handleOpenBlacklistModal = useCallback(
+    (e: MouseEvent): void => {
+      stopPropagation(e);
+      if (hostname) {
+        openBlacklistModal({
+          confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+          confirmText: 'Blacklist',
+          message: (
+            <>
+              Are you sure you want to blacklist <strong>{hostname}</strong>? This will hide all current and future history items from this domain.
+              You can manage your blacklist in the &quot;Blacklist Domain&quot; section.
+            </>
+          ),
+          onConfirm: handleConfirmBlacklist,
+          title: 'Blacklist Domain',
+        });
+      }
+    },
+    [hostname, stopPropagation, openBlacklistModal, handleConfirmBlacklist],
+  );
 
   const handleSearchSimilar = useCallback(
     (e: MouseEvent): void => {
@@ -147,33 +166,8 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
           </div>
         </div>
       </div>
-      <ConfirmationModal
-        confirmButtonClass="bg-red-600 hover:bg-red-700"
-        confirmText="Blacklist"
-        isOpen={isBlacklistModalOpen}
-        message={
-          <>
-            Are you sure you want to blacklist <strong>{hostname}</strong>? This will hide all current and future history items from this domain. You
-            can manage your blacklist in the &quot;Blacklist Domain&quot; section.
-          </>
-        }
-        onClose={() => setIsBlacklistModalOpen(false)}
-        onConfirm={handleConfirmBlacklist}
-        title="Blacklist Domain"
-      />
-      <ConfirmationModal
-        confirmButtonClass="bg-red-600 hover:bg-red-700"
-        confirmText="Delete"
-        isOpen={isDeleteModalOpen}
-        message={
-          <>
-            Are you sure you want to permanently delete <strong>{title || url}</strong> from your history? This action cannot be undone.
-          </>
-        }
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Delete History Item"
-      />
+      <BlacklistModal />
+      <DeleteModal />
     </>
   );
 });

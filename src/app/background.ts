@@ -1,11 +1,9 @@
+import { createBlacklistMatchers, isDomainBlacklisted } from '../utilities/blacklistUtil';
 import { getHostnameFromUrl } from '../utilities/urlUtil';
 
-declare const chrome: any;
+import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
 
-interface BlacklistItem {
-  isRegex: boolean;
-  value: string;
-}
+declare const chrome: any;
 
 interface ChromeHistoryItem {
   id: string;
@@ -23,12 +21,12 @@ interface BlacklistData {
 function getBlacklistFromStorage(): Promise<string | null> {
   return new Promise((resolve) => {
     if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-      chrome.storage.local.get(['rekishi-blacklist-storage'], (result: { [key: string]: string | undefined }) => {
-        resolve(result['rekishi-blacklist-storage'] ?? null);
+      chrome.storage.local.get(['rekishi-blacklist'], (result: { [key: string]: string | undefined }) => {
+        resolve(result['rekishi-blacklist'] ?? null);
       });
     } else {
       try {
-        resolve(localStorage.getItem('rekishi-blacklist-storage'));
+        resolve(localStorage.getItem('rekishi-blacklist'));
       } catch (e) {
         console.error('Could not access localStorage', e);
         resolve(null);
@@ -53,38 +51,14 @@ async function getBlacklist(): Promise<BlacklistData> {
 }
 
 let lastBlacklistedItemsJSON: string | null = null;
-let cachedPlainMatchers: Set<string> = new Set();
-let cachedRegexMatchers: RegExp[] = [];
+let cachedMatchers: BlacklistMatchers;
 
 function isBlacklisted(domain: string, blacklistedItems: BlacklistItem[], json: string | null): boolean {
   if (json !== lastBlacklistedItemsJSON) {
-    cachedPlainMatchers = new Set();
-    cachedRegexMatchers = [];
-    for (const item of blacklistedItems) {
-      if (item.isRegex) {
-        try {
-          cachedRegexMatchers.push(new RegExp(item.value, 'i'));
-        } catch (e) {
-          console.error(`Invalid regex in blacklist: ${item.value}`, e);
-        }
-      } else {
-        cachedPlainMatchers.add(item.value);
-      }
-    }
+    cachedMatchers = createBlacklistMatchers(blacklistedItems);
     lastBlacklistedItemsJSON = json;
   }
-
-  if (cachedPlainMatchers.has(domain)) {
-    return true;
-  }
-
-  for (const regex of cachedRegexMatchers) {
-    if (regex.test(domain)) {
-      return true;
-    }
-  }
-
-  return false;
+  return isDomainBlacklisted(domain, cachedMatchers);
 }
 
 async function handleVisited(historyItem: ChromeHistoryItem): Promise<void> {

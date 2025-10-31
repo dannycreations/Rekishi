@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { deleteUrl, search } from '../services/chromeApi';
+import { useBlacklistStore } from '../stores/useBlacklistStore';
+import { useHistoryStore } from '../stores/useHistoryStore';
 import { isSameDay } from '../utilities/dateUtil';
 import { getHostnameFromUrl } from '../utilities/urlUtil';
-import { useBlacklist } from './useBlacklist';
-import { useHistorySettingsStore } from './useHistorySettingsStore';
 
 import type { ChromeHistoryItem } from '../app/types';
 
@@ -48,8 +48,8 @@ export const useHistory = (): UseHistoryReturn => {
   const [hasMoreSearchResults, setHasMoreSearchResults] = useState(true);
   const [lastLoadedDate, setLastLoadedDate] = useState(() => new Date());
 
-  const { isBlacklisted, blacklistedItems } = useBlacklist();
-  const { isRegex, searchQuery, selectedDate } = useHistorySettingsStore();
+  const { isBlacklisted, blacklistedItems } = useBlacklistStore();
+  const { isRegex, searchQuery, selectedDate } = useHistoryStore();
 
   const history = useMemo(() => {
     return rawHistory.filter((item) => {

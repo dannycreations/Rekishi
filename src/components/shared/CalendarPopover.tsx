@@ -39,8 +39,6 @@ const CalendarSkeleton = memo(() => {
   );
 });
 
-CalendarSkeleton.displayName = 'CalendarSkeleton';
-
 export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHistory, isLoading }: CalendarPopoverProps): JSX.Element => {
   const [displayDate, setDisplayDate] = useState(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
 
@@ -76,6 +74,11 @@ export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHist
     setDisplayDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
   }, []);
 
+  const isCurrentMonth = useMemo(
+    () => displayDate.getFullYear() === today.getFullYear() && displayDate.getMonth() === today.getMonth(),
+    [displayDate, today],
+  );
+
   if (isLoading) {
     return <CalendarSkeleton />;
   }
@@ -83,12 +86,16 @@ export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHist
   return (
     <div className="absolute right-0 z-10 p-2 mt-2 bg-white border rounded-lg shadow-lg top-full w-72 border-slate-200">
       <div className="flex items-center justify-between mb-2">
-        <button className="p-2 transition-colors rounded-full hover:bg-slate-100" onClick={handlePrevMonth}>
-          <ChevronLeftIcon className="w-5 h-5 text-slate-500" />
+        <button className="p-2 text-slate-500 transition-colors rounded-full hover:bg-slate-100" onClick={handlePrevMonth}>
+          <ChevronLeftIcon className="w-5 h-5" />
         </button>
         <span className="text-sm font-semibold text-slate-700">{monthName}</span>
-        <button className="p-2 transition-colors rounded-full hover:bg-slate-100" onClick={handleNextMonth}>
-          <ChevronRightIcon className="w-5 h-5 text-slate-500" />
+        <button
+          className="p-2 text-slate-500 transition-colors rounded-full hover:bg-slate-100 disabled:text-slate-300 disabled:cursor-not-allowed"
+          disabled={isCurrentMonth}
+          onClick={handleNextMonth}
+        >
+          <ChevronRightIcon className="w-5 h-5" />
         </button>
       </div>
       <div className="grid grid-cols-7 text-center gap-y-1">
@@ -100,6 +107,10 @@ export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHist
         {calendarGrid.map((date, index) => {
           if (!date) {
             return <div key={`empty-${index}`} />;
+          }
+
+          if (date > today) {
+            return <div key={`future-${index}`} />;
           }
 
           const dateString = date.toISOString().split('T')[0];
@@ -133,5 +144,3 @@ export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHist
     </div>
   );
 });
-
-CalendarPopover.displayName = 'CalendarPopover';

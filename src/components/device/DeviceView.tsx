@@ -40,7 +40,7 @@ export const DeviceView = memo((): JSX.Element => {
       ) : error ? (
         <div className="p-4 text-center text-red-600 bg-red-50 rounded-lg">{error}</div>
       ) : devices.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-8 text-center bg-white border rounded-lg shadow-sm border-slate-200">
+        <div className="flex flex-col items-center justify-center p-8 text-center">
           <DevicesIcon className="w-16 h-16 mb-4 text-slate-400" />
           <h3 className="text-xl font-semibold text-slate-700">No Other Devices Found</h3>
           <p className="mt-2 text-slate-500">
@@ -71,5 +71,3 @@ export const DeviceView = memo((): JSX.Element => {
     </div>
   );
 });
-
-DeviceView.displayName = 'DeviceView';

@@ -171,5 +171,3 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
     </>
   );
 });
-
-HistoryItem.displayName = 'HistoryItem';

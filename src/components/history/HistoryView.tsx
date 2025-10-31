@@ -91,8 +91,6 @@ const HistoryViewItemSkeleton = memo(() => {
   );
 });
 
-HistoryViewItemSkeleton.displayName = 'HistoryViewItemSkeleton';
-
 const HistoryViewGroupSkeleton = memo(() => {
   return (
     <section>
@@ -109,8 +107,6 @@ const HistoryViewGroupSkeleton = memo(() => {
   );
 });
 
-HistoryViewGroupSkeleton.displayName = 'HistoryViewGroupSkeleton';
-
 const DailyGroupHeaderSkeleton = memo(() => {
   return (
     <div className="flex items-center justify-between px-2 mb-3">
@@ -121,8 +117,6 @@ const DailyGroupHeaderSkeleton = memo(() => {
     </div>
   );
 });
-
-DailyGroupHeaderSkeleton.displayName = 'DailyGroupHeaderSkeleton';
 
 export const HistoryViewSkeleton = memo(() => {
   return (
@@ -145,8 +139,6 @@ export const HistoryViewSkeleton = memo(() => {
     </div>
   );
 });
-
-HistoryViewSkeleton.displayName = 'HistoryViewSkeleton';
 
 export const HistoryView = memo(
   ({ deleteHistoryItems, hasMore, historyItems, isLoadingMore, loadMore, onDelete, scrollContainerRef }: HistoryViewProps): JSX.Element => {
@@ -473,5 +465,3 @@ export const HistoryView = memo(
     );
   },
 );
-
-HistoryView.displayName = 'HistoryView';

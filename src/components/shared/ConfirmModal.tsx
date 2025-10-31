@@ -67,5 +67,3 @@ export const ConfirmModal = memo(
     return createPortal(modalContent, document.body);
   },
 );
-
-ConfirmModal.displayName = 'ConfirmModal';

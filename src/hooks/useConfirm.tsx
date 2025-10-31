@@ -50,7 +50,5 @@ export const useConfirm = () => {
     );
   });
 
-  Modal.displayName = 'ConfirmationModal';
-
   return { Modal, openModal };
 };

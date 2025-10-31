@@ -66,5 +66,3 @@ export const HistoryGroupHeader = memo(
     );
   },
 );
-
-HistoryGroupHeader.displayName = 'HistoryGroupHeader';

@@ -193,5 +193,3 @@ export const ExportView = memo((): JSX.Element => {
     </div>
   );
 });
-
-ExportView.displayName = 'ExportView';

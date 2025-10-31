@@ -25,8 +25,6 @@ const SettingRow = memo(({ title, description, children }: SettingRowProps): JSX
   );
 });
 
-SettingRow.displayName = 'SettingRow';
-
 interface SettingSectionProps {
   children: ReactNode;
   title: string;
@@ -40,8 +38,6 @@ const SettingSection = memo(({ title, children }: SettingSectionProps): JSX.Elem
     </div>
   );
 });
-
-SettingSection.displayName = 'SettingSection';
 
 export const SettingView = memo((): JSX.Element => {
   const { syncEnabled, dataRetention, setSyncEnabled, setDataRetention } = useSettingStore();
@@ -115,5 +111,3 @@ export const SettingView = memo((): JSX.Element => {
     </>
   );
 });
-
-SettingView.displayName = 'SettingView';

@@ -26,5 +26,3 @@ export const ScrollToTop = memo(({ isVisible, onClick }: ScrollToTopProps): JSX.
     </button>
   );
 });
-
-ScrollToTop.displayName = 'ScrollToTop';

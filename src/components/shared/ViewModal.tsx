@@ -48,5 +48,3 @@ export const ViewModal = memo(({ isOpen, onClose, title, children, size = '3xl' 
 
   return createPortal(modalContent, document.body);
 });
-
-ViewModal.displayName = 'ViewModal';

@@ -29,8 +29,6 @@ const BlacklistItem = memo(({ item, onRemove }: BlacklistItemProps) => {
   );
 });
 
-BlacklistItem.displayName = 'BlacklistItem';
-
 export const BlacklistView = memo((): JSX.Element => {
   const { addDomain, blacklistedItems, removeDomain } = useBlacklistStore();
   const [newDomain, setNewDomain] = useState('');
@@ -69,7 +67,7 @@ export const BlacklistView = memo((): JSX.Element => {
 
   return (
     <div className="space-y-3">
-      <form className="flex items-center p-3 space-x-2 bg-white border rounded-lg shadow-sm border-slate-200" onSubmit={handleAddDomain}>
+      <form className="flex items-center space-x-2" onSubmit={handleAddDomain}>
         <div className="relative flex-grow">
           <input
             className="w-full py-2 pl-4 pr-12 text-sm bg-white text-slate-900 border rounded-lg outline-none transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
@@ -114,5 +112,3 @@ export const BlacklistView = memo((): JSX.Element => {
     </div>
   );
 });
-
-BlacklistView.displayName = 'BlacklistView';

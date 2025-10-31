@@ -29,8 +29,6 @@ const NavButton = memo(({ icon, onClick }: NavButtonProps): JSX.Element => {
   );
 });
 
-NavButton.displayName = 'NavButton';
-
 interface HeaderProps {
   datesWithHistory: Set<string>;
   isLoadingDates: boolean;
@@ -184,5 +182,3 @@ export const Header = memo(
     );
   },
 );
-
-Header.displayName = 'Header';

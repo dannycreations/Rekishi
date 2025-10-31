@@ -17,5 +17,3 @@ export const ToggleSwitch = memo(({ enabled, setEnabled }: ToggleSwitchProps): J
     </div>
   );
 });
-
-ToggleSwitch.displayName = 'ToggleSwitch';

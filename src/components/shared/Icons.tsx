@@ -5,9 +5,7 @@ import type { FC, JSX, SVGProps } from 'react';
 export type IconProps = SVGProps<SVGSVGElement>;
 
 const createIcon = (Component: FC<IconProps>) => {
-  const MemoizedComponent = memo(Component);
-  MemoizedComponent.displayName = `${Component.name || 'Icon'}`;
-  return MemoizedComponent;
+  return memo(Component);
 };
 
 export const ExportIcon = createIcon((props: IconProps): JSX.Element => {

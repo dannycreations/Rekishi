@@ -4,6 +4,8 @@ import { getHostnameFromUrl } from '../utilities/urlUtil';
 import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
 import type { ChromeHistoryItem } from './types';
 
+declare const chrome: any;
+
 interface BlacklistData {
   items: BlacklistItem[];
   json: string | null;

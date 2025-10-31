@@ -1,5 +1,7 @@
 import type { StateStorage } from 'zustand/middleware';
 
+declare const chrome: any;
+
 type StorageArea = 'local' | 'sync';
 
 const createChromeStorage = (area: StorageArea): StateStorage => {

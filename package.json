@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "check": "tsc --noEmit",
     "format": "prettier --write .",
     "update": "npm-check-updates -u -x @types/node",
     "prepare": "husky"
@@ -37,7 +38,12 @@
     "tailwindcss": "^4.1.16",
     "typescript": "~5.9.3",
     "vite": "^7.1.12",
-    "vite-plugin-checker": "^0.11.0",
-    "vite-plugin-zip-pack": "^1.2.4"
-  }
+    "vite-plugin-checker": "^0.11.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "packageManager": "pnpm@10.20.0"
 }

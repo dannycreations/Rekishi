@@ -112,7 +112,7 @@ export const Header = memo(
     }, [selectedDate]);
 
     return (
-      <header className="relative z-20 flex items-center justify-between md:justify-center flex-shrink-0 p-3 bg-white border-b border-slate-200 gap-3 flex-wrap md:flex-nowrap">
+      <header className="relative z-20 flex items-center justify-between md:justify-center shrink-0 p-3 bg-white border-b border-slate-200 gap-3 flex-wrap md:flex-nowrap">
         <div className="flex items-center space-x-2 md:absolute md:left-3 md:top-1/2 md:-translate-y-1/2">
           <LogoIcon className="w-6 h-6 text-slate-800" />
           <h1 className="text-xl font-bold text-slate-800">Rekishi</h1>

@@ -116,7 +116,7 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
       `}
         onClick={handleToggle}
       >
-        <div className="relative mr-2 flex h-4 w-4 flex-shrink-0 items-center justify-center">
+        <div className="relative mr-2 flex h-4 w-4 shrink-0 items-center justify-center">
           <div
             className={`flex h-4 w-4 items-center justify-center rounded border-2 transition-colors ${
               isChecked ? 'border-slate-800 bg-slate-800' : 'border-slate-300 group-hover:border-slate-400'
@@ -126,11 +126,11 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
           </div>
         </div>
         {faviconError ? (
-          <GlobeIcon className="mr-2 h-4 w-4 flex-shrink-0 text-slate-400" />
+          <GlobeIcon className="mr-2 h-4 w-4 shrink-0 text-slate-400" />
         ) : (
           <img
             alt=""
-            className="mr-2 h-4 w-4 flex-shrink-0"
+            className="mr-2 h-4 w-4 shrink-0"
             loading="lazy"
             onError={handleFaviconError}
             src={`https://www.google.com/s2/favicons?sz=32&domain_url=${hostname}`}
@@ -147,11 +147,11 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
             >
               {title || url}
             </a>
-            <ExternalLinkIcon className="ml-1 h-3.5 w-3.5 flex-shrink-0 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100" />
+            <ExternalLinkIcon className="ml-1 h-3.5 w-3.5 shrink-0 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100" />
           </div>
           <p className="truncate text-xs text-slate-500">{url}</p>
         </div>
-        <div className="relative flex items-center justify-end flex-shrink-0 w-24 h-6 ml-2">
+        <div className="relative flex items-center justify-end shrink-0 w-24 h-6 ml-2">
           <span className="text-xs text-right text-slate-500 transition-opacity duration-200 opacity-100 group-hover:opacity-0">{visitTime}</span>
           <div className="absolute inset-0 flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <button className="p-1 text-slate-400 rounded-md hover:bg-slate-100 hover:text-slate-800" onClick={handleSearchSimilar}>

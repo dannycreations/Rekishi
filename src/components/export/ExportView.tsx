@@ -140,7 +140,7 @@ export const ExportView = memo((): JSX.Element => {
           <h3 className="text-lg font-semibold text-slate-800">Format</h3>
           <div className="flex mt-1 space-x-2">
             <label className="flex items-center flex-1 p-3 space-x-2 border rounded-lg cursor-pointer border-slate-200 has-[:checked]:bg-slate-50 has-[:checked]:border-slate-400">
-              <div className="relative flex h-4 w-4 flex-shrink-0 items-center justify-center">
+              <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
                 <input
                   checked={format === 'json'}
                   className="peer sr-only"
@@ -159,7 +159,7 @@ export const ExportView = memo((): JSX.Element => {
               </div>
             </label>
             <label className="flex items-center flex-1 p-3 space-x-2 border rounded-lg cursor-pointer border-slate-200 has-[:checked]:bg-slate-50 has-[:checked]:border-slate-400">
-              <div className="relative flex h-4 w-4 flex-shrink-0 items-center justify-center">
+              <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
                 <input checked={format === 'csv'} className="peer sr-only" name="format" onChange={() => setFormat('csv')} type="radio" value="csv" />
                 <div className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-300 transition-colors peer-checked:border-slate-800">
                   <div className="h-2 w-2 rounded-full transition-colors peer-checked:bg-slate-800" />

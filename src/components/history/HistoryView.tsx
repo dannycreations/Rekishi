@@ -80,13 +80,13 @@ const groupHistoryByDay = (
 const HistoryViewItemSkeleton = memo(() => {
   return (
     <div className="flex items-center p-2">
-      <Skeleton className="flex-shrink-0 w-4 h-4 mr-2 rounded" />
-      <Skeleton className="flex-shrink-0 w-4 h-4 mr-2 rounded-full" />
+      <Skeleton className="shrink-0 w-4 h-4 mr-2 rounded" />
+      <Skeleton className="shrink-0 w-4 h-4 mr-2 rounded-full" />
       <div className="flex-1 min-w-0">
         <Skeleton className="w-3/4 h-4 rounded" />
         <Skeleton className="w-1/2 h-3 mt-2 rounded" />
       </div>
-      <Skeleton className="flex-shrink-0 w-20 h-4 ml-2 rounded" />
+      <Skeleton className="shrink-0 w-20 h-4 ml-2 rounded" />
     </div>
   );
 });

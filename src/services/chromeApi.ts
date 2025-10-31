@@ -2,6 +2,8 @@ import { deleteAllHistory as fakeDeleteAllHistory, deleteUrl as fakeDeleteUrl, g
 
 import type { ChromeHistoryItem, Device } from '../app/types';
 
+declare const chrome: any;
+
 interface SearchParams {
   readonly text: string;
   readonly startTime?: number;

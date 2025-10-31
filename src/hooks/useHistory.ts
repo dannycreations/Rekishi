@@ -8,6 +8,8 @@ import { getHostnameFromUrl } from '../utilities/urlUtil';
 
 import type { ChromeHistoryItem } from '../app/types';
 
+declare const chrome: any;
+
 const SEARCH_PAGE_SIZE = 100;
 
 function applyRegexFilter(
@@ -104,7 +106,7 @@ export const useHistory = (): UseHistoryReturn => {
       }
 
       setRawHistory(filteredItems);
-      if (filteredItems.length < SEARCH_PAGE_SIZE) {
+      if (newItems.length < SEARCH_PAGE_SIZE) {
         setHasMoreSearchResults(false);
       }
     } catch (err: unknown) {
@@ -181,16 +183,28 @@ export const useHistory = (): UseHistoryReturn => {
           text: searchQuery,
         });
 
-        let filteredItems = newItems.slice(1);
-        if (isRegex) {
-          const result = applyRegexFilter(filteredItems, searchQuery);
-          filteredItems = result.filteredItems;
-        }
-
-        setRawHistory((prev) => [...prev, ...filteredItems]);
         if (newItems.length < SEARCH_PAGE_SIZE) {
           setHasMoreSearchResults(false);
         }
+
+        setRawHistory((prev) => {
+          let itemsToAdd = newItems;
+
+          if (isRegex) {
+            const result = applyRegexFilter(newItems, searchQuery);
+            if (result.error && !error) {
+              setError(result.error);
+            }
+            itemsToAdd = result.filteredItems;
+          }
+
+          const combinedItems = [...prev, ...itemsToAdd];
+          const itemMap = new Map(combinedItems.map((item) => [item.id, item]));
+          const uniqueItems = Array.from(itemMap.values());
+          uniqueItems.sort((a, b) => b.lastVisitTime - a.lastVisitTime);
+
+          return uniqueItems;
+        });
       } else {
         const nextDate = new Date(lastLoadedDate);
         nextDate.setDate(lastLoadedDate.getDate() - 1);
@@ -205,7 +219,13 @@ export const useHistory = (): UseHistoryReturn => {
           startTime: startTime.getTime(),
           text: '',
         });
-        setRawHistory((prev) => [...prev, ...newItems]);
+        setRawHistory((prev) => {
+          const combinedItems = [...prev, ...newItems];
+          const itemMap = new Map(combinedItems.map((item) => [item.id, item]));
+          const uniqueItems = Array.from(itemMap.values());
+          uniqueItems.sort((a, b) => b.lastVisitTime - a.lastVisitTime);
+          return uniqueItems;
+        });
         setLastLoadedDate(nextDate);
       }
     } catch (err: unknown) {
@@ -214,7 +234,7 @@ export const useHistory = (): UseHistoryReturn => {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoading, isLoadingMore, searchQuery, rawHistory, lastLoadedDate, hasMoreSearchResults, isRegex]);
+  }, [isLoading, isLoadingMore, searchQuery, rawHistory, lastLoadedDate, hasMoreSearchResults, isRegex, error]);
 
   const deleteHistoryItem = useCallback(
     async (id: string): Promise<void> => {

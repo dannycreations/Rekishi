@@ -27,8 +27,8 @@ export const useConfirm = () => {
   const handleConfirm = useCallback(() => {
     if (options) {
       options.onConfirm();
+      closeModal();
     }
-    closeModal();
   }, [options, closeModal]);
 
   const Modal = memo((): JSX.Element | null => {

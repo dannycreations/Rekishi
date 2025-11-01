@@ -30,7 +30,11 @@ const VIEW_MODAL_SIZES: Partial<Record<ViewType, 'md' | 'lg' | 'xl' | '2xl' | '3
   settings: 'lg',
 };
 
-const ModalContent = ({ view }: { view: ViewType }): JSX.Element | null => {
+interface ModalContentProps {
+  view: ViewType;
+}
+
+export const ModalContent = ({ view }: ModalContentProps): JSX.Element | null => {
   switch (view) {
     case 'devices':
       return <DeviceView />;
@@ -80,6 +84,10 @@ export const App = (): JSX.Element => {
     mainContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  const handleCloseModal = useCallback(() => {
+    setActiveModal(null);
+  }, []);
+
   const activityViewProps = useMemo(
     () => ({
       deleteHistoryItems,
@@ -120,12 +128,7 @@ export const App = (): JSX.Element => {
         </main>
 
         {activeModal && (
-          <ViewModal
-            isOpen={!!activeModal}
-            onClose={() => setActiveModal(null)}
-            size={VIEW_MODAL_SIZES[activeModal]}
-            title={VIEW_TITLES[activeModal] ?? ''}
-          >
+          <ViewModal isOpen={!!activeModal} onClose={handleCloseModal} size={VIEW_MODAL_SIZES[activeModal]} title={VIEW_TITLES[activeModal] ?? ''}>
             <ModalContent view={activeModal} />
           </ViewModal>
         )}

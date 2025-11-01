@@ -12,7 +12,7 @@ import type { ChromeHistoryItem } from '../../app/types';
 interface HistoryItemProps {
   isChecked: boolean;
   item: ChromeHistoryItem;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
   onToggleSelection: (id: string) => void;
 }
 
@@ -20,7 +20,7 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
   const { id, lastVisitTime, title, url } = item;
   const { addDomain } = useBlacklistStore();
   const { setSearchQuery } = useHistoryStore();
-  const [faviconError, setFaviconError] = useState(false);
+  const [faviconError, setFaviconError] = useState<boolean>(false);
   const { Modal: BlacklistModal, openModal: openBlacklistModal } = useConfirm();
   const { Modal: DeleteModal, openModal: openDeleteModal } = useConfirm();
 
@@ -48,8 +48,8 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
     e.stopPropagation();
   }, []);
 
-  const handleConfirmDelete = useCallback((): void => {
-    onDelete(id);
+  const handleConfirmDelete = useCallback(async (): Promise<void> => {
+    await onDelete(id);
   }, [id, onDelete]);
 
   const handleOpenDeleteModal = useCallback(

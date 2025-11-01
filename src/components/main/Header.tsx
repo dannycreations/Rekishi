@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CalendarPopover } from '../shared/CalendarPopover';
 import {
@@ -21,7 +21,7 @@ interface NavButtonProps {
   onClick: () => void;
 }
 
-const NavButton = memo(({ icon, onClick }: NavButtonProps): JSX.Element => {
+export const NavButton = memo(({ icon, onClick }: NavButtonProps): JSX.Element => {
   return (
     <button className="p-2 text-slate-500 transition-colors rounded-lg hover:bg-slate-100 hover:text-slate-800" onClick={onClick}>
       {icon}
@@ -111,6 +111,26 @@ export const Header = memo(
       return `${year}/${month}/${day}`;
     }, [selectedDate]);
 
+    const handleToggleCalendar = useCallback(() => {
+      setIsCalendarOpen((o) => !o);
+    }, []);
+    const handleToggleRegex = useCallback(() => {
+      setIsRegex((prev) => !prev);
+    }, [setIsRegex]);
+
+    const handleOpenDevices = useCallback(() => {
+      onOpenModal('devices');
+    }, [onOpenModal]);
+    const handleOpenBlacklist = useCallback(() => {
+      onOpenModal('blacklist');
+    }, [onOpenModal]);
+    const handleOpenExport = useCallback(() => {
+      onOpenModal('export');
+    }, [onOpenModal]);
+    const handleOpenSettings = useCallback(() => {
+      onOpenModal('settings');
+    }, [onOpenModal]);
+
     return (
       <header className="relative z-20 flex items-center justify-between md:justify-center shrink-0 p-3 bg-white border-b border-slate-200 gap-3 flex-wrap md:flex-nowrap">
         <div className="flex items-center space-x-2 md:absolute md:left-3 md:top-1/2 md:-translate-y-1/2">
@@ -143,7 +163,7 @@ export const Header = memo(
                   className={`p-1 rounded-md transition-colors ${
                     isRegex ? 'bg-slate-800 text-white hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
                   }`}
-                  onClick={() => setIsRegex((prev) => !prev)}
+                  onClick={handleToggleRegex}
                 >
                   <RegexIcon className="w-4 h-4" />
                 </button>
@@ -153,7 +173,7 @@ export const Header = memo(
           <div className="relative" ref={calendarContainerRef}>
             <button
               className="flex items-center px-2 py-2 space-x-2 border rounded-lg transition-colors border-slate-200 hover:bg-slate-100"
-              onClick={() => setIsCalendarOpen((o) => !o)}
+              onClick={handleToggleCalendar}
             >
               <span className="text-sm text-slate-800">{formattedDate}</span>
               <CalendarIcon className="w-4 h-4 text-slate-400" />
@@ -173,10 +193,10 @@ export const Header = memo(
         </div>
 
         <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2">
-          <NavButton icon={<DevicesIcon className="w-5 h-5" />} onClick={() => onOpenModal('devices')} />
-          <NavButton icon={<BlacklistDomainIcon className="w-5 h-5" />} onClick={() => onOpenModal('blacklist')} />
-          <NavButton icon={<ExportIcon className="w-5 h-5" />} onClick={() => onOpenModal('export')} />
-          <NavButton icon={<SettingsIcon className="w-5 h-5" />} onClick={() => onOpenModal('settings')} />
+          <NavButton icon={<DevicesIcon className="w-5 h-5" />} onClick={handleOpenDevices} />
+          <NavButton icon={<BlacklistDomainIcon className="w-5 h-5" />} onClick={handleOpenBlacklist} />
+          <NavButton icon={<ExportIcon className="w-5 h-5" />} onClick={handleOpenExport} />
+          <NavButton icon={<SettingsIcon className="w-5 h-5" />} onClick={handleOpenSettings} />
         </div>
       </header>
     );

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 
 import { CloseIcon } from './Icons';
 
-import type { ReactNode, ReactPortal } from 'react';
+import type { MouseEvent, ReactNode, ReactPortal } from 'react';
 
 interface ViewModalProps {
   children: ReactNode;
@@ -33,7 +33,7 @@ export const ViewModal = memo(({ isOpen, onClose, title, children, size = '3xl' 
       <div
         ref={modalRef}
         className={`relative flex flex-col w-full ${sizeClass} max-h-[90vh] mx-3 bg-slate-50 rounded-lg shadow-xl outline-none`}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
       >
         <header className="flex items-start justify-between shrink-0 p-3 bg-white border-b border-slate-200 rounded-t-lg">
           <h3 className="text-lg font-bold text-slate-800">{title}</h3>

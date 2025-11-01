@@ -15,7 +15,7 @@ interface CalendarPopoverProps {
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const CalendarSkeleton = memo(() => {
+export const CalendarSkeleton = memo(() => {
   return (
     <div className="absolute right-0 z-10 p-2 mt-2 bg-white border rounded-lg shadow-lg top-full w-72 border-slate-200">
       <div className="flex items-center justify-between mb-2">
@@ -67,11 +67,15 @@ export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHist
   }, [displayDate]);
 
   const handlePrevMonth = useCallback(() => {
-    setDisplayDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+    setDisplayDate((d) => {
+      return new Date(d.getFullYear(), d.getMonth() - 1, 1);
+    });
   }, []);
 
   const handleNextMonth = useCallback(() => {
-    setDisplayDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+    setDisplayDate((d) => {
+      return new Date(d.getFullYear(), d.getMonth() + 1, 1);
+    });
   }, []);
 
   const isCurrentMonth = useMemo(

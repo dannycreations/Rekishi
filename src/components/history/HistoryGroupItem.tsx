@@ -8,10 +8,10 @@ import type { JSX } from 'react';
 import type { HistoryItemGroup as HistoryItemGroupType } from '../../app/types';
 
 interface HistoryGroupItemProps {
-  deleteHistoryItems: (ids: string[]) => void;
+  deleteHistoryItems: (ids: string[]) => Promise<void>;
   group: HistoryItemGroupType;
   isSticky?: boolean;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
   onToggleSelection: (id: string) => void;
   selectedItems: Set<string>;
 }
@@ -20,9 +20,9 @@ export const HistoryGroupItem = memo(
   ({ deleteHistoryItems, group, onDelete, onToggleSelection, selectedItems, isSticky }: HistoryGroupItemProps): JSX.Element => {
     const { Modal: DeleteModal, openModal: openDeleteModal } = useConfirm();
 
-    const handleConfirmDelete = useCallback(() => {
+    const handleConfirmDelete = useCallback(async () => {
       const idsToDelete = group.items.map((item) => item.id);
-      deleteHistoryItems(idsToDelete);
+      await deleteHistoryItems(idsToDelete);
     }, [group.items, deleteHistoryItems]);
 
     const handleOpenDeleteModal = useCallback(() => {

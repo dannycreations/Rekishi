@@ -13,7 +13,7 @@ interface SettingRowProps {
   title: string;
 }
 
-const SettingRow = memo(({ title, description, children }: SettingRowProps): JSX.Element => {
+export const SettingRow = memo(({ title, description, children }: SettingRowProps): JSX.Element => {
   return (
     <div className="flex items-center justify-between p-3 bg-white border rounded-lg border-slate-200">
       <div>
@@ -30,7 +30,7 @@ interface SettingSectionProps {
   title: string;
 }
 
-const SettingSection = memo(({ title, children }: SettingSectionProps): JSX.Element => {
+export const SettingSection = memo(({ title, children }: SettingSectionProps): JSX.Element => {
   return (
     <div>
       <h3 className="mb-2 text-lg font-bold text-slate-800">{title}</h3>

@@ -11,12 +11,12 @@ import type { JSX, RefObject } from 'react';
 import type { ChromeHistoryItem, HistoryItemGroup } from '../../app/types';
 
 interface HistoryViewProps {
-  deleteHistoryItems: (ids: string[]) => void;
+  deleteHistoryItems: (ids: string[]) => Promise<void>;
   hasMore: boolean;
   historyItems: ChromeHistoryItem[];
   isLoadingMore: boolean;
   loadMore: () => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
   scrollContainerRef: RefObject<HTMLElement | null>;
 }
 
@@ -77,7 +77,7 @@ const groupHistoryByDay = (
   return Object.values(groups).sort((a, b) => b.date.getTime() - a.date.getTime());
 };
 
-const HistoryViewItemSkeleton = memo(() => {
+export const HistoryViewItemSkeleton = memo(() => {
   return (
     <div className="flex items-center p-2">
       <Skeleton className="shrink-0 w-4 h-4 mr-2 rounded" />
@@ -91,7 +91,7 @@ const HistoryViewItemSkeleton = memo(() => {
   );
 });
 
-const HistoryViewGroupSkeleton = memo(() => {
+export const HistoryViewGroupSkeleton = memo(() => {
   return (
     <section>
       <div className="flex items-center justify-between mb-1">
@@ -107,7 +107,7 @@ const HistoryViewGroupSkeleton = memo(() => {
   );
 });
 
-const DailyGroupHeaderSkeleton = memo(() => {
+export const DailyGroupHeaderSkeleton = memo(() => {
   return (
     <div className="flex items-center justify-between px-2 mb-3">
       <div className="flex items-center gap-2">
@@ -162,9 +162,9 @@ export const HistoryView = memo(
       });
     }, []);
 
-    const handleConfirmDeleteSelected = useCallback(() => {
+    const handleConfirmDeleteSelected = useCallback(async () => {
       if (selectedItems.size > 0) {
-        deleteHistoryItems(Array.from(selectedItems));
+        await deleteHistoryItems(Array.from(selectedItems));
         setSelectedItems(new Set());
       }
     }, [selectedItems, deleteHistoryItems]);
@@ -198,7 +198,7 @@ export const HistoryView = memo(
                 undone.
               </>
             ),
-            onConfirm: () => deleteHistoryItems(items.map((i) => i.id)),
+            onConfirm: async () => await deleteHistoryItems(items.map((i) => i.id)),
             title: `Delete Entire ${type === 'day' ? 'Day' : 'Hour'}`,
           });
         }
@@ -272,7 +272,9 @@ export const HistoryView = memo(
         let activeDayKey: string | null = null;
         let activeHourText: string | null = null;
 
-        const sortedRefs = Array.from(headerRefs.current.entries()).sort((a, b) => a[1].offsetTop - b[1].offsetTop);
+        const sortedRefs = Array.from(headerRefs.current.entries()).sort((a, b) => {
+          return a[1].offsetTop - b[1].offsetTop;
+        });
 
         for (const [key, el] of sortedRefs) {
           if (!el) continue;
@@ -380,7 +382,7 @@ export const HistoryView = memo(
               dayItems={stickyHeaderData.items}
               onDeleteAll={() => handleOpenDeleteAllModal(stickyHeaderData.items, stickyState.hourText ? 'hour' : 'day')}
               onDeleteSelected={handleOpenDeleteSelectedModal}
-              onToggleDaySelection={() => handleToggleDaySelection(stickyHeaderData.items)}
+              onToggleDaySelection={handleToggleDaySelection}
               selectedItemsCount={stickyHeaderData.selectedCount}
               totalSelectedCount={selectedItems.size}
             />
@@ -414,7 +416,7 @@ export const HistoryView = memo(
                     dayItems={dayGroup.items}
                     onDeleteAll={() => handleOpenDeleteAllModal(dayGroup.items, 'day')}
                     onDeleteSelected={handleOpenDeleteSelectedModal}
-                    onToggleDaySelection={() => handleToggleDaySelection(dayGroup.items)}
+                    onToggleDaySelection={handleToggleDaySelection}
                     selectedItemsCount={dayGroup.selectedInDayCount}
                     totalSelectedCount={selectedItems.size}
                   />

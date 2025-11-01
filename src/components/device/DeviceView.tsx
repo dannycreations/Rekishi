@@ -14,7 +14,7 @@ const ICONS: Record<Device['type'], MemoExoticComponent<(props: IconProps) => JS
   desktop: DesktopIcon,
 };
 
-const DeviceCardSkeleton = (): JSX.Element => {
+export const DeviceCardSkeleton = memo((): JSX.Element => {
   return (
     <div className="flex items-center p-3 space-x-3 bg-white border rounded-lg shadow-sm border-slate-200">
       <Skeleton className="w-14 h-14 rounded-full" />
@@ -24,7 +24,7 @@ const DeviceCardSkeleton = (): JSX.Element => {
       </div>
     </div>
   );
-};
+});
 
 export const DeviceView = memo((): JSX.Element => {
   const { devices, isLoading, error } = useDevices();

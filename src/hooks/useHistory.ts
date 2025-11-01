@@ -8,9 +8,23 @@ import { getHostnameFromUrl } from '../utilities/urlUtil';
 
 import type { ChromeHistoryItem } from '../app/types';
 
-declare const chrome: any;
-
 const SEARCH_PAGE_SIZE = 100;
+
+interface NewHistoryItemMessage {
+  type: 'NEW_HISTORY_ITEM';
+  payload: ChromeHistoryItem;
+}
+
+function isNewHistoryItemMessage(message: unknown): message is NewHistoryItemMessage {
+  return (
+    !!message &&
+    typeof message === 'object' &&
+    'type' in message &&
+    (message as { type: unknown }).type === 'NEW_HISTORY_ITEM' &&
+    'payload' in message &&
+    !!(message as { payload: unknown }).payload
+  );
+}
 
 function applyRegexFilter(
   items: ChromeHistoryItem[],
@@ -130,8 +144,8 @@ export const useHistory = (): UseHistoryReturn => {
       return undefined;
     }
 
-    const messageListener = (message: { type: string; payload: ChromeHistoryItem }): void => {
-      if (message.type === 'NEW_HISTORY_ITEM') {
+    const messageListener = (message: unknown): void => {
+      if (isNewHistoryItemMessage(message)) {
         const newItem = message.payload;
         const domain = getHostnameFromUrl(newItem.url);
         if (isBlacklisted(domain)) {

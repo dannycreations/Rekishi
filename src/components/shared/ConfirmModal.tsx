@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 
 import { CloseIcon } from './Icons';
 
-import type { ReactNode, ReactPortal } from 'react';
+import type { MouseEvent, ReactNode, ReactPortal } from 'react';
 
 interface ConfirmModalProps {
   cancelText?: string;
@@ -38,7 +38,7 @@ export const ConfirmModal = memo(
         <div
           ref={modalRef}
           className="relative w-full max-w-md p-3 mx-3 bg-white rounded-lg shadow-xl outline-none"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
         >
           <div className="flex items-start justify-between">
             <h3 className="text-lg font-bold text-slate-800">{title}</h3>

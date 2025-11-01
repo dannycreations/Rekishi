@@ -2,8 +2,6 @@ import { deleteAllHistory as fakeDeleteAllHistory, deleteUrl as fakeDeleteUrl, g
 
 import type { ChromeHistoryItem, Device } from '../app/types';
 
-declare const chrome: any;
-
 interface SearchParams {
   readonly text: string;
   readonly startTime?: number;
@@ -13,10 +11,18 @@ interface SearchParams {
 
 function getDeviceTypeFromName(name: string): Device['type'] {
   const lowerName = name.toLowerCase();
-  if (['pixel', 'iphone', 'galaxy', 'android', 'phone'].some((s) => lowerName.includes(s))) {
+  if (
+    ['pixel', 'iphone', 'galaxy', 'android', 'phone'].some((s) => {
+      return lowerName.includes(s);
+    })
+  ) {
     return 'phone';
   }
-  if (['macbook', 'pixelbook', 'chromebook', 'laptop'].some((s) => lowerName.includes(s))) {
+  if (
+    ['macbook', 'pixelbook', 'chromebook', 'laptop'].some((s) => {
+      return lowerName.includes(s);
+    })
+  ) {
     return 'laptop';
   }
   return 'desktop';
@@ -116,7 +122,9 @@ export function getDevices(): Promise<Device[]> {
           return;
         }
         const mappedDevices = devices.map((d) => {
-          const lastModifiedTimes = d.sessions.flatMap((s) => s.window?.tabs?.map((t) => t.timestamp) ?? []);
+          const lastModifiedTimes = d.sessions.map((s) => {
+            return s.lastModified * 1000;
+          });
           const mostRecent = Math.max(0, ...lastModifiedTimes);
 
           return {

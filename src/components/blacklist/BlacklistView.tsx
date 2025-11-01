@@ -11,7 +11,7 @@ interface BlacklistItemProps {
   onRemove: (value: string) => void;
 }
 
-const BlacklistItem = memo(({ item, onRemove }: BlacklistItemProps) => {
+export const BlacklistItem = memo(({ item, onRemove }: BlacklistItemProps) => {
   const handleRemove = useCallback(() => {
     onRemove(item.value);
   }, [item.value, onRemove]);
@@ -65,6 +65,10 @@ export const BlacklistView = memo((): JSX.Element => {
     [removeDomain],
   );
 
+  const handleToggleRegex = useCallback(() => {
+    setIsRegex((prev) => !prev);
+  }, []);
+
   return (
     <div className="space-y-3">
       <form className="flex items-center space-x-2" onSubmit={handleAddDomain}>
@@ -81,7 +85,7 @@ export const BlacklistView = memo((): JSX.Element => {
               className={`p-1 rounded-md transition-colors ${
                 isRegex ? 'bg-slate-800 text-white hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
               }`}
-              onClick={() => setIsRegex((prev) => !prev)}
+              onClick={handleToggleRegex}
               type="button"
             >
               <RegexIcon className="w-4 h-4" />

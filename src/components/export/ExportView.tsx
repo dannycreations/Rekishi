@@ -60,7 +60,9 @@ export const ExportView = memo((): JSX.Element => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [endDate, setEndDate] = useState(() => formatDateForInput(new Date()));
+  const [endDate, setEndDate] = useState(() => {
+    return formatDateForInput(new Date());
+  });
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 30);

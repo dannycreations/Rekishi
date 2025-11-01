@@ -18,7 +18,13 @@ export const useHistoryStore = create<HistoryState>()(
       isRegex: false,
       searchQuery: '',
       selectedDate: new Date(),
-      setIsRegex: (value) => set((state) => ({ isRegex: typeof value === 'function' ? value(state.isRegex) : value })),
+      setIsRegex: (value) =>
+        set((state) => {
+          if (typeof value === 'function') {
+            return { isRegex: value(state.isRegex) };
+          }
+          return { isRegex: value };
+        }),
       setSearchQuery: (query) => set({ searchQuery: query }),
       setSelectedDate: (date) => set({ selectedDate: date, searchQuery: '' }),
     }),
@@ -32,9 +38,11 @@ export const useHistoryStore = create<HistoryState>()(
           return value;
         },
       }),
-      partialize: (state) => ({
-        selectedDate: state.selectedDate,
-      }),
+      partialize: (state) => {
+        return {
+          selectedDate: state.selectedDate,
+        };
+      },
     },
   ),
 );

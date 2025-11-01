@@ -7,7 +7,6 @@ interface HistoryState {
   readonly isRegex: boolean;
   readonly searchQuery: string;
   readonly selectedDate: Date;
-  readonly setIsRegex: (value: boolean | ((prev: boolean) => boolean)) => void;
   readonly setSearchQuery: (query: string) => void;
   readonly setSelectedDate: (date: Date) => void;
 }
@@ -18,15 +17,12 @@ export const useHistoryStore = create<HistoryState>()(
       isRegex: false,
       searchQuery: '',
       selectedDate: new Date(),
-      setIsRegex: (value) =>
-        set((state) => {
-          if (typeof value === 'function') {
-            return { isRegex: value(state.isRegex) };
-          }
-          return { isRegex: value };
+      setSearchQuery: (query) =>
+        set({
+          searchQuery: query,
+          isRegex: query.length > 2 && query.startsWith('/') && query.endsWith('/'),
         }),
-      setSearchQuery: (query) => set({ searchQuery: query }),
-      setSelectedDate: (date) => set({ selectedDate: date, searchQuery: '' }),
+      setSelectedDate: (date) => set({ selectedDate: date, searchQuery: '', isRegex: false }),
     }),
     {
       name: 'rekishi-history',

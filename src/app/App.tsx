@@ -6,6 +6,7 @@ import { ExportView } from '../components/export/ExportView';
 import { HistoryView, HistoryViewSkeleton } from '../components/history/HistoryView';
 import { Header } from '../components/main/Header';
 import { SettingView } from '../components/setting/SettingView';
+import { LogoIcon } from '../components/shared/Icons';
 import { ScrollToTop } from '../components/shared/ScrollToTop';
 import { ViewModal } from '../components/shared/ViewModal';
 import { useHistory } from '../hooks/useHistory';
@@ -55,7 +56,7 @@ export const App = (): JSX.Element => {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const mainContentRef = useRef<HTMLElement>(null);
 
-  const { isRegex, searchQuery, selectedDate, setIsRegex, setSearchQuery, setSelectedDate } = useHistoryStore();
+  const { searchQuery, selectedDate, setSearchQuery, setSelectedDate } = useHistoryStore();
   const { deleteHistoryItem, deleteHistoryItems, error, hasMore, history, isLoading, isLoadingMore, loadMore } = useHistory();
   const { datesWithHistory, isLoading: isLoadingDates } = useHistoryDates();
 
@@ -100,27 +101,33 @@ export const App = (): JSX.Element => {
     [history, deleteHistoryItem, deleteHistoryItems, loadMore, hasMore, isLoadingMore],
   );
 
+  const noHistoryEver = history.length === 0 && datesWithHistory.size === 0;
+
   return (
     <div className="h-screen bg-slate-100 text-slate-900">
       <div className="absolute inset-0 flex flex-col max-w-6xl mx-auto overflow-hidden bg-slate-50 shadow-xl sm:inset-6 sm:rounded-lg">
         <Header
           datesWithHistory={datesWithHistory}
           isLoadingDates={isLoadingDates}
-          isRegex={isRegex}
           onOpenModal={setActiveModal}
           onSearch={setSearchQuery}
           searchQuery={searchQuery}
           selectedDate={selectedDate}
-          setIsRegex={setIsRegex}
           setSelectedDate={setSelectedDate}
         />
 
         <main ref={mainContentRef} className="flex-1 min-h-0 overflow-y-auto">
-          {isLoading ? (
+          {isLoading || isLoadingDates ? (
             <HistoryViewSkeleton />
           ) : error ? (
             <div className="flex items-center justify-center h-full p-3 text-red-500">
               <p>Error loading history: {error}</p>
+            </div>
+          ) : noHistoryEver ? (
+            <div className="flex flex-col items-center justify-center h-full p-3 text-center text-slate-500">
+              <LogoIcon className="w-16 h-16 mb-4 text-slate-400" />
+              <h2 className="text-2xl font-bold text-slate-800">Welcome to Rekishi!</h2>
+              <p className="mt-2">Start browsing the web to see your history here.</p>
             </div>
           ) : (
             <HistoryView {...activityViewProps} scrollContainerRef={mainContentRef} />

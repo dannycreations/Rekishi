@@ -1,19 +1,9 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CalendarPopover } from '../shared/CalendarPopover';
-import {
-  BlacklistDomainIcon,
-  CalendarIcon,
-  CloseIcon,
-  DevicesIcon,
-  ExportIcon,
-  LogoIcon,
-  RegexIcon,
-  SearchIcon,
-  SettingsIcon,
-} from '../shared/Icons';
+import { BlacklistDomainIcon, CalendarIcon, CloseIcon, DevicesIcon, ExportIcon, LogoIcon, SearchIcon, SettingsIcon } from '../shared/Icons';
 
-import type { ChangeEvent, JSX, ReactNode, SetStateAction } from 'react';
+import type { ChangeEvent, JSX, ReactNode } from 'react';
 import type { ViewType } from '../../app/types';
 
 interface NavButtonProps {
@@ -32,27 +22,15 @@ export const NavButton = memo(({ icon, onClick }: NavButtonProps): JSX.Element =
 interface HeaderProps {
   datesWithHistory: Set<string>;
   isLoadingDates: boolean;
-  isRegex: boolean;
   onOpenModal: (view: ViewType) => void;
   onSearch: (query: string) => void;
   searchQuery: string;
   selectedDate: Date;
-  setIsRegex: (value: SetStateAction<boolean>) => void;
   setSelectedDate: (date: Date) => void;
 }
 
 export const Header = memo(
-  ({
-    isRegex,
-    onOpenModal,
-    onSearch,
-    searchQuery,
-    selectedDate,
-    setIsRegex,
-    setSelectedDate,
-    datesWithHistory,
-    isLoadingDates,
-  }: HeaderProps): JSX.Element => {
+  ({ onOpenModal, onSearch, searchQuery, selectedDate, setSelectedDate, datesWithHistory, isLoadingDates }: HeaderProps): JSX.Element => {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
 
@@ -114,9 +92,6 @@ export const Header = memo(
     const handleToggleCalendar = useCallback(() => {
       setIsCalendarOpen((o) => !o);
     }, []);
-    const handleToggleRegex = useCallback(() => {
-      setIsRegex((prev) => !prev);
-    }, [setIsRegex]);
 
     const handleOpenDevices = useCallback(() => {
       onOpenModal('devices');
@@ -138,34 +113,25 @@ export const Header = memo(
           <h1 className="text-xl font-bold text-slate-800">Rekishi</h1>
         </div>
 
-        <div className="flex items-center flex-grow w-full order-last gap-2 md:w-auto md:order-none md:flex-grow-0">
-          <div className="relative flex-grow max-w-lg">
+        <div className="flex items-center grow w-full order-last gap-2 md:w-auto md:order-0 md:grow-0">
+          <div className="relative grow max-w-lg">
             <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
               <SearchIcon className="w-4 h-4 text-slate-400" />
             </div>
             <input
               className="w-full py-2 pl-8 pr-12 text-sm text-slate-900 bg-white border rounded-lg outline-none transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
               onChange={handleSearchChange}
-              placeholder={isRegex ? 'Search with Regex' : 'Search with Regex'}
+              placeholder="Search title or URL"
               type="text"
               value={localSearchQuery}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-2">
-              {localSearchQuery ? (
+              {localSearchQuery && (
                 <button
                   className="p-1 rounded-md transition-colors text-slate-400 hover:bg-slate-100 hover:text-slate-800"
                   onClick={handleClearSearch}
                 >
                   <CloseIcon className="w-4 h-4" />
-                </button>
-              ) : (
-                <button
-                  className={`p-1 rounded-md transition-colors ${
-                    isRegex ? 'bg-slate-800 text-white hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
-                  }`}
-                  onClick={handleToggleRegex}
-                >
-                  <RegexIcon className="w-4 h-4" />
                 </button>
               )}
             </div>

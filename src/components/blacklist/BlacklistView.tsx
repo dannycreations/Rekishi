@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
-import { RegexIcon, TrashIcon } from '../shared/Icons';
+import { TrashIcon } from '../shared/Icons';
 
 import type { FormEvent, JSX } from 'react';
 import type { BlacklistItem as BlacklistItemType } from '../../utilities/blacklistUtil';
@@ -32,7 +32,6 @@ export const BlacklistItem = memo(({ item, onRemove }: BlacklistItemProps) => {
 export const BlacklistView = memo((): JSX.Element => {
   const { addDomain, blacklistedItems, removeDomain } = useBlacklistStore();
   const [newDomain, setNewDomain] = useState('');
-  const [isRegex, setIsRegex] = useState(false);
 
   const sortedItems = useMemo(() => [...blacklistedItems].sort((a, b) => a.value.localeCompare(b.value)), [blacklistedItems]);
 
@@ -44,18 +43,26 @@ export const BlacklistView = memo((): JSX.Element => {
         return;
       }
 
+      const isRegex = trimmedDomain.length > 2 && trimmedDomain.startsWith('/') && trimmedDomain.endsWith('/');
+      const value = isRegex ? trimmedDomain.slice(1, -1) : trimmedDomain;
+
+      if (!value) {
+        return;
+      }
+
       if (isRegex) {
         try {
-          new RegExp(trimmedDomain);
+          new RegExp(value);
         } catch (error) {
           alert('Invalid Regular Expression');
           return;
         }
       }
-      addDomain(trimmedDomain, isRegex);
+
+      addDomain(value, isRegex);
       setNewDomain('');
     },
-    [newDomain, isRegex, addDomain],
+    [newDomain, addDomain],
   );
 
   const handleRemoveDomain = useCallback(
@@ -65,32 +72,17 @@ export const BlacklistView = memo((): JSX.Element => {
     [removeDomain],
   );
 
-  const handleToggleRegex = useCallback(() => {
-    setIsRegex((prev) => !prev);
-  }, []);
-
   return (
     <div className="space-y-3">
       <form className="flex items-center space-x-2" onSubmit={handleAddDomain}>
-        <div className="relative flex-grow">
+        <div className="relative grow">
           <input
-            className="w-full py-2 pl-4 pr-12 text-sm bg-white text-slate-900 border rounded-lg outline-none transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
+            className="w-full py-2 pl-4 pr-4 text-sm bg-white text-slate-900 border rounded-lg outline-none transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
             onChange={(e) => setNewDomain(e.target.value)}
-            placeholder="e.g., example.com or .*\\.bad-site\\.com"
+            placeholder="e.g., example.com or /.*\\.bad-site\\.com/"
             type="text"
             value={newDomain}
           />
-          <div className="absolute inset-y-0 right-0 flex items-center pr-2">
-            <button
-              className={`p-1 rounded-md transition-colors ${
-                isRegex ? 'bg-slate-800 text-white hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
-              }`}
-              onClick={handleToggleRegex}
-              type="button"
-            >
-              <RegexIcon className="w-4 h-4" />
-            </button>
-          </div>
         </div>
         <button
           className="px-2 py-2 text-sm font-semibold text-white transition-colors rounded-lg bg-slate-800 hover:bg-slate-700 disabled:bg-slate-500 disabled:cursor-not-allowed"

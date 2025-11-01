@@ -28,13 +28,13 @@ function isNewHistoryItemMessage(message: unknown): message is NewHistoryItemMes
 
 function applyRegexFilter(
   items: ChromeHistoryItem[],
-  searchQuery: string,
+  pattern: string,
 ): {
   filteredItems: ChromeHistoryItem[];
   error: string | null;
 } {
   try {
-    const regex = new RegExp(searchQuery, 'i');
+    const regex = new RegExp(pattern, 'i');
     const filteredItems = items.filter((item) => regex.test(item.title) || regex.test(item.url));
     return { filteredItems, error: null };
   } catch (e: unknown) {
@@ -105,18 +105,24 @@ export const useHistory = (): UseHistoryReturn => {
     setHasMoreSearchResults(true);
 
     try {
+      const textForSearch = isRegex ? '' : searchQuery;
       const newItems = await search({
         maxResults: SEARCH_PAGE_SIZE,
-        text: searchQuery,
+        text: textForSearch,
       });
 
       let filteredItems = newItems;
       if (isRegex) {
-        const result = applyRegexFilter(newItems, searchQuery);
-        if (result.error) {
-          setError(result.error);
+        const pattern = searchQuery.slice(1, -1);
+        if (pattern) {
+          const result = applyRegexFilter(newItems, pattern);
+          if (result.error) {
+            setError(result.error);
+          }
+          filteredItems = result.filteredItems;
+        } else {
+          filteredItems = [];
         }
-        filteredItems = result.filteredItems;
       }
 
       setRawHistory(filteredItems);
@@ -155,7 +161,9 @@ export const useHistory = (): UseHistoryReturn => {
         const isMatch = (() => {
           if (searchQuery) {
             if (isRegex) {
-              const { filteredItems } = applyRegexFilter([newItem], searchQuery);
+              const pattern = searchQuery.slice(1, -1);
+              if (!pattern) return false;
+              const { filteredItems } = applyRegexFilter([newItem], pattern);
               return filteredItems.length > 0;
             }
             const query = searchQuery.toLowerCase();
@@ -191,10 +199,11 @@ export const useHistory = (): UseHistoryReturn => {
           return;
         }
 
+        const textForSearch = isRegex ? '' : searchQuery;
         const newItems = await search({
           endTime: lastItem.lastVisitTime,
           maxResults: SEARCH_PAGE_SIZE,
-          text: searchQuery,
+          text: textForSearch,
         });
 
         if (newItems.length < SEARCH_PAGE_SIZE) {
@@ -205,11 +214,16 @@ export const useHistory = (): UseHistoryReturn => {
           let itemsToAdd = newItems;
 
           if (isRegex) {
-            const result = applyRegexFilter(newItems, searchQuery);
-            if (result.error && !error) {
-              setError(result.error);
+            const pattern = searchQuery.slice(1, -1);
+            if (pattern) {
+              const result = applyRegexFilter(newItems, pattern);
+              if (result.error && !error) {
+                setError(result.error);
+              }
+              itemsToAdd = result.filteredItems;
+            } else {
+              itemsToAdd = [];
             }
-            itemsToAdd = result.filteredItems;
           }
 
           const combinedItems = [...prev, ...itemsToAdd];

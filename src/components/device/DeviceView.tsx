@@ -4,15 +4,13 @@ import { useDevices } from '../../hooks/useDevices';
 import { DesktopIcon, DevicesIcon, LaptopIcon } from '../shared/Icons';
 import { Skeleton } from '../shared/Skeleton';
 
-import type { JSX, MemoExoticComponent } from 'react';
-import type { Device } from '../../app/types';
-import type { IconProps } from '../shared/Icons';
+import type { JSX } from 'react';
 
-const ICONS: Record<Device['type'], MemoExoticComponent<(props: IconProps) => JSX.Element>> = {
+const ICONS = {
   laptop: LaptopIcon,
   phone: DevicesIcon,
   desktop: DesktopIcon,
-};
+} as const;
 
 export const DeviceCardSkeleton = memo((): JSX.Element => {
   return (

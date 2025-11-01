@@ -19,7 +19,7 @@ export const useSettingStore = create<SettingState>()(
       setSyncEnabled: (enabled) => set({ syncEnabled: enabled }),
     }),
     {
-      name: 'rekishi-settings',
+      name: 'rekishi-setting',
       storage: createJSONStorage(() => chromeSyncStorage),
     },
   ),

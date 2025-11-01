@@ -164,15 +164,6 @@ export const LogoIcon = createIcon((props: IconProps): JSX.Element => {
   );
 });
 
-export const RegexIcon = createIcon((props: IconProps) => {
-  return (
-    <svg fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <path d="M8 3L4 21" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M20 3L16 21" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-});
-
 export const SearchIcon = createIcon((props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>

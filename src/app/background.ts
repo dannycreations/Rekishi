@@ -58,7 +58,7 @@ function isBlacklisted(domain: string, blacklistedItems: BlacklistItem[], json: 
   return isDomainBlacklisted(domain, cachedMatchers);
 }
 
-const LAST_CLEANUP_TIME_KEY = 'rekishi-last-cleanup-time';
+const LAST_CLEANUP_KEY = 'rekishi-last-cleanup';
 
 async function runBlacklistCleanup() {
   if (typeof chrome === 'undefined' || !chrome.history?.search || !chrome.history?.deleteUrl) {
@@ -72,9 +72,9 @@ async function runBlacklistCleanup() {
   }
 
   const result = await new Promise<{ [key: string]: number }>((resolve) =>
-    chrome.storage.local.get(LAST_CLEANUP_TIME_KEY, (res) => resolve(res as { [key: string]: number })),
+    chrome.storage.local.get(LAST_CLEANUP_KEY, (res) => resolve(res as { [key: string]: number })),
   );
-  const lastCleanupTime = result[LAST_CLEANUP_TIME_KEY] || 0;
+  const lastCleanupTime = result[LAST_CLEANUP_KEY] || 0;
   const now = Date.now();
 
   chrome.history.search({ text: '', maxResults: 0, startTime: lastCleanupTime }, (historyItems) => {
@@ -104,7 +104,7 @@ async function runBlacklistCleanup() {
       );
 
     Promise.all(deletions).then(() => {
-      chrome.storage.local.set({ [LAST_CLEANUP_TIME_KEY]: now }, () => {
+      chrome.storage.local.set({ [LAST_CLEANUP_KEY]: now }, () => {
         if (chrome.runtime.lastError) {
           console.error('Failed to set last cleanup time:', chrome.runtime.lastError.message);
         }

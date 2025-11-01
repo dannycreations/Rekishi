@@ -9,11 +9,16 @@ import type { ViewType } from '../../app/types';
 interface NavButtonProps {
   icon: ReactNode;
   onClick: () => void;
+  title: string;
 }
 
-export const NavButton = memo(({ icon, onClick }: NavButtonProps): JSX.Element => {
+export const NavButton = memo(({ icon, onClick, title }: NavButtonProps): JSX.Element => {
   return (
-    <button className="p-2 text-slate-500 transition-colors rounded-lg cursor-pointer hover:bg-slate-100 hover:text-slate-800" onClick={onClick}>
+    <button
+      className="p-2 text-slate-500 transition-colors rounded-lg cursor-pointer hover:bg-slate-100 hover:text-slate-800"
+      onClick={onClick}
+      title={title}
+    >
       {icon}
     </button>
   );
@@ -35,7 +40,12 @@ export const Header = memo(
     const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
 
     const calendarContainerRef = useRef<HTMLDivElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
     const searchTimeout = useRef<number | null>(null);
+
+    useEffect(() => {
+      searchInputRef.current?.focus();
+    }, []);
 
     useEffect(() => {
       setLocalSearchQuery(searchQuery);
@@ -80,6 +90,7 @@ export const Header = memo(
       }
       setLocalSearchQuery('');
       onSearch('');
+      searchInputRef.current?.focus();
     };
 
     const formattedDate = useMemo(() => {
@@ -119,6 +130,7 @@ export const Header = memo(
               <SearchIcon className="w-4 h-4 text-slate-400" />
             </div>
             <input
+              ref={searchInputRef}
               className="w-full py-2 pl-8 pr-10 text-sm text-slate-900 bg-white border rounded-lg outline-none transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
               onChange={handleSearchChange}
               placeholder="Search title or URL"
@@ -130,6 +142,7 @@ export const Header = memo(
                 <button
                   className="p-1 rounded-md transition-colors cursor-pointer text-slate-400 hover:bg-slate-100 hover:text-slate-800"
                   onClick={handleClearSearch}
+                  title="Clear search"
                 >
                   <CloseIcon className="w-4 h-4" />
                 </button>
@@ -140,6 +153,7 @@ export const Header = memo(
             <button
               className="flex items-center px-2 py-2 space-x-2 border rounded-lg transition-colors cursor-pointer border-slate-200 hover:bg-slate-100"
               onClick={handleToggleCalendar}
+              title="Select date"
             >
               <span className="text-sm text-slate-800">{formattedDate}</span>
               <CalendarIcon className="w-4 h-4 text-slate-400" />
@@ -159,10 +173,10 @@ export const Header = memo(
         </div>
 
         <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2">
-          <NavButton icon={<DevicesIcon className="w-5 h-5" />} onClick={handleOpenDevices} />
-          <NavButton icon={<BlacklistDomainIcon className="w-5 h-5" />} onClick={handleOpenBlacklist} />
-          <NavButton icon={<ExportIcon className="w-5 h-5" />} onClick={handleOpenExport} />
-          <NavButton icon={<SettingsIcon className="w-5 h-5" />} onClick={handleOpenSettings} />
+          <NavButton icon={<DevicesIcon className="w-5 h-5" />} onClick={handleOpenDevices} title="Synced Devices" />
+          <NavButton icon={<BlacklistDomainIcon className="w-5 h-5" />} onClick={handleOpenBlacklist} title="Manage Blacklist" />
+          <NavButton icon={<ExportIcon className="w-5 h-5" />} onClick={handleOpenExport} title="Export History" />
+          <NavButton icon={<SettingsIcon className="w-5 h-5" />} onClick={handleOpenSettings} title="Settings" />
         </div>
       </header>
     );

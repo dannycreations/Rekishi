@@ -78,6 +78,10 @@ export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHist
     });
   }, []);
 
+  const handleGoToToday = useCallback(() => {
+    onDateSelect(new Date());
+  }, [onDateSelect]);
+
   const isCurrentMonth = useMemo(
     () => displayDate.getFullYear() === today.getFullYear() && displayDate.getMonth() === today.getMonth(),
     [displayDate, today],
@@ -93,7 +97,12 @@ export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHist
         <button className="p-2 text-slate-500 transition-colors rounded-full cursor-pointer hover:bg-slate-100" onClick={handlePrevMonth}>
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
-        <span className="text-sm font-semibold text-slate-700">{monthName}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-slate-700">{monthName}</span>
+          <button className="px-2 py-0.5 text-xs font-semibold rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200" onClick={handleGoToToday}>
+            Today
+          </button>
+        </div>
         <button
           className="p-2 text-slate-500 transition-colors rounded-full cursor-pointer hover:bg-slate-100 disabled:text-slate-300 disabled:cursor-not-allowed"
           disabled={isCurrentMonth}

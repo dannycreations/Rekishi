@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
 import { CloseIcon, TrashIcon } from '../shared/Icons';
@@ -22,7 +22,11 @@ export const BlacklistItem = memo(({ item, onRemove }: BlacklistItemProps) => {
         <span className="text-sm text-slate-600">{item.value}</span>
         {item.isRegex && <span className="px-2 py-1 text-xs font-mono font-semibold rounded-md bg-slate-200 text-slate-600">REGEX</span>}
       </div>
-      <button className="p-1 rounded-md cursor-pointer text-slate-400 hover:bg-red-100 hover:text-red-500" onClick={handleRemove}>
+      <button
+        className="p-1 rounded-md cursor-pointer text-slate-400 hover:bg-red-100 hover:text-red-500"
+        onClick={handleRemove}
+        title={`Remove ${item.value}`}
+      >
         <TrashIcon className="w-4 h-4" />
       </button>
     </li>
@@ -32,6 +36,14 @@ export const BlacklistItem = memo(({ item, onRemove }: BlacklistItemProps) => {
 export const BlacklistView = memo((): JSX.Element => {
   const { addDomain, blacklistedItems, removeDomain } = useBlacklistStore();
   const [newDomain, setNewDomain] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timeoutId);
+  }, []);
 
   const sortedItems = useMemo(() => [...blacklistedItems].sort((a, b) => a.value.localeCompare(b.value)), [blacklistedItems]);
 
@@ -73,10 +85,11 @@ export const BlacklistView = memo((): JSX.Element => {
   );
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <form className="flex items-center space-x-2" onSubmit={handleAddDomain}>
         <div className="relative grow">
           <input
+            ref={inputRef}
             className="w-full py-2 pl-4 pr-10 text-sm bg-white text-slate-900 border rounded-lg outline-none transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
             onChange={(e) => setNewDomain(e.target.value)}
             placeholder="e.g., example.com or /.*\\.bad-site\\.com/"
@@ -88,6 +101,7 @@ export const BlacklistView = memo((): JSX.Element => {
               <button
                 className="p-1 rounded-md transition-colors cursor-pointer text-slate-400 hover:bg-slate-100 hover:text-slate-800"
                 onClick={() => setNewDomain('')}
+                title="Clear input"
                 type="button"
               >
                 <CloseIcon className="w-4 h-4" />

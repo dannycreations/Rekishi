@@ -71,7 +71,7 @@ export const SettingView = memo((): JSX.Element => {
 
   return (
     <>
-      <div className="space-y-3">
+      <div className="space-y-6">
         <SettingSection title="Data & Sync">
           <SettingRow description="Sync settings across your signed-in devices." title="Sync settings">
             <ToggleSwitch enabled={syncEnabled} setEnabled={setSyncEnabled} />

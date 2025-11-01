@@ -52,7 +52,7 @@ export const DeviceView = memo((): JSX.Element => {
             return (
               <div
                 key={device.name}
-                className="flex items-center p-3 space-x-3 bg-white border rounded-lg shadow-sm transition-transform border-slate-200 hover:scale-105"
+                className="flex items-center p-3 space-x-3 bg-white border rounded-lg shadow-sm transition-transform duration-200 border-slate-200 hover:scale-105"
               >
                 <div className="p-3 rounded-full bg-slate-100">
                   <IconComponent className="w-8 h-8 text-slate-600" />

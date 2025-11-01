@@ -14,8 +14,7 @@ export const ScrollToTop = memo(({ isVisible, onClick }: ScrollToTopProps): JSX.
     <button
       className={`
         fixed bottom-6 right-6 z-10 p-3 rounded-full shadow-lg transition-transform duration-300 ease-in-out cursor-pointer
-        bg-slate-800 text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2
-        ${isVisible ? 'scale-100' : 'scale-0'}
+        bg-slate-800 text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 ${isVisible ? 'scale-100' : 'scale-0'}
       `}
       onClick={onClick}
       title="Scroll to top"

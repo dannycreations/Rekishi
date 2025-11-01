@@ -119,7 +119,7 @@ export const Header = memo(
               <SearchIcon className="w-4 h-4 text-slate-400" />
             </div>
             <input
-              className="w-full py-2 pl-8 pr-12 text-sm text-slate-900 bg-white border rounded-lg outline-none transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
+              className="w-full py-2 pl-8 pr-10 text-sm text-slate-900 bg-white border rounded-lg outline-none transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
               onChange={handleSearchChange}
               placeholder="Search title or URL"
               type="text"

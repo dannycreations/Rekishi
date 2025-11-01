@@ -48,7 +48,6 @@ export const HistoryGroupItem = memo(
             style={{
               visibility: isSticky ? 'hidden' : 'visible',
               height: isSticky ? 0 : 'auto',
-              overflow: 'hidden',
             }}
           >
             <h2 className="text-sm font-semibold text-slate-800">{group.time}</h2>

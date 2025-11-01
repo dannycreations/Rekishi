@@ -408,7 +408,6 @@ export const HistoryView = memo(
                   style={{
                     visibility: isDayHeaderCovered ? 'hidden' : 'visible',
                     height: isDayHeaderCovered ? 0 : 'auto',
-                    overflow: 'hidden',
                   }}
                 >
                   <HistoryGroupHeader

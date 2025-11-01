@@ -92,14 +92,17 @@ export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHist
   }
 
   return (
-    <div className="absolute right-0 z-10 p-2 mt-2 bg-white border rounded-lg shadow-lg top-full w-72 border-slate-200">
+    <div className="absolute right-0 z-10 p-2 mt-2 origin-top-right bg-white border rounded-lg shadow-lg top-full w-72 border-slate-200 popover-animate-enter">
       <div className="flex items-center justify-between mb-2">
         <button className="p-2 text-slate-500 transition-colors rounded-full cursor-pointer hover:bg-slate-100" onClick={handlePrevMonth}>
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-slate-700">{monthName}</span>
-          <button className="px-2 py-0.5 text-xs font-semibold rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200" onClick={handleGoToToday}>
+          <button
+            className="px-2 py-0.5 text-xs font-semibold rounded-md cursor-pointer bg-slate-100 text-slate-700 hover:bg-slate-200"
+            onClick={handleGoToToday}
+          >
             Today
           </button>
         </div>

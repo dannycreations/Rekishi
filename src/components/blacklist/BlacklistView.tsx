@@ -17,13 +17,13 @@ export const BlacklistItem = memo(({ item, onRemove }: BlacklistItemProps) => {
   }, [item.value, onRemove]);
 
   return (
-    <li className="flex items-center justify-between p-2 rounded-md hover:bg-slate-50">
+    <li className="flex items-center justify-between p-2 transition-colors rounded-md group hover:bg-slate-50">
       <div className="flex items-center space-x-2">
         <span className="text-sm text-slate-600">{item.value}</span>
         {item.isRegex && <span className="px-2 py-1 text-xs font-mono font-semibold rounded-md bg-slate-200 text-slate-600">REGEX</span>}
       </div>
       <button
-        className="p-1 rounded-md cursor-pointer text-slate-400 hover:bg-red-100 hover:text-red-500"
+        className="p-1 transition-all rounded-md cursor-pointer text-slate-400 opacity-0 group-hover:opacity-100 hover:opacity-100! hover:bg-red-100 hover:text-red-500"
         onClick={handleRemove}
         title={`Remove ${item.value}`}
       >

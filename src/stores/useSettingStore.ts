@@ -13,7 +13,7 @@ interface SettingState {
 export const useSettingStore = create<SettingState>()(
   persist(
     (set) => ({
-      dataRetention: '90',
+      dataRetention: 'disabled',
       syncEnabled: true,
       setDataRetention: (retention) => set({ dataRetention: retention }),
       setSyncEnabled: (enabled) => set({ syncEnabled: enabled }),

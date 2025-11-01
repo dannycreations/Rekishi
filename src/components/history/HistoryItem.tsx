@@ -186,30 +186,30 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
         </div>
         <div className="relative flex items-center justify-end shrink-0 w-32 h-6 ml-2">
           <span className="text-xs text-right text-slate-500 transition-opacity duration-200 opacity-100 group-hover:opacity-0">{visitTime}</span>
-          <div className="absolute inset-0 flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="absolute inset-0 flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-x-2 group-hover:translate-x-0">
             <button
-              className="p-1 text-slate-400 rounded-md cursor-pointer hover:bg-slate-100 hover:text-slate-800"
+              className="p-1 text-slate-400 rounded-md cursor-pointer transition-colors hover:bg-slate-100 hover:text-slate-800"
               onClick={handleCopyUrl}
               title={isCopied ? 'Copied!' : 'Copy URL'}
             >
               {isCopied ? <CheckIcon className="w-4 h-4 text-green-500" /> : <CopyIcon className="w-4 h-4" />}
             </button>
             <button
-              className="p-1 text-slate-400 rounded-md cursor-pointer hover:bg-slate-100 hover:text-slate-800"
+              className="p-1 text-slate-400 rounded-md cursor-pointer transition-colors hover:bg-slate-100 hover:text-slate-800"
               onClick={handleSearchSimilar}
               title="Search for similar items"
             >
               <SearchIcon className="w-4 h-4" />
             </button>
             <button
-              className="p-1 text-slate-400 rounded-md cursor-pointer hover:bg-slate-100 hover:text-slate-800"
+              className="p-1 text-slate-400 rounded-md cursor-pointer transition-colors hover:bg-slate-100 hover:text-slate-800"
               onClick={handleOpenBlacklistModal}
               title="Blacklist this domain"
             >
               <BlacklistDomainIcon className="w-4 h-4" />
             </button>
             <button
-              className="p-1 text-slate-400 rounded-md cursor-pointer hover:bg-slate-100 hover:text-slate-800"
+              className="p-1 text-slate-400 rounded-md cursor-pointer transition-colors hover:bg-red-100 hover:text-red-500"
               onClick={handleOpenDeleteModal}
               title="Delete from history"
             >

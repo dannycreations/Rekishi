@@ -10,7 +10,7 @@ import { LogoIcon } from '../components/shared/Icons';
 import { ScrollToTop } from '../components/shared/ScrollToTop';
 import { ViewModal } from '../components/shared/ViewModal';
 import { useHistory } from '../hooks/useHistory';
-import { useHistoryDates } from '../hooks/useHistoryDates';
+import { useHistoryDate } from '../hooks/useHistoryDate';
 import { useHistoryStore } from '../stores/useHistoryStore';
 
 import type { JSX } from 'react';
@@ -58,7 +58,7 @@ export const App = (): JSX.Element => {
 
   const { searchQuery, selectedDate, setSearchQuery, setSelectedDate } = useHistoryStore();
   const { deleteHistoryItem, deleteHistoryItems, error, hasMore, history, isLoading, isLoadingMore, loadMore } = useHistory();
-  const { datesWithHistory, isLoading: isLoadingDates } = useHistoryDates();
+  const { datesWithHistory, isLoading: isLoadingDates } = useHistoryDate();
 
   useEffect(() => {
     mainContentRef.current?.scrollTo(0, 0);

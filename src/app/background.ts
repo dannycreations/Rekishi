@@ -138,6 +138,85 @@ async function runBlacklistCleanup() {
   });
 }
 
+const LAST_RETENTION_KEY = 'rekishi-last-retention';
+
+type StoredSettings = {
+  state?: {
+    dataRetention?: string;
+    syncEnabled?: boolean;
+  };
+};
+
+function getSettingsFromStorage(): Promise<{ dataRetention: string; syncEnabled: boolean }> {
+  const defaults = { dataRetention: 'disabled', syncEnabled: true };
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.storage?.sync) {
+      chrome.storage.sync.get(['rekishi-setting'], (result) => {
+        const storageValue = result['rekishi-setting'];
+        if (typeof storageValue === 'string') {
+          try {
+            const parsed: StoredSettings = JSON.parse(storageValue);
+            resolve({
+              dataRetention: parsed.state?.dataRetention ?? defaults.dataRetention,
+              syncEnabled: parsed.state?.syncEnabled ?? defaults.syncEnabled,
+            });
+            return;
+          } catch (e) {
+            console.error('Failed to parse settings from storage', e);
+          }
+        }
+        resolve(defaults);
+      });
+    } else {
+      resolve(defaults);
+    }
+  });
+}
+
+async function runRetentionCleanup() {
+  if (typeof chrome === 'undefined' || !chrome.history?.deleteRange) {
+    return;
+  }
+
+  const result = await new Promise<{ [key: string]: number | undefined }>((resolve) =>
+    chrome.storage.local.get(LAST_RETENTION_KEY, (res) => resolve(res as { [key: string]: number | undefined })),
+  );
+
+  const lastCleanupTime = result[LAST_RETENTION_KEY] || 0;
+  const now = Date.now();
+  if (now - lastCleanupTime < 24 * 60 * 60 * 1000) {
+    return;
+  }
+
+  const settings = await getSettingsFromStorage();
+  const { dataRetention } = settings;
+
+  if (dataRetention === 'disabled') {
+    return;
+  }
+
+  const retentionDays = parseInt(dataRetention, 10);
+  if (isNaN(retentionDays)) {
+    return;
+  }
+
+  const endDate = new Date();
+  endDate.setDate(endDate.getDate() - retentionDays);
+  endDate.setHours(0, 0, 0, 0);
+
+  chrome.history.deleteRange({ startTime: 0, endTime: endDate.getTime() }, () => {
+    if (chrome.runtime.lastError) {
+      console.error('Error cleaning up old history:', chrome.runtime.lastError.message);
+    } else {
+      chrome.storage.local.set({ [LAST_RETENTION_KEY]: now }, () => {
+        if (chrome.runtime.lastError) {
+          console.error('Failed to set last history cleanup time:', chrome.runtime.lastError.message);
+        }
+      });
+    }
+  });
+}
+
 function handleVisited(historyItem: chrome.history.HistoryItem): void {
   if (!historyItem.url) {
     return;
@@ -185,6 +264,9 @@ if (typeof chrome !== 'undefined' && chrome.alarms) {
   chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === ALARM_NAME) {
       await runBlacklistCleanup();
+      await runRetentionCleanup();
     }
   });
 }
+
+runRetentionCleanup();

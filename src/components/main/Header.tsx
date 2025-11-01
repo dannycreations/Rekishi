@@ -15,7 +15,7 @@ interface NavButtonProps {
 export const NavButton = memo(({ icon, onClick, title }: NavButtonProps): JSX.Element => {
   return (
     <button
-      className="p-2 text-slate-500 transition-colors rounded-lg cursor-pointer hover:bg-slate-100 hover:text-slate-800"
+      className="p-2 text-slate-500 transition-all duration-200 ease-in-out rounded-lg cursor-pointer hover:bg-slate-100 hover:text-slate-800 hover:scale-110 active:scale-95"
       onClick={onClick}
       title={title}
     >

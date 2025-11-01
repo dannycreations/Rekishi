@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 
 import { search } from '../services/chromeApi';
 
-interface UseHistoryDatesReturn {
+interface UseHistoryDateReturn {
   datesWithHistory: Set<string>;
   error: string | null;
   isLoading: boolean;
 }
 
-export const useHistoryDates = (): UseHistoryDatesReturn => {
+export const useHistoryDate = (): UseHistoryDateReturn => {
   const [datesWithHistory, setDatesWithHistory] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

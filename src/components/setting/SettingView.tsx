@@ -82,10 +82,11 @@ export const SettingView = memo((): JSX.Element => {
               onChange={(e: ChangeEvent<HTMLSelectElement>) => setDataRetention(e.target.value)}
               value={dataRetention}
             >
+              <option value="disabled">Disabled</option>
+              <option value="7">7 days</option>
+              <option value="14">14 days</option>
               <option value="30">30 days</option>
               <option value="90">90 days</option>
-              <option value="365">1 year</option>
-              <option value="forever">Forever</option>
             </select>
           </SettingRow>
         </SettingSection>

@@ -4,13 +4,13 @@ import { getDevices } from '../services/chromeApi';
 
 import type { Device } from '../app/types';
 
-interface UseDevicesReturn {
+interface UseDeviceReturn {
   devices: Device[];
   isLoading: boolean;
   error: string | null;
 }
 
-export const useDevices = (): UseDevicesReturn => {
+export const useDevice = (): UseDeviceReturn => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

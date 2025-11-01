@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-import { useDevices } from '../../hooks/useDevices';
+import { useDevice } from '../../hooks/useDevice';
 import { DesktopIcon, DevicesIcon, LaptopIcon } from '../shared/Icons';
 import { Skeleton } from '../shared/Skeleton';
 
@@ -25,7 +25,7 @@ export const DeviceCardSkeleton = memo((): JSX.Element => {
 });
 
 export const DeviceView = memo((): JSX.Element => {
-  const { devices, isLoading, error } = useDevices();
+  const { devices, isLoading, error } = useDevice();
 
   return (
     <div className="space-y-3">
@@ -50,10 +50,7 @@ export const DeviceView = memo((): JSX.Element => {
           {devices.map((device) => {
             const IconComponent = ICONS[device.type] || DesktopIcon;
             return (
-              <div
-                key={device.name}
-                className="flex items-center p-3 space-x-3 bg-white border rounded-lg shadow-sm transition-transform duration-200 border-slate-200 hover:scale-105"
-              >
+              <div key={device.name} className="flex items-center p-3 space-x-3 bg-white border rounded-lg shadow-sm border-slate-200">
                 <div className="p-3 rounded-full bg-slate-100">
                   <IconComponent className="w-8 h-8 text-slate-600" />
                 </div>

@@ -226,12 +226,10 @@ export const useHistory = (): UseHistoryReturn => {
             }
           }
 
-          const combinedItems = [...prev, ...itemsToAdd];
-          const itemMap = new Map(combinedItems.map((item) => [item.id, item]));
-          const uniqueItems = Array.from(itemMap.values());
-          uniqueItems.sort((a, b) => b.lastVisitTime - a.lastVisitTime);
+          const existingIds = new Set(prev.map((p) => p.id));
+          const uniqueNewItems = itemsToAdd.filter((i) => !existingIds.has(i.id));
 
-          return uniqueItems;
+          return [...prev, ...uniqueNewItems];
         });
       } else {
         const nextDate = new Date(lastLoadedDate);

@@ -124,10 +124,7 @@ export function getDevices(): Promise<Device[]> {
           return;
         }
         const mappedDevices = devices.map((d) => {
-          const lastModifiedTimes = d.sessions.map((s) => {
-            return s.lastModified * 1000;
-          });
-          const mostRecent = Math.max(0, ...lastModifiedTimes);
+          const mostRecent = d.sessions.reduce((latest, session) => Math.max(latest, session.lastModified * 1000), 0);
 
           return {
             lastSync: mostRecent > 0 ? formatTimeAgo(mostRecent) : 'Unknown',

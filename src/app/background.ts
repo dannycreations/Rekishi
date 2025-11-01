@@ -15,6 +15,14 @@ type StoredBlacklist = {
   };
 };
 
+let blacklistData: BlacklistData = { items: [], json: null };
+let blacklistMatchers: BlacklistMatchers = { plain: new Set(), regex: [] };
+
+function updateBlacklistCache(items: BlacklistItem[], json: string | null) {
+  blacklistData = { items, json };
+  blacklistMatchers = createBlacklistMatchers(items);
+}
+
 function getBlacklistFromStorage(): Promise<string | null> {
   return new Promise((resolve) => {
     if (typeof chrome !== 'undefined' && chrome.storage?.local) {
@@ -32,30 +40,49 @@ function getBlacklistFromStorage(): Promise<string | null> {
   });
 }
 
-async function getBlacklist(): Promise<BlacklistData> {
+async function initializeBlacklist(): Promise<void> {
   const storageValue = await getBlacklistFromStorage();
   if (storageValue) {
     try {
       const parsed: StoredBlacklist = JSON.parse(storageValue);
       if (parsed.state?.blacklistedItems) {
-        return { items: parsed.state.blacklistedItems, json: storageValue };
+        updateBlacklistCache(parsed.state.blacklistedItems, storageValue);
+        return;
       }
     } catch (e: unknown) {
       console.error('Failed to parse blacklist from storage', e);
     }
   }
-  return { items: [], json: storageValue };
+  updateBlacklistCache([], storageValue);
 }
 
-let lastBlacklistedItemsJSON: string | null = null;
-let cachedMatchers: BlacklistMatchers;
+if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === 'local' && changes['rekishi-blacklist']) {
+      const newStorageValue = changes['rekishi-blacklist'].newValue ?? null;
+      if (typeof newStorageValue === 'string') {
+        try {
+          const parsed: StoredBlacklist = JSON.parse(newStorageValue);
+          if (parsed.state?.blacklistedItems) {
+            updateBlacklistCache(parsed.state.blacklistedItems, newStorageValue);
+          } else {
+            updateBlacklistCache([], newStorageValue);
+          }
+        } catch (e: unknown) {
+          console.error('Failed to parse updated blacklist from storage', e);
+          updateBlacklistCache([], newStorageValue);
+        }
+      } else {
+        updateBlacklistCache([], null);
+      }
+    }
+  });
+}
 
-function isBlacklisted(domain: string, blacklistedItems: BlacklistItem[], json: string | null): boolean {
-  if (json !== lastBlacklistedItemsJSON) {
-    cachedMatchers = createBlacklistMatchers(blacklistedItems);
-    lastBlacklistedItemsJSON = json;
-  }
-  return isDomainBlacklisted(domain, cachedMatchers);
+initializeBlacklist();
+
+function isBlacklisted(domain: string): boolean {
+  return isDomainBlacklisted(domain, blacklistMatchers);
 }
 
 const LAST_CLEANUP_KEY = 'rekishi-last-cleanup';
@@ -65,9 +92,7 @@ async function runBlacklistCleanup() {
     return;
   }
 
-  const { items: blacklistedItems, json } = await getBlacklist();
-
-  if (blacklistedItems.length === 0) {
+  if (blacklistData.items.length === 0) {
     return;
   }
 
@@ -89,7 +114,7 @@ async function runBlacklistCleanup() {
           return false;
         }
         const domain = getHostnameFromUrl(item.url);
-        return domain && isBlacklisted(domain, blacklistedItems, json);
+        return domain && isBlacklisted(domain);
       })
       .map(
         (item) =>
@@ -113,16 +138,14 @@ async function runBlacklistCleanup() {
   });
 }
 
-async function handleVisited(historyItem: chrome.history.HistoryItem): Promise<void> {
+function handleVisited(historyItem: chrome.history.HistoryItem): void {
   if (!historyItem.url) {
     return;
   }
 
   const domain = getHostnameFromUrl(historyItem.url);
 
-  const { items: blacklistedItems, json } = await getBlacklist();
-
-  if (isBlacklisted(domain, blacklistedItems, json)) {
+  if (isBlacklisted(domain)) {
     if (typeof chrome !== 'undefined' && chrome.history?.deleteUrl) {
       chrome.history.deleteUrl({ url: historyItem.url }, () => {
         if (chrome.runtime.lastError) {

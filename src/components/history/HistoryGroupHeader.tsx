@@ -8,6 +8,7 @@ import type { ChromeHistoryItem } from '../../app/types';
 interface HistoryGroupHeaderProps {
   dayHeaderText: string;
   dayItems: ChromeHistoryItem[];
+  isHourHeader: boolean;
   onDeleteAll: () => void;
   onDeleteSelected: () => void;
   onToggleDaySelection: (items: ChromeHistoryItem[]) => void;
@@ -19,6 +20,7 @@ export const HistoryGroupHeader = memo(
   ({
     dayHeaderText,
     dayItems,
+    isHourHeader,
     selectedItemsCount,
     onToggleDaySelection,
     onDeleteSelected,
@@ -27,8 +29,6 @@ export const HistoryGroupHeader = memo(
   }: HistoryGroupHeaderProps): JSX.Element => {
     const allForDaySelected = useMemo(() => selectedItemsCount === dayItems.length && dayItems.length > 0, [selectedItemsCount, dayItems.length]);
     const someForDaySelected = useMemo(() => selectedItemsCount > 0 && !allForDaySelected, [selectedItemsCount, allForDaySelected]);
-
-    const isHourHeader = useMemo(() => dayHeaderText.includes(' - '), [dayHeaderText]);
 
     const buttonText = useMemo(() => {
       if (totalSelectedCount > 0) {
@@ -42,7 +42,7 @@ export const HistoryGroupHeader = memo(
     return (
       <div className="flex items-center justify-between px-2 mb-1">
         <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center cursor-pointer" onClick={() => onToggleDaySelection(dayItems)}>
+          <div className="flex items-center justify-center cursor-pointer select-none" onClick={() => onToggleDaySelection(dayItems)}>
             <div
               className={`flex h-4 w-4 items-center justify-center rounded border-2 transition-colors ${
                 allForDaySelected || someForDaySelected ? 'border-slate-800 bg-slate-800' : 'border-slate-300 hover:border-slate-400'

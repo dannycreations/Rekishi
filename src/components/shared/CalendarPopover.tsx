@@ -114,7 +114,13 @@ export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHist
           }
 
           if (date > today) {
-            return <div key={`future-${index}`} />;
+            return (
+              <div key={date.toISOString()} className="flex items-center justify-center py-1">
+                <button disabled className="w-8 h-8 text-sm rounded-full cursor-not-allowed text-slate-300">
+                  {date.getDate()}
+                </button>
+              </div>
+            );
           }
 
           const dateString = date.toISOString().split('T')[0];

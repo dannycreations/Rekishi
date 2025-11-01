@@ -44,17 +44,13 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
     onToggleSelection(id);
   }, [id, onToggleSelection]);
 
-  const stopPropagation = useCallback((e: MouseEvent): void => {
-    e.stopPropagation();
-  }, []);
-
   const handleConfirmDelete = useCallback(async (): Promise<void> => {
     await onDelete(id);
   }, [id, onDelete]);
 
   const handleOpenDeleteModal = useCallback(
     (e: MouseEvent): void => {
-      stopPropagation(e);
+      e.stopPropagation();
       openDeleteModal({
         confirmButtonClass: 'bg-red-600 hover:bg-red-700',
         confirmText: 'Delete',
@@ -67,7 +63,7 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
         title: 'Delete History Item',
       });
     },
-    [stopPropagation, openDeleteModal, title, url, handleConfirmDelete],
+    [openDeleteModal, title, url, handleConfirmDelete],
   );
 
   const handleConfirmBlacklist = useCallback((): void => {
@@ -78,7 +74,7 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
 
   const handleOpenBlacklistModal = useCallback(
     (e: MouseEvent): void => {
-      stopPropagation(e);
+      e.stopPropagation();
       if (hostname) {
         openBlacklistModal({
           confirmButtonClass: 'bg-red-600 hover:bg-red-700',
@@ -94,17 +90,17 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
         });
       }
     },
-    [hostname, stopPropagation, openBlacklistModal, handleConfirmBlacklist],
+    [hostname, openBlacklistModal, handleConfirmBlacklist],
   );
 
   const handleSearchSimilar = useCallback(
     (e: MouseEvent): void => {
-      stopPropagation(e);
+      e.stopPropagation();
       if (hostname) {
         setSearchQuery(hostname);
       }
     },
-    [hostname, setSearchQuery, stopPropagation],
+    [hostname, setSearchQuery],
   );
 
   return (
@@ -116,7 +112,7 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
       `}
         onClick={handleToggle}
       >
-        <div className="relative mr-2 flex h-4 w-4 shrink-0 items-center justify-center">
+        <div className="relative mr-2 flex h-4 w-4 shrink-0 items-center justify-center select-none">
           <div
             className={`flex h-4 w-4 items-center justify-center rounded border-2 transition-colors ${
               isChecked ? 'border-slate-800 bg-slate-800' : 'border-slate-300 group-hover:border-slate-400'
@@ -136,12 +132,12 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
             src={`https://www.google.com/s2/favicons?sz=32&domain_url=${hostname}`}
           />
         )}
-        <div className="min-w-0 flex-1 truncate" onClick={stopPropagation}>
+        <div className="min-w-0 flex-1 truncate" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center">
             <a
               className="truncate text-sm font-semibold text-slate-700 hover:underline"
               href={url}
-              onClick={stopPropagation}
+              onClick={(e) => e.stopPropagation()}
               rel="noopener noreferrer"
               target="_blank"
             >

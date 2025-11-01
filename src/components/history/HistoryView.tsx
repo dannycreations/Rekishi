@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useConfirm } from '../../hooks/useConfirm';
 import { formatDayHeader } from '../../utilities/dateUtil';
@@ -148,7 +148,7 @@ export const HistoryView = memo(
       dayKey: string | null;
       hourText: string | null;
     }>({ dayKey: null, hourText: null });
-    const headerRefs = useRef<Map<string, HTMLElement>>(new Map());
+    const headerPositions = useRef<{ top: number; dayKey: string; hourText: string | null }[]>([]);
 
     const handleToggleSelection = useCallback((id: string): void => {
       setSelectedItems((prev) => {
@@ -263,33 +263,38 @@ export const HistoryView = memo(
       [dailyGroupsWithHourlySubgroups, selectedCountByDay],
     );
 
+    useLayoutEffect(() => {
+      const container = scrollContainerRef.current;
+      if (!container) return;
+
+      const positions: { top: number; dayKey: string; hourText: string | null }[] = [];
+      const headerElements = container.querySelectorAll<HTMLElement>('[data-day-key]');
+
+      headerElements.forEach((el) => {
+        positions.push({
+          top: el.offsetTop,
+          dayKey: el.dataset.dayKey!,
+          hourText: el.dataset.hourKey || null,
+        });
+      });
+      headerPositions.current = positions;
+    }, [processedDailyGroups, scrollContainerRef]);
+
     useEffect(() => {
       const container = scrollContainerRef.current;
       if (!container) return;
 
       const handleScroll = (): void => {
-        const containerTop = container.getBoundingClientRect().top;
+        const scrollTop = container.scrollTop;
         let activeDayKey: string | null = null;
         let activeHourText: string | null = null;
 
-        const sortedRefs = Array.from(headerRefs.current.entries()).sort((a, b) => {
-          return a[1].offsetTop - b[1].offsetTop;
-        });
-
-        for (const [key, el] of sortedRefs) {
-          if (!el) continue;
-
-          const { top } = el.getBoundingClientRect();
-
-          if (top <= containerTop) {
-            if (key.includes('_')) {
-              const [dayKey, hourText] = key.split('_');
-              activeDayKey = dayKey;
-              activeHourText = hourText;
-            } else {
-              activeDayKey = key;
-              activeHourText = null;
-            }
+        for (const header of headerPositions.current) {
+          if (header.top <= scrollTop) {
+            activeDayKey = header.dayKey;
+            activeHourText = header.hourText;
+          } else {
+            break;
           }
         }
 
@@ -378,8 +383,9 @@ export const HistoryView = memo(
         {stickyDayGroup && (
           <div className="sticky top-0 z-10 px-3 pt-3 bg-slate-50/95 backdrop-blur-sm">
             <HistoryGroupHeader
-              dayHeaderText={`${formatDayHeader(stickyDayGroup.date)}${stickyState.hourText ? ` - ${stickyState.hourText}` : ''}`}
+              dayHeaderText={`${formatDayHeader(stickyDayGroup.date)}${stickyState.hourText ? ` ${stickyState.hourText}` : ''}`}
               dayItems={stickyHeaderData.items}
+              isHourHeader={!!stickyState.hourText}
               onDeleteAll={() => handleOpenDeleteAllModal(stickyHeaderData.items, stickyState.hourText ? 'hour' : 'day')}
               onDeleteSelected={handleOpenDeleteSelectedModal}
               onToggleDaySelection={handleToggleDaySelection}
@@ -398,13 +404,7 @@ export const HistoryView = memo(
             return (
               <section key={dayKey}>
                 <div
-                  ref={(el) => {
-                    if (el) {
-                      headerRefs.current.set(dayKey, el);
-                    } else {
-                      headerRefs.current.delete(dayKey);
-                    }
-                  }}
+                  data-day-key={dayKey}
                   style={{
                     visibility: isDayHeaderCovered ? 'hidden' : 'visible',
                     height: isDayHeaderCovered ? 0 : 'auto',
@@ -413,6 +413,7 @@ export const HistoryView = memo(
                   <HistoryGroupHeader
                     dayHeaderText={dayHeaderText}
                     dayItems={dayGroup.items}
+                    isHourHeader={false}
                     onDeleteAll={() => handleOpenDeleteAllModal(dayGroup.items, 'day')}
                     onDeleteSelected={handleOpenDeleteSelectedModal}
                     onToggleDaySelection={handleToggleDaySelection}
@@ -423,20 +424,10 @@ export const HistoryView = memo(
                 </div>
                 <div className="space-y-2">
                   {dayGroup.hourlyGroups.map((group) => {
-                    const hourKey = `${dayKey}_${group.time}`;
                     const isHourHeaderCovered = isDayHeaderCovered && stickyState.hourText === group.time;
 
                     return (
-                      <div
-                        key={group.time}
-                        ref={(el) => {
-                          if (el) {
-                            headerRefs.current.set(hourKey, el);
-                          } else {
-                            headerRefs.current.delete(hourKey);
-                          }
-                        }}
-                      >
+                      <div key={group.time} data-day-key={dayKey} data-hour-key={group.time}>
                         <HistoryItemGroupComponent
                           deleteHistoryItems={deleteHistoryItems}
                           group={group}

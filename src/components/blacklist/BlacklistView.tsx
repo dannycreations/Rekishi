@@ -1,20 +1,98 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
-import { CloseIcon, TrashIcon } from '../shared/Icons';
+import { CheckIcon, CloseIcon, PencilIcon, TrashIcon } from '../shared/Icons';
 
-import type { FormEvent, JSX } from 'react';
+import type { FormEvent, JSX, KeyboardEvent } from 'react';
 import type { BlacklistItem as BlacklistItemType } from '../../utilities/blacklistUtil';
 
 interface BlacklistItemProps {
   item: BlacklistItemType;
+  onEdit: (oldValue: string, newValue: string, newIsRegex: boolean) => void;
   onRemove: (value: string) => void;
 }
 
-export const BlacklistItem = memo(({ item, onRemove }: BlacklistItemProps) => {
+export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(item.isRegex ? `/${item.value}/` : item.value);
+
   const handleRemove = useCallback(() => {
     onRemove(item.value);
   }, [item.value, onRemove]);
+
+  const handleEdit = useCallback(() => {
+    setIsEditing(true);
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    setIsEditing(false);
+    setEditValue(item.isRegex ? `/${item.value}/` : item.value);
+  }, [item]);
+
+  const handleSave = useCallback(() => {
+    const trimmedValue = editValue.trim();
+    if (!trimmedValue) return;
+
+    const newIsRegex = trimmedValue.length > 2 && trimmedValue.startsWith('/') && trimmedValue.endsWith('/');
+    const newValue = newIsRegex ? trimmedValue.slice(1, -1) : trimmedValue;
+
+    if (!newValue) return;
+
+    if (newIsRegex) {
+      try {
+        new RegExp(newValue);
+      } catch (error) {
+        alert('Invalid Regular Expression');
+        return;
+      }
+    }
+
+    if (item.value === newValue && item.isRegex === newIsRegex) {
+      setIsEditing(false);
+      return;
+    }
+
+    onEdit(item.value, newValue, newIsRegex);
+    setIsEditing(false);
+  }, [editValue, item, onEdit]);
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        handleSave();
+      } else if (e.key === 'Escape') {
+        handleCancel();
+      }
+    },
+    [handleSave, handleCancel],
+  );
+
+  if (isEditing) {
+    return (
+      <li className="flex items-center justify-between p-2 rounded-md bg-slate-100">
+        <input
+          autoFocus
+          className="w-full px-2 py-1 text-sm bg-white border rounded-md outline-none text-slate-900 transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
+          onChange={(e) => setEditValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          type="text"
+          value={editValue}
+        />
+        <div className="flex items-center ml-2 space-x-1">
+          <button className="p-1 rounded-md cursor-pointer text-slate-400 hover:bg-green-100 hover:text-green-600" onClick={handleSave} title="Save">
+            <CheckIcon className="w-4 h-4" />
+          </button>
+          <button
+            className="p-1 rounded-md cursor-pointer text-slate-400 hover:bg-slate-200 hover:text-slate-800"
+            onClick={handleCancel}
+            title="Cancel"
+          >
+            <CloseIcon className="w-4 h-4" />
+          </button>
+        </div>
+      </li>
+    );
+  }
 
   return (
     <li className="flex items-center justify-between p-2 transition-colors rounded-md group hover:bg-slate-50">
@@ -22,19 +100,28 @@ export const BlacklistItem = memo(({ item, onRemove }: BlacklistItemProps) => {
         <span className="text-sm text-slate-600">{item.value}</span>
         {item.isRegex && <span className="px-2 py-1 text-xs font-mono font-semibold rounded-md bg-slate-200 text-slate-600">REGEX</span>}
       </div>
-      <button
-        className="p-1 transition-all rounded-md cursor-pointer text-slate-400 opacity-0 group-hover:opacity-100 hover:opacity-100! hover:bg-red-100 hover:text-red-500"
-        onClick={handleRemove}
-        title={`Remove ${item.value}`}
-      >
-        <TrashIcon className="w-4 h-4" />
-      </button>
+      <div className="flex items-center space-x-1">
+        <button
+          className="p-1 transition-all rounded-md cursor-pointer text-slate-400 hover:bg-slate-100 hover:text-slate-800"
+          onClick={handleEdit}
+          title={`Edit ${item.value}`}
+        >
+          <PencilIcon className="w-4 h-4" />
+        </button>
+        <button
+          className="p-1 transition-all rounded-md cursor-pointer text-slate-400 hover:bg-red-100 hover:text-red-500"
+          onClick={handleRemove}
+          title={`Remove ${item.value}`}
+        >
+          <TrashIcon className="w-4 h-4" />
+        </button>
+      </div>
     </li>
   );
 });
 
 export const BlacklistView = memo((): JSX.Element => {
-  const { addDomain, blacklistedItems, removeDomain } = useBlacklistStore();
+  const { addDomain, blacklistedItems, removeDomain, editDomain } = useBlacklistStore();
   const [newDomain, setNewDomain] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -84,6 +171,17 @@ export const BlacklistView = memo((): JSX.Element => {
     [removeDomain],
   );
 
+  const handleEditDomain = useCallback(
+    (oldValue: string, newValue: string, newIsRegex: boolean) => {
+      if (oldValue !== newValue && blacklistedItems.some((item) => item.value === newValue)) {
+        alert('This item already exists in the blacklist.');
+        return;
+      }
+      editDomain(oldValue, newValue, newIsRegex);
+    },
+    [blacklistedItems, editDomain],
+  );
+
   return (
     <div className="space-y-4">
       <form className="flex items-center space-x-2" onSubmit={handleAddDomain}>
@@ -123,7 +221,7 @@ export const BlacklistView = memo((): JSX.Element => {
         {sortedItems.length > 0 ? (
           <ul className="space-y-1">
             {sortedItems.map((item) => (
-              <BlacklistItem key={item.value} item={item} onRemove={handleRemoveDomain} />
+              <BlacklistItem key={item.value} item={item} onEdit={handleEditDomain} onRemove={handleRemoveDomain} />
             ))}
           </ul>
         ) : (

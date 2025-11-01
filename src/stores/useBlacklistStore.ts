@@ -7,8 +7,9 @@ import { chromeLocalStorage } from '../utilities/storageUtil';
 import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
 
 interface BlacklistState {
-  readonly blacklistedItems: BlacklistItem[];
   readonly addDomain: (value: string, isRegex: boolean) => void;
+  readonly blacklistedItems: BlacklistItem[];
+  readonly editDomain: (oldValue: string, newValue: string, newIsRegex: boolean) => void;
   readonly isBlacklisted: (domain: string) => boolean;
   readonly removeDomain: (value: string) => void;
 }
@@ -28,9 +29,9 @@ export const useBlacklistStore = create<BlacklistState>()(
           return { blacklistedItems: [...state.blacklistedItems, { value, isRegex }] };
         });
       },
-      removeDomain: (value) => {
+      editDomain: (oldValue, newValue, newIsRegex) => {
         set((state) => ({
-          blacklistedItems: state.blacklistedItems.filter((item) => item.value !== value),
+          blacklistedItems: state.blacklistedItems.map((item) => (item.value === oldValue ? { value: newValue, isRegex: newIsRegex } : item)),
         }));
       },
       isBlacklisted: (domain: string): boolean => {
@@ -41,6 +42,11 @@ export const useBlacklistStore = create<BlacklistState>()(
         }
 
         return isDomainBlacklisted(domain, cachedMatchers);
+      },
+      removeDomain: (value) => {
+        set((state) => ({
+          blacklistedItems: state.blacklistedItems.filter((item) => item.value !== value),
+        }));
       },
     }),
     {

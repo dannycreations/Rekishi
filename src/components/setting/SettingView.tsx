@@ -98,7 +98,7 @@ export const SettingView = memo((): JSX.Element => {
             </div>
             <div>
               <button
-                className="px-2 py-2 text-sm font-semibold text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700"
+                className="px-2 py-2 text-sm font-semibold text-white transition-colors bg-red-600 rounded-lg cursor-pointer hover:bg-red-700"
                 onClick={handleOpenClearHistoryModal}
               >
                 Clear Data

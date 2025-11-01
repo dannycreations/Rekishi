@@ -13,7 +13,7 @@ interface NavButtonProps {
 
 export const NavButton = memo(({ icon, onClick }: NavButtonProps): JSX.Element => {
   return (
-    <button className="p-2 text-slate-500 transition-colors rounded-lg hover:bg-slate-100 hover:text-slate-800" onClick={onClick}>
+    <button className="p-2 text-slate-500 transition-colors rounded-lg cursor-pointer hover:bg-slate-100 hover:text-slate-800" onClick={onClick}>
       {icon}
     </button>
   );
@@ -128,7 +128,7 @@ export const Header = memo(
             <div className="absolute inset-y-0 right-0 flex items-center pr-2">
               {localSearchQuery && (
                 <button
-                  className="p-1 rounded-md transition-colors text-slate-400 hover:bg-slate-100 hover:text-slate-800"
+                  className="p-1 rounded-md transition-colors cursor-pointer text-slate-400 hover:bg-slate-100 hover:text-slate-800"
                   onClick={handleClearSearch}
                 >
                   <CloseIcon className="w-4 h-4" />
@@ -138,7 +138,7 @@ export const Header = memo(
           </div>
           <div className="relative" ref={calendarContainerRef}>
             <button
-              className="flex items-center px-2 py-2 space-x-2 border rounded-lg transition-colors border-slate-200 hover:bg-slate-100"
+              className="flex items-center px-2 py-2 space-x-2 border rounded-lg transition-colors cursor-pointer border-slate-200 hover:bg-slate-100"
               onClick={handleToggleCalendar}
             >
               <span className="text-sm text-slate-800">{formattedDate}</span>

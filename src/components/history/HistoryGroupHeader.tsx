@@ -55,7 +55,7 @@ export const HistoryGroupHeader = memo(
           <h2 className="text-lg font-bold text-slate-800">{dayHeaderText}</h2>
         </div>
         <button
-          className="flex items-center px-2 py-1 text-xs font-medium text-red-600 transition-colors bg-red-50 border border-red-200 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center px-2 py-1 text-xs font-medium text-red-600 transition-colors bg-red-50 border border-red-200 rounded-md cursor-pointer hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={totalSelectedCount === 0 && dayItems.length === 0}
           onClick={handleButtonClick}
         >

@@ -42,7 +42,7 @@ export const ConfirmModal = memo(
         >
           <div className="flex items-start justify-between">
             <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-            <button className="p-1 text-slate-400 rounded-md hover:bg-slate-100 hover:text-slate-800" onClick={onClose}>
+            <button className="p-1 text-slate-400 rounded-md cursor-pointer hover:bg-slate-100 hover:text-slate-800" onClick={onClose}>
               <CloseIcon className="w-5 h-5" />
             </button>
           </div>
@@ -51,12 +51,15 @@ export const ConfirmModal = memo(
           </div>
           <div className="flex justify-end mt-3 space-x-2">
             <button
-              className="px-2 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
+              className="px-2 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50"
               onClick={onClose}
             >
               {cancelText}
             </button>
-            <button className={`px-2 py-2 text-sm font-semibold text-white rounded-lg transition-colors ${confirmButtonClass}`} onClick={onConfirm}>
+            <button
+              className={`px-2 py-2 text-sm font-semibold text-white rounded-lg transition-colors cursor-pointer ${confirmButtonClass}`}
+              onClick={onConfirm}
+            >
               {confirmText}
             </button>
           </div>

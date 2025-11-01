@@ -176,7 +176,7 @@ export const ExportView = memo((): JSX.Element => {
         </div>
 
         <button
-          className="flex items-center justify-center w-full px-2 py-2 font-semibold text-white transition-colors rounded-lg bg-slate-800 hover:bg-slate-700 disabled:bg-slate-500 disabled:cursor-wait"
+          className="flex items-center justify-center w-full px-2 py-2 font-semibold text-white transition-colors rounded-lg cursor-pointer bg-slate-800 hover:bg-slate-700 disabled:bg-slate-500 disabled:cursor-wait"
           disabled={isLoading}
           onClick={handleExport}
         >

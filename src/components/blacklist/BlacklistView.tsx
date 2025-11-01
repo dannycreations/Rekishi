@@ -22,7 +22,7 @@ export const BlacklistItem = memo(({ item, onRemove }: BlacklistItemProps) => {
         <span className="text-sm text-slate-600">{item.value}</span>
         {item.isRegex && <span className="px-2 py-1 text-xs font-mono font-semibold rounded-md bg-slate-200 text-slate-600">REGEX</span>}
       </div>
-      <button className="p-1 rounded-md text-slate-400 hover:bg-red-100 hover:text-red-500" onClick={handleRemove}>
+      <button className="p-1 rounded-md cursor-pointer text-slate-400 hover:bg-red-100 hover:text-red-500" onClick={handleRemove}>
         <TrashIcon className="w-4 h-4" />
       </button>
     </li>
@@ -85,7 +85,7 @@ export const BlacklistView = memo((): JSX.Element => {
           />
         </div>
         <button
-          className="px-2 py-2 text-sm font-semibold text-white transition-colors rounded-lg bg-slate-800 hover:bg-slate-700 disabled:bg-slate-500 disabled:cursor-not-allowed"
+          className="px-2 py-2 text-sm font-semibold text-white transition-colors rounded-lg cursor-pointer bg-slate-800 hover:bg-slate-700 disabled:bg-slate-500 disabled:cursor-not-allowed"
           disabled={!newDomain.trim()}
           type="submit"
         >

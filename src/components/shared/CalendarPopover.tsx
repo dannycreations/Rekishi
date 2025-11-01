@@ -90,12 +90,12 @@ export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHist
   return (
     <div className="absolute right-0 z-10 p-2 mt-2 bg-white border rounded-lg shadow-lg top-full w-72 border-slate-200">
       <div className="flex items-center justify-between mb-2">
-        <button className="p-2 text-slate-500 transition-colors rounded-full hover:bg-slate-100" onClick={handlePrevMonth}>
+        <button className="p-2 text-slate-500 transition-colors rounded-full cursor-pointer hover:bg-slate-100" onClick={handlePrevMonth}>
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
         <span className="text-sm font-semibold text-slate-700">{monthName}</span>
         <button
-          className="p-2 text-slate-500 transition-colors rounded-full hover:bg-slate-100 disabled:text-slate-300 disabled:cursor-not-allowed"
+          className="p-2 text-slate-500 transition-colors rounded-full cursor-pointer hover:bg-slate-100 disabled:text-slate-300 disabled:cursor-not-allowed"
           disabled={isCurrentMonth}
           onClick={handleNextMonth}
         >
@@ -127,7 +127,7 @@ export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHist
               <button
                 disabled={!hasHistory}
                 className={`
-                    w-8 h-8 rounded-full text-sm transition-colors
+                    w-8 h-8 rounded-full text-sm transition-colors cursor-pointer
                     ${
                       isSelected
                         ? 'bg-slate-800 text-white font-semibold hover:bg-slate-700'

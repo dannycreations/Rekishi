@@ -126,11 +126,11 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
           </div>
         </div>
         {faviconError ? (
-          <GlobeIcon className="mr-2 h-4 w-4 shrink-0 text-slate-400" />
+          <GlobeIcon className="mr-2 h-5 w-5 shrink-0 text-slate-400" />
         ) : (
           <img
             alt=""
-            className="mr-2 h-4 w-4 shrink-0"
+            className="mr-2 h-5 w-5 shrink-0"
             loading="lazy"
             onError={handleFaviconError}
             src={`https://www.google.com/s2/favicons?sz=32&domain_url=${hostname}`}
@@ -139,7 +139,7 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
         <div className="min-w-0 flex-1 truncate" onClick={stopPropagation}>
           <div className="flex items-center">
             <a
-              className="truncate text-sm text-slate-700 hover:underline"
+              className="truncate text-sm font-semibold text-slate-700 hover:underline"
               href={url}
               onClick={stopPropagation}
               rel="noopener noreferrer"
@@ -154,13 +154,16 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
         <div className="relative flex items-center justify-end shrink-0 w-24 h-6 ml-2">
           <span className="text-xs text-right text-slate-500 transition-opacity duration-200 opacity-100 group-hover:opacity-0">{visitTime}</span>
           <div className="absolute inset-0 flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <button className="p-1 text-slate-400 rounded-md hover:bg-slate-100 hover:text-slate-800" onClick={handleSearchSimilar}>
+            <button className="p-1 text-slate-400 rounded-md cursor-pointer hover:bg-slate-100 hover:text-slate-800" onClick={handleSearchSimilar}>
               <SearchIcon className="w-4 h-4" />
             </button>
-            <button className="p-1 text-slate-400 rounded-md hover:bg-slate-100 hover:text-slate-800" onClick={handleOpenBlacklistModal}>
+            <button
+              className="p-1 text-slate-400 rounded-md cursor-pointer hover:bg-slate-100 hover:text-slate-800"
+              onClick={handleOpenBlacklistModal}
+            >
               <BlacklistDomainIcon className="w-4 h-4" />
             </button>
-            <button className="p-1 text-slate-400 rounded-md hover:bg-slate-100 hover:text-slate-800" onClick={handleOpenDeleteModal}>
+            <button className="p-1 text-slate-400 rounded-md cursor-pointer hover:bg-slate-100 hover:text-slate-800" onClick={handleOpenDeleteModal}>
               <TrashIcon className="w-4 h-4" />
             </button>
           </div>

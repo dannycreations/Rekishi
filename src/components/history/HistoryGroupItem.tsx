@@ -53,7 +53,7 @@ export const HistoryGroupItem = memo(
           >
             <h2 className="text-sm font-semibold text-slate-800">{group.time}</h2>
             <button
-              className="flex items-center px-2 py-1 text-xs font-medium text-red-600 transition-colors bg-red-50 border border-red-200 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
+              className="flex items-center px-2 py-1 text-xs font-medium text-red-600 transition-colors bg-red-50 border border-red-200 rounded-md cursor-pointer hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
               onClick={handleOpenDeleteModal}
             >
               <TrashIcon className="w-3 h-3 mr-1" />

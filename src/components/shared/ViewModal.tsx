@@ -37,7 +37,7 @@ export const ViewModal = memo(({ isOpen, onClose, title, children, size = '3xl' 
       >
         <header className="flex items-start justify-between shrink-0 p-3 bg-white border-b border-slate-200 rounded-t-lg">
           <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-          <button className="p-1 text-slate-400 rounded-md hover:bg-slate-100 hover:text-slate-800" onClick={onClose}>
+          <button className="p-1 text-slate-400 rounded-md cursor-pointer hover:bg-slate-100 hover:text-slate-800" onClick={onClose}>
             <CloseIcon className="w-5 h-5" />
           </button>
         </header>

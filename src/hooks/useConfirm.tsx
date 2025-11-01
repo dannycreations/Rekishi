@@ -2,7 +2,7 @@ import { memo, useCallback, useState } from 'react';
 
 import { ConfirmModal } from '../components/shared/ConfirmModal';
 
-import type { JSX, ReactNode } from 'react';
+import type { JSX, MemoExoticComponent, ReactNode } from 'react';
 
 interface ConfirmOptions {
   cancelText?: string;
@@ -13,7 +13,12 @@ interface ConfirmOptions {
   title: string;
 }
 
-export const useConfirm = () => {
+interface UseConfirmReturn {
+  Modal: MemoExoticComponent<() => JSX.Element | null>;
+  openModal: (opts: ConfirmOptions) => void;
+}
+
+export const useConfirm = (): UseConfirmReturn => {
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
 
   const openModal = useCallback((opts: ConfirmOptions) => {

@@ -245,12 +245,12 @@ export const HistoryView = memo(
 
     const selectedCountByDay = useMemo(() => {
       const counts = new Map<string, number>();
-      for (const itemId of selectedItems) {
+      selectedItems.forEach((itemId) => {
         const dayKey = itemIdToDayKeyMap.get(itemId);
         if (dayKey) {
           counts.set(dayKey, (counts.get(dayKey) || 0) + 1);
         }
-      }
+      });
       return counts;
     }, [selectedItems, itemIdToDayKeyMap]);
 

@@ -119,9 +119,6 @@ async function handleVisited(historyItem: chrome.history.HistoryItem): Promise<v
   }
 
   const domain = getHostnameFromUrl(historyItem.url);
-  if (!domain) {
-    return;
-  }
 
   const { items: blacklistedItems, json } = await getBlacklist();
 

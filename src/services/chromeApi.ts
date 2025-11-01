@@ -76,7 +76,7 @@ export function search(params: SearchParams): Promise<ChromeHistoryItem[]> {
           text: params.text,
           startTime: params.startTime,
           endTime: params.endTime,
-          maxResults: params.maxResults ?? 100,
+          maxResults: params.maxResults ?? 0,
         },
         (results: chrome.history.HistoryItem[]) => {
           const validResults: ChromeHistoryItem[] = results
@@ -88,6 +88,8 @@ export function search(params: SearchParams): Promise<ChromeHistoryItem[]> {
               visitCount: item.visitCount ?? 0,
             }))
             .filter((item) => item.url);
+
+          validResults.sort((a, b) => b.lastVisitTime - a.lastVisitTime);
           resolve(validResults);
         },
       );

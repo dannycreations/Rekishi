@@ -18,13 +18,20 @@ interface HistoryItemProps {
 }
 
 const Highlight = memo(({ text, highlight }: { text: string; highlight: string }) => {
-  const parts = useMemo(() => {
+  const highlightRegex = useMemo(() => {
     if (!highlight) {
-      return [text];
+      return null;
     }
     const escapedHighlight = highlight.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    return text.split(new RegExp(`(${escapedHighlight})`, 'gi'));
-  }, [text, highlight]);
+    return new RegExp(`(${escapedHighlight})`, 'gi');
+  }, [highlight]);
+
+  const parts = useMemo(() => {
+    if (!highlightRegex) {
+      return [text];
+    }
+    return text.split(highlightRegex);
+  }, [text, highlightRegex]);
 
   if (!highlight || parts.length <= 1) {
     return <>{text}</>;
@@ -198,28 +205,28 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
           <span className="text-right text-xs text-slate-500 group-hover:hidden">{visitTime}</span>
           <div className="absolute inset-0 hidden items-center justify-end space-x-1 group-hover:flex">
             <button
-              className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
+              className="cursor-pointer rounded-md p-1 text-slate-400 transition-all duration-200 ease-in-out hover:scale-110 hover:bg-slate-100 hover:text-slate-800 active:scale-95"
               onClick={handleCopyUrl}
               title={isCopied ? 'Copied!' : 'Copy URL'}
             >
               {isCopied ? <CheckIcon className="h-4 w-4 text-green-500" /> : <CopyIcon className="h-4 w-4" />}
             </button>
             <button
-              className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
+              className="cursor-pointer rounded-md p-1 text-slate-400 transition-all duration-200 ease-in-out hover:scale-110 hover:bg-slate-100 hover:text-slate-800 active:scale-95"
               onClick={handleSearchSimilar}
               title="Search for similar items"
             >
               <SearchIcon className="h-4 w-4" />
             </button>
             <button
-              className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
+              className="cursor-pointer rounded-md p-1 text-slate-400 transition-all duration-200 ease-in-out hover:scale-110 hover:bg-slate-100 hover:text-slate-800 active:scale-95"
               onClick={handleOpenBlacklistModal}
               title="Blacklist this domain"
             >
               <BlacklistDomainIcon className="h-4 w-4" />
             </button>
             <button
-              className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-500"
+              className="cursor-pointer rounded-md p-1 text-slate-400 transition-all duration-200 ease-in-out hover:scale-110 hover:bg-red-100 hover:text-red-500 active:scale-95"
               onClick={handleOpenDeleteModal}
               title="Delete from history"
             >

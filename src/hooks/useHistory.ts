@@ -39,6 +39,7 @@ interface UseHistoryReturn {
 export const useHistory = (): UseHistoryReturn => {
   const [history, setHistory] = useState<ChromeHistoryItem[]>([]);
   const rawHistoryRef = useRef<ChromeHistoryItem[]>([]);
+  const historyItemMap = useRef<Map<string, ChromeHistoryItem>>(new Map());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +48,12 @@ export const useHistory = (): UseHistoryReturn => {
 
   const { isBlacklisted, blacklistedItems } = useBlacklistStore();
   const { isRegex, searchQuery, selectedDate } = useHistoryStore();
+
+  const removeItemsByIds = useCallback((idsToRemove: Set<string>) => {
+    rawHistoryRef.current = rawHistoryRef.current.filter((item) => !idsToRemove.has(item.id));
+    setHistory((prev) => prev.filter((item) => !idsToRemove.has(item.id)));
+    idsToRemove.forEach((id) => historyItemMap.current.delete(id));
+  }, []);
 
   const compiledRegex = useMemo(() => {
     if (!isRegex || searchQuery.length <= 2) {
@@ -66,23 +73,35 @@ export const useHistory = (): UseHistoryReturn => {
 
   const applyBlacklistFilter = useCallback(
     (items: ChromeHistoryItem[]) => {
+      if (blacklistedItems.length === 0) return items;
       return items.filter((item) => {
         const domain = getHostnameFromUrl(item.url);
         return !domain || !isBlacklisted(domain);
       });
     },
-    [isBlacklisted],
+    [isBlacklisted, blacklistedItems.length],
   );
 
   useEffect(() => {
-    setHistory(applyBlacklistFilter(rawHistoryRef.current));
-  }, [blacklistedItems, applyBlacklistFilter]);
+    const blacklistedIds = new Set<string>();
+    rawHistoryRef.current.forEach((item) => {
+      const domain = getHostnameFromUrl(item.url);
+      if (domain && isBlacklisted(domain)) {
+        blacklistedIds.add(item.id);
+      }
+    });
+
+    if (blacklistedIds.size > 0) {
+      removeItemsByIds(blacklistedIds);
+    }
+  }, [blacklistedItems, isBlacklisted, removeItemsByIds]);
 
   const fetchInitialDailyHistory = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     setHistory([]);
     rawHistoryRef.current = [];
+    historyItemMap.current.clear();
     setLastLoadedDate(selectedDate);
 
     const dateToFetch = selectedDate;
@@ -102,6 +121,7 @@ export const useHistory = (): UseHistoryReturn => {
       });
 
       if (isSameDay(dateToFetch, useHistoryStore.getState().selectedDate)) {
+        initialItems.forEach((item) => historyItemMap.current.set(item.id, item));
         rawHistoryRef.current = initialItems;
         setHistory(applyBlacklistFilter(initialItems));
       }
@@ -130,12 +150,10 @@ export const useHistory = (): UseHistoryReturn => {
         });
 
         if (isSameDay(dateToFetch, useHistoryStore.getState().selectedDate)) {
-          const currentRawItems = rawHistoryRef.current;
-
-          if (allItemsForDay.length > currentRawItems.length) {
-            rawHistoryRef.current = allItemsForDay;
-            setHistory(applyBlacklistFilter(allItemsForDay));
-          }
+          historyItemMap.current.clear();
+          allItemsForDay.forEach((item) => historyItemMap.current.set(item.id, item));
+          rawHistoryRef.current = allItemsForDay;
+          setHistory(applyBlacklistFilter(allItemsForDay));
         }
       } catch (err) {
         console.error('Failed to fetch rest of daily history in background:', err);
@@ -148,6 +166,7 @@ export const useHistory = (): UseHistoryReturn => {
     setError(null);
     setHistory([]);
     rawHistoryRef.current = [];
+    historyItemMap.current.clear();
     setHasMoreSearchResults(true);
 
     const textForSearch = isRegex ? '' : searchQuery;
@@ -171,7 +190,7 @@ export const useHistory = (): UseHistoryReturn => {
           filteredInitialItems = [];
         }
       }
-
+      filteredInitialItems.forEach((item) => historyItemMap.current.set(item.id, item));
       rawHistoryRef.current = filteredInitialItems;
       setHistory(applyBlacklistFilter(filteredInitialItems));
     } catch (err: unknown) {
@@ -206,6 +225,8 @@ export const useHistory = (): UseHistoryReturn => {
         }
 
         if (searchQuery === useHistoryStore.getState().searchQuery) {
+          historyItemMap.current.clear();
+          filteredMoreItems.forEach((item) => historyItemMap.current.set(item.id, item));
           rawHistoryRef.current = filteredMoreItems;
           setHistory(applyBlacklistFilter(filteredMoreItems));
           if (moreItems.length < SEARCH_PAGE_SIZE) {
@@ -225,11 +246,6 @@ export const useHistory = (): UseHistoryReturn => {
       fetchInitialDailyHistory();
     }
   }, [searchQuery, selectedDate, isRegex, fetchInitialDailyHistory, fetchInitialSearchHistory]);
-
-  const removeItemsByIds = useCallback((idsToRemove: Set<string>) => {
-    rawHistoryRef.current = rawHistoryRef.current.filter((item) => !idsToRemove.has(item.id));
-    setHistory((prev) => prev.filter((item) => !idsToRemove.has(item.id)));
-  }, []);
 
   const messageListener = useCallback(
     (message: unknown): void => {
@@ -258,25 +274,17 @@ export const useHistory = (): UseHistoryReturn => {
           isMatch = isSameDay(selectedDate, new Date(newItem.lastVisitTime));
         }
 
-        const rawIdx = rawHistoryRef.current.findIndex((i) => i.id === newItem.id);
-        if (rawIdx !== -1) {
-          rawHistoryRef.current.splice(rawIdx, 1);
-        }
+        // Remove old version if it exists to avoid duplicates and reflect updates
+        removeItemsByIds(new Set([newItem.id]));
+
+        // Add the new/updated item to the raw data cache
+        historyItemMap.current.set(newItem.id, newItem);
         rawHistoryRef.current.unshift(newItem);
 
-        setHistory((prev) => {
-          const existingItemIndex = prev.findIndex((i) => i.id === newItem.id);
-
-          if (existingItemIndex === -1 && !isMatch) {
-            return prev;
-          }
-
-          const newHistory = prev.filter((i) => i.id !== newItem.id);
-          if (isMatch) {
-            newHistory.unshift(newItem);
-          }
-          return newHistory;
-        });
+        // If it matches the current view, add it to the displayed history
+        if (isMatch) {
+          setHistory((prev) => [newItem, ...prev]);
+        }
       }
     },
     [isBlacklisted, removeItemsByIds, searchQuery, isRegex, compiledRegex, selectedDate],
@@ -301,7 +309,6 @@ export const useHistory = (): UseHistoryReturn => {
     setIsLoadingMore(true);
 
     try {
-      const existingIds = new Set(rawHistoryRef.current.map((i) => i.id));
       if (searchQuery) {
         const lastItem = rawHistoryRef.current[rawHistoryRef.current.length - 1];
         if (!lastItem || !hasMoreSearchResults) {
@@ -320,7 +327,7 @@ export const useHistory = (): UseHistoryReturn => {
           setHasMoreSearchResults(false);
         }
 
-        const uniqueNewItems = newItems.filter((i) => !existingIds.has(i.id));
+        const uniqueNewItems = newItems.filter((i) => !historyItemMap.current.has(i.id));
         let itemsToAdd = uniqueNewItems;
         if (isRegex) {
           if (compiledRegex.error) {
@@ -334,6 +341,7 @@ export const useHistory = (): UseHistoryReturn => {
           }
         }
 
+        itemsToAdd.forEach((item) => historyItemMap.current.set(item.id, item));
         rawHistoryRef.current.push(...itemsToAdd);
         setHistory((prev) => [...prev, ...applyBlacklistFilter(itemsToAdd)]);
       } else {
@@ -351,7 +359,8 @@ export const useHistory = (): UseHistoryReturn => {
           startTime: startTime.getTime(),
           text: '',
         });
-        const uniqueNewItems = newItems.filter((i) => !existingIds.has(i.id));
+        const uniqueNewItems = newItems.filter((i) => !historyItemMap.current.has(i.id));
+        uniqueNewItems.forEach((item) => historyItemMap.current.set(item.id, item));
         rawHistoryRef.current.push(...uniqueNewItems);
         setHistory((prev) => [...prev, ...applyBlacklistFilter(uniqueNewItems)]);
         setLastLoadedDate(nextDate);
@@ -367,7 +376,7 @@ export const useHistory = (): UseHistoryReturn => {
   const deleteHistoryItem = useCallback(
     async (id: string): Promise<void> => {
       try {
-        const itemToDelete = rawHistoryRef.current.find((item) => item.id === id);
+        const itemToDelete = historyItemMap.current.get(id);
         if (itemToDelete?.url) {
           await deleteUrl({ url: itemToDelete.url });
           removeItemsByIds(new Set([id]));
@@ -383,18 +392,11 @@ export const useHistory = (): UseHistoryReturn => {
   const deleteHistoryItems = useCallback(
     async (ids: string[]): Promise<void> => {
       try {
-        const idsToDelete = new Set(ids);
         const urlsToDelete = new Set<string>();
-
-        for (const item of rawHistoryRef.current) {
-          if (idsToDelete.size === 0) {
-            break;
-          }
-          if (idsToDelete.has(item.id)) {
-            if (item.url) {
-              urlsToDelete.add(item.url);
-            }
-            idsToDelete.delete(item.id);
+        for (const id of ids) {
+          const item = historyItemMap.current.get(id);
+          if (item?.url) {
+            urlsToDelete.add(item.url);
           }
         }
 

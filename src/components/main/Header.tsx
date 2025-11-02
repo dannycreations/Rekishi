@@ -49,7 +49,7 @@ export const Header = memo(
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
 
-    const calendarContainerRef = useRef<HTMLDivElement>(null);
+    const calendarButtonRef = useRef<HTMLButtonElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const searchTimeout = useRef<number | null>(null);
 
@@ -60,18 +60,6 @@ export const Header = memo(
     useEffect(() => {
       setLocalSearchQuery(searchQuery);
     }, [searchQuery]);
-
-    useEffect(() => {
-      const handleClickOutside = (event: MouseEvent): void => {
-        if (calendarContainerRef.current && event.target instanceof Node && !calendarContainerRef.current.contains(event.target)) {
-          setIsCalendarOpen(false);
-        }
-      };
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }, []);
 
     useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent): void => {
@@ -134,6 +122,10 @@ export const Header = memo(
       setIsCalendarOpen((o) => !o);
     }, []);
 
+    const handleCloseCalendar = useCallback(() => {
+      setIsCalendarOpen(false);
+    }, []);
+
     const handleOpenDevices = useCallback(() => {
       onOpenModal('devices');
     }, [onOpenModal]);
@@ -179,8 +171,9 @@ export const Header = memo(
               )}
             </div>
           </div>
-          <div ref={calendarContainerRef} className="relative">
+          <div>
             <button
+              ref={calendarButtonRef}
               className="flex cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 px-2 py-2 transition-colors hover:bg-slate-100"
               onClick={handleToggleCalendar}
               title="Select date"
@@ -188,18 +181,6 @@ export const Header = memo(
               <span className="text-sm text-slate-800">{formattedDate}</span>
               <CalendarIcon className="h-4 w-4 text-slate-400" />
             </button>
-            {isCalendarOpen && (
-              <CalendarPopover
-                datesWithHistory={datesWithHistory}
-                fetchDatesForMonth={fetchDatesForMonth}
-                isLoading={isLoadingDates}
-                onDateSelect={(date) => {
-                  setSelectedDate(date);
-                  setIsCalendarOpen(false);
-                }}
-                selectedDate={selectedDate}
-              />
-            )}
           </div>
         </div>
 
@@ -209,6 +190,19 @@ export const Header = memo(
           <NavButton icon={<ExportIcon className="h-5 w-5" />} onClick={handleOpenExport} title="Export History" />
           <NavButton icon={<SettingsIcon className="h-5 w-5" />} onClick={handleOpenSettings} title="Settings" />
         </div>
+
+        <CalendarPopover
+          anchorEl={isCalendarOpen ? calendarButtonRef.current : null}
+          datesWithHistory={datesWithHistory}
+          fetchDatesForMonth={fetchDatesForMonth}
+          isLoading={isLoadingDates}
+          onClose={handleCloseCalendar}
+          onDateSelect={(date) => {
+            setSelectedDate(date);
+            setIsCalendarOpen(false);
+          }}
+          selectedDate={selectedDate}
+        />
       </header>
     );
   },

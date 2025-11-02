@@ -3,7 +3,7 @@ import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'r
 import { useConfirm } from '../../hooks/useConfirm';
 import { useToast } from '../../hooks/useToast';
 import { formatDayHeader } from '../../utilities/dateUtil';
-import { groupHistoryByDay, groupHistoryByHour } from '../../utilities/historyUtil';
+import { groupHistoryByDayAndHour } from '../../utilities/historyUtil';
 import { SearchIcon } from '../shared/Icons';
 import { Skeleton } from '../shared/Skeleton';
 import { HistoryGroupHeader } from './HistoryGroupHeader';
@@ -172,13 +172,11 @@ export const HistoryView = memo(
 
     const itemIdToDayKeyMap = useMemo(() => {
       const map = new Map<string, string>();
-      const dayGroups = groupHistoryByDay(historyItems);
-      dayGroups.forEach((group) => {
-        const dayKey = group.date.toISOString();
-        group.items.forEach((item) => {
-          map.set(item.id, dayKey);
-        });
-      });
+      for (const item of historyItems) {
+        const itemDate = new Date(item.lastVisitTime);
+        itemDate.setHours(0, 0, 0, 0);
+        map.set(item.id, itemDate.toISOString());
+      }
       return map;
     }, [historyItems]);
 
@@ -193,10 +191,11 @@ export const HistoryView = memo(
       return counts;
     }, [selectedItems, itemIdToDayKeyMap]);
 
+    const dailyGroups = useMemo(() => groupHistoryByDayAndHour(historyItems), [historyItems]);
+
     const { processedDailyGroups, dailyGroupsMap } = useMemo(() => {
-      const dayGroups = groupHistoryByDay(historyItems);
-      const groups: ProcessedDayGroup[] = dayGroups.map((dayGroup) => {
-        const hourlyGroupsArray = groupHistoryByHour(dayGroup.items).map((group) => ({
+      const groups: ProcessedDayGroup[] = dailyGroups.map((dayGroup) => {
+        const hourlyGroupsArray = dayGroup.hourlyGroups.map((group) => ({
           ...group,
           selectedInHourCount: group.items.reduce((count, item) => (selectedItems.has(item.id) ? count + 1 : count), 0),
         }));
@@ -213,7 +212,7 @@ export const HistoryView = memo(
 
       const map = new Map<string, ProcessedDayGroup>(groups.map((g) => [g.date.toISOString(), g]));
       return { processedDailyGroups: groups, dailyGroupsMap: map };
-    }, [historyItems, selectedCountByDay, selectedItems]);
+    }, [dailyGroups, selectedCountByDay, selectedItems]);
 
     const handleToggleDaySelection = useCallback(
       (dayItems: ChromeHistoryItem[]) => {

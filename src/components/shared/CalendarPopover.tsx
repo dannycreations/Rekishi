@@ -1,23 +1,28 @@
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { DAYS_OF_WEEK } from '../../app/constants';
 import { isSameDay } from '../../utilities/dateUtil';
 import { ChevronLeftIcon, ChevronRightIcon } from './Icons';
 import { Skeleton } from './Skeleton';
 
-import type { JSX } from 'react';
+import type { CSSProperties, JSX, ReactPortal } from 'react';
 
 interface CalendarPopoverProps {
+  anchorEl: HTMLElement | null;
   datesWithHistory: Set<string>;
   fetchDatesForMonth: (date: Date) => void;
   isLoading: boolean;
+  maxDate?: Date;
+  minDate?: Date;
+  onClose: () => void;
   onDateSelect: (date: Date) => void;
   selectedDate: Date;
 }
 
 export const CalendarSkeleton = memo(() => {
   return (
-    <div className="absolute right-0 top-full z-10 mt-2 w-72 rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+    <div>
       <div className="mb-2 flex items-center justify-between">
         <Skeleton className="h-8 w-8 rounded-full" />
         <Skeleton className="h-5 w-32 rounded" />
@@ -40,12 +45,92 @@ export const CalendarSkeleton = memo(() => {
 });
 
 export const CalendarPopover = memo(
-  ({ selectedDate, onDateSelect, datesWithHistory, isLoading, fetchDatesForMonth }: CalendarPopoverProps): JSX.Element => {
+  ({
+    selectedDate,
+    onDateSelect,
+    datesWithHistory,
+    isLoading,
+    fetchDatesForMonth,
+    anchorEl,
+    onClose,
+    minDate,
+    maxDate,
+  }: CalendarPopoverProps): ReactPortal | null => {
     const [displayDate, setDisplayDate] = useState(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
+    const popoverRef = useRef<HTMLDivElement>(null);
+    const [style, setStyle] = useState<CSSProperties>({
+      position: 'fixed',
+      top: '-9999px',
+      left: '-9999px',
+    });
 
     useEffect(() => {
-      fetchDatesForMonth(displayDate);
-    }, [displayDate, fetchDatesForMonth]);
+      if (anchorEl) {
+        fetchDatesForMonth(displayDate);
+      } else {
+        setDisplayDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
+      }
+    }, [displayDate, fetchDatesForMonth, anchorEl, selectedDate]);
+
+    const updatePosition = useCallback(() => {
+      if (anchorEl && popoverRef.current) {
+        const anchorRect = anchorEl.getBoundingClientRect();
+        const popoverEl = popoverRef.current;
+        const popoverWidth = popoverEl.offsetWidth;
+        const popoverHeight = popoverEl.offsetHeight;
+
+        let left = anchorRect.right - popoverWidth;
+        if (left < 8) left = 8;
+        if (left + popoverWidth > window.innerWidth - 8) {
+          left = window.innerWidth - popoverWidth - 8;
+        }
+
+        let top = anchorRect.bottom + 8;
+        if (top + popoverHeight > window.innerHeight && anchorRect.top - popoverHeight - 8 > 0) {
+          top = anchorRect.top - popoverHeight - 8;
+        }
+
+        if (top < 0) top = 8;
+
+        setStyle({
+          top: `${top}px`,
+          left: `${left}px`,
+        });
+      } else {
+        setStyle({
+          position: 'fixed',
+          top: '-9999px',
+          left: '-9999px',
+        });
+      }
+    }, [anchorEl]);
+
+    useLayoutEffect(() => {
+      updatePosition();
+    }, [updatePosition, isLoading]);
+
+    useEffect(() => {
+      if (!anchorEl) return;
+
+      window.addEventListener('resize', updatePosition);
+      return () => {
+        window.removeEventListener('resize', updatePosition);
+      };
+    }, [anchorEl, updatePosition]);
+
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (anchorEl && popoverRef.current && !popoverRef.current.contains(event.target as Node) && !anchorEl.contains(event.target as Node)) {
+          onClose();
+        }
+      };
+      if (anchorEl) {
+        document.addEventListener('mousedown', handleClickOutside);
+      }
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, [onClose, anchorEl]);
 
     const today = useMemo(() => {
       const d = new Date();
@@ -92,79 +177,95 @@ export const CalendarPopover = memo(
       [displayDate, today],
     );
 
-    if (isLoading && datesWithHistory.size === 0) {
-      return <CalendarSkeleton />;
+    if (!anchorEl) {
+      return null;
     }
 
-    return (
-      <div className="absolute right-0 top-full z-10 mt-2 w-72 origin-top-right rounded-lg border border-slate-200 bg-white p-2 shadow-lg popover-animate-enter">
-        <div className="mb-2 flex items-center justify-between">
-          <button className="cursor-pointer rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100" onClick={handlePrevMonth}>
-            <ChevronLeftIcon className="h-5 w-5" />
-          </button>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-slate-700">{monthName}</span>
-            <button
-              className="cursor-pointer rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 hover:bg-slate-200"
-              onClick={handleGoToToday}
-            >
-              Today
-            </button>
-          </div>
-          <button
-            className="cursor-pointer rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-300"
-            disabled={isCurrentMonth}
-            onClick={handleNextMonth}
-          >
-            <ChevronRightIcon className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="grid grid-cols-7 gap-y-1 text-center">
-          {DAYS_OF_WEEK.map((day) => (
-            <div key={day} className="text-xs font-medium text-slate-500">
-              {day}
-            </div>
-          ))}
-          {calendarGrid.map((date, index) => {
-            if (!date) {
-              return <div key={`empty-${index}`} />;
-            }
-
-            if (date > today) {
-              return (
-                <div key={date.toISOString()} className="flex items-center justify-center py-1">
-                  <button disabled className="h-8 w-8 cursor-not-allowed rounded-full text-sm text-slate-300">
-                    {date.getDate()}
-                  </button>
-                </div>
-              );
-            }
-
-            const dateString = date.toISOString().split('T')[0];
-            const hasHistory = datesWithHistory.has(dateString);
-            const isSelected = isSameDay(date, selectedDate);
-            const isToday = isSameDay(date, today);
-
-            return (
-              <div key={date.toISOString()} className="flex items-center justify-center py-1">
+    const popoverElement = (
+      <div
+        ref={popoverRef}
+        style={style}
+        className="fixed z-[101] w-72 origin-top-right rounded-lg border border-slate-200 bg-white p-2 shadow-lg popover-animate-enter"
+      >
+        {isLoading && datesWithHistory.size === 0 ? (
+          <CalendarSkeleton />
+        ) : (
+          <>
+            <div className="mb-2 flex items-center justify-between">
+              <button className="cursor-pointer rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100" onClick={handlePrevMonth}>
+                <ChevronLeftIcon className="h-5 w-5" />
+              </button>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-slate-700">{monthName}</span>
                 <button
-                  disabled={!hasHistory}
-                  className={`h-8 w-8 cursor-pointer rounded-full text-sm transition-colors ${
-                    isSelected
-                      ? 'bg-slate-800 font-semibold text-white hover:bg-slate-700'
-                      : hasHistory
-                        ? 'text-slate-600 hover:bg-slate-100'
-                        : 'cursor-not-allowed text-slate-300'
-                  } ${!isSelected && isToday && hasHistory ? 'ring-1 ring-slate-400' : ''}`}
-                  onClick={() => onDateSelect(date)}
+                  className="cursor-pointer rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+                  onClick={handleGoToToday}
                 >
-                  {date.getDate()}
+                  Today
                 </button>
               </div>
-            );
-          })}
-        </div>
+              <button
+                className="cursor-pointer rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-300"
+                disabled={isCurrentMonth}
+                onClick={handleNextMonth}
+              >
+                <ChevronRightIcon className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="grid grid-cols-7 gap-y-1 text-center">
+              {DAYS_OF_WEEK.map((day) => (
+                <div key={day} className="text-xs font-medium text-slate-500">
+                  {day}
+                </div>
+              ))}
+              {calendarGrid.map((date, index) => {
+                if (!date) {
+                  return <div key={`empty-${index}`} />;
+                }
+
+                const isFuture = date > today;
+                const isBeforeMin = minDate && date < new Date(new Date(minDate).setHours(0, 0, 0, 0));
+                const isAfterMax = maxDate && date > new Date(new Date(maxDate).setHours(0, 0, 0, 0));
+
+                if (isFuture || isBeforeMin || isAfterMax) {
+                  return (
+                    <div key={date.toISOString()} className="flex items-center justify-center py-1">
+                      <button disabled className="h-8 w-8 cursor-not-allowed rounded-full text-sm text-slate-300">
+                        {date.getDate()}
+                      </button>
+                    </div>
+                  );
+                }
+
+                const dateString = date.toISOString().split('T')[0];
+                const hasHistory = datesWithHistory.has(dateString);
+                const isSelected = isSameDay(date, selectedDate);
+                const isToday = isSameDay(date, today);
+
+                return (
+                  <div key={date.toISOString()} className="flex items-center justify-center py-1">
+                    <button
+                      disabled={!hasHistory}
+                      className={`h-8 w-8 cursor-pointer rounded-full text-sm transition-colors ${
+                        isSelected
+                          ? 'bg-slate-800 font-semibold text-white hover:bg-slate-700'
+                          : hasHistory
+                            ? 'text-slate-600 hover:bg-slate-100'
+                            : 'cursor-not-allowed text-slate-300'
+                      } ${!isSelected && isToday && hasHistory ? 'ring-1 ring-slate-400' : ''}`}
+                      onClick={() => onDateSelect(date)}
+                    >
+                      {date.getDate()}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
     );
+
+    return createPortal(popoverElement, document.body);
   },
 );

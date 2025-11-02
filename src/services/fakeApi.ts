@@ -126,7 +126,7 @@ const getFakeHistory = (params: SearchParams): ChromeHistoryItem[] => {
     return b.lastVisitTime - a.lastVisitTime;
   });
 
-  if (params.maxResults) {
+  if (params.maxResults && params.maxResults > 0) {
     return items.slice(0, params.maxResults);
   }
 

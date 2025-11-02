@@ -91,7 +91,10 @@ export const App = (): JSX.Element => {
     [history, deleteHistoryItem, deleteHistoryItems, loadMore, hasMore, isLoadingMore],
   );
 
-  const noHistoryEver = history.length === 0 && datesWithHistory.size === 0 && !isLoading && !isLoadingDates;
+  const noHistoryEver = useMemo(
+    () => history.length === 0 && datesWithHistory.size === 0 && !isLoading && !isLoadingDates,
+    [history, datesWithHistory, isLoading, isLoadingDates],
+  );
 
   return (
     <div className="h-screen bg-slate-100 text-slate-900">

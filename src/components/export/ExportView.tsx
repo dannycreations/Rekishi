@@ -1,8 +1,10 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
+import { useHistoryDate } from '../../hooks/useHistoryDate';
 import { useToast } from '../../hooks/useToast';
 import { search } from '../../services/chromeApi';
-import { LoadingSpinnerIcon } from '../shared/Icons';
+import { CalendarPopover } from '../shared/CalendarPopover';
+import { CalendarIcon, LoadingSpinnerIcon } from '../shared/Icons';
 
 import type { JSX } from 'react';
 import type { ChromeHistoryItem } from '../../app/types';
@@ -10,7 +12,10 @@ import type { ChromeHistoryItem } from '../../app/types';
 type ExportFormat = 'json' | 'csv';
 
 const formatDateForInput = (date: Date): string => {
-  return date.toISOString().split('T')[0];
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}/${month}/${day}`;
 };
 
 function generateFileContent(items: ChromeHistoryItem[], format: ExportFormat): string {
@@ -93,15 +98,18 @@ export const ExportView = memo((): JSX.Element => {
     return formatDateForInput(d);
   });
 
+  const [activeCalendar, setActiveCalendar] = useState<'start' | 'end' | null>(null);
+  const startDateTriggerRef = useRef<HTMLButtonElement>(null);
+  const endDateTriggerRef = useRef<HTMLButtonElement>(null);
+
+  const { datesWithHistory, fetchDatesForMonth, isLoading: isLoadingDates } = useHistoryDate();
+
   const handleExport = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      const start = new Date(startDate);
-      start.setHours(0, 0, 0, 0);
-
-      const end = new Date(endDate);
-      end.setHours(23, 59, 59, 999);
+      const start = new Date(`${startDate.replace(/\//g, '-')}T00:00:00`);
+      const end = new Date(`${endDate.replace(/\//g, '-')}T23:59:59.999`);
 
       if (start > end) {
         addToast('Start date cannot be after end date.', 'error');
@@ -109,8 +117,9 @@ export const ExportView = memo((): JSX.Element => {
       }
 
       const historyItems = await search({
-        startTime: start.getTime(),
         endTime: end.getTime(),
+        maxResults: 0,
+        startTime: start.getTime(),
         text: '',
       });
 
@@ -120,7 +129,7 @@ export const ExportView = memo((): JSX.Element => {
       }
 
       const fileContent = generateFileContent(historyItems, format);
-      downloadFile(fileContent, format, startDate, endDate);
+      downloadFile(fileContent, format, startDate.replace(/\//g, '-'), endDate.replace(/\//g, '-'));
       addToast('History export started.', 'success');
     } catch (err: unknown) {
       addToast('An error occurred during export. Please try again.', 'error');
@@ -130,61 +139,119 @@ export const ExportView = memo((): JSX.Element => {
     }
   }, [startDate, endDate, format, addToast]);
 
+  const activeAnchorEl = useMemo(() => {
+    if (activeCalendar === 'start') return startDateTriggerRef.current;
+    if (activeCalendar === 'end') return endDateTriggerRef.current;
+    return null;
+  }, [activeCalendar]);
+
+  const activeSelectedDate = useMemo(() => {
+    const dateStr = activeCalendar === 'start' ? startDate : endDate;
+    return new Date(`${dateStr.replace(/\//g, '-')}T00:00:00`);
+  }, [activeCalendar, startDate, endDate]);
+
+  const handleDateSelect = useCallback(
+    (date: Date) => {
+      const formatted = formatDateForInput(date);
+      if (activeCalendar === 'start') {
+        setStartDate(formatted);
+      } else if (activeCalendar === 'end') {
+        setEndDate(formatted);
+      }
+      setActiveCalendar(null);
+    },
+    [activeCalendar],
+  );
+
+  const minCalendarDate = useMemo(() => {
+    if (activeCalendar === 'end') {
+      return new Date(`${startDate.replace(/\//g, '-')}T00:00:00`);
+    }
+    return undefined;
+  }, [activeCalendar, startDate]);
+
+  const maxCalendarDate = useMemo(() => {
+    if (activeCalendar === 'start') {
+      return new Date(`${endDate.replace(/\//g, '-')}T00:00:00`);
+    }
+    return new Date();
+  }, [activeCalendar, endDate]);
+
   return (
-    <div className="space-y-3">
-      <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-        <div>
-          <h3 className="text-lg font-semibold text-slate-800">Date Range</h3>
-          <div className="mt-1 grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-sm font-medium text-slate-600">Start Date</label>
-              <input
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-slate-900 focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
-                id="start-date"
-                max={endDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                type="date"
-                value={startDate}
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-slate-600">End Date</label>
-              <input
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-slate-900 focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
-                id="end-date"
-                max={formatDateForInput(new Date())}
-                min={startDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                type="date"
-                value={endDate}
-              />
+    <>
+      <div className="space-y-3">
+        <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-800">Date Range</h3>
+            <div className="mt-1 grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-sm font-medium text-slate-600" htmlFor="start-date">
+                  Start Date
+                </label>
+                <button
+                  ref={startDateTriggerRef}
+                  id="start-date"
+                  className="mt-1 flex w-full cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-white px-2 py-2 text-left transition-colors hover:bg-slate-100"
+                  onClick={() => setActiveCalendar(activeCalendar === 'start' ? null : 'start')}
+                  title="Select start date"
+                >
+                  <span className="text-sm text-slate-800">{startDate}</span>
+                  <CalendarIcon className="h-4 w-4 text-slate-400" />
+                </button>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-600" htmlFor="end-date">
+                  End Date
+                </label>
+                <button
+                  ref={endDateTriggerRef}
+                  id="end-date"
+                  className="mt-1 flex w-full cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-white px-2 py-2 text-left transition-colors hover:bg-slate-100"
+                  onClick={() => setActiveCalendar(activeCalendar === 'end' ? null : 'end')}
+                  title="Select end date"
+                >
+                  <span className="text-sm text-slate-800">{endDate}</span>
+                  <CalendarIcon className="h-4 w-4 text-slate-400" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div>
-          <h3 className="text-lg font-semibold text-slate-800">Format</h3>
-          <div className="mt-1 flex space-x-2">
-            <RadioCard checked={format === 'json'} description="JavaScript Object Notation" label="JSON" onChange={setFormat} value="json" />
-            <RadioCard checked={format === 'csv'} description="Comma-Separated Values" label="CSV" onChange={setFormat} value="csv" />
+          <div>
+            <h3 className="text-lg font-semibold text-slate-800">Format</h3>
+            <div className="mt-1 flex space-x-2">
+              <RadioCard checked={format === 'json'} description="JavaScript Object Notation" label="JSON" onChange={setFormat} value="json" />
+              <RadioCard checked={format === 'csv'} description="Comma-Separated Values" label="CSV" onChange={setFormat} value="csv" />
+            </div>
           </div>
-        </div>
 
-        <button
-          className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-slate-800 px-2 py-2 font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-wait disabled:bg-slate-500"
-          disabled={isLoading}
-          onClick={handleExport}
-        >
-          {isLoading ? (
-            <>
-              <LoadingSpinnerIcon className="mr-2 h-5 w-5 animate-spin" />
-              Exporting...
-            </>
-          ) : (
-            'Export History'
-          )}
-        </button>
+          <button
+            className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-slate-800 px-2 py-2 font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-wait disabled:bg-slate-500"
+            disabled={isLoading}
+            onClick={handleExport}
+          >
+            {isLoading ? (
+              <>
+                <LoadingSpinnerIcon className="mr-2 h-5 w-5 animate-spin" />
+                Exporting...
+              </>
+            ) : (
+              'Export History'
+            )}
+          </button>
+        </div>
       </div>
-    </div>
+      <CalendarPopover
+        anchorEl={activeAnchorEl}
+        datesWithHistory={datesWithHistory}
+        fetchDatesForMonth={fetchDatesForMonth}
+        isLoading={isLoadingDates}
+        maxDate={maxCalendarDate}
+        minDate={minCalendarDate}
+        onClose={() => setActiveCalendar(null)}
+        onDateSelect={handleDateSelect}
+        selectedDate={activeSelectedDate}
+      />
+    </>
   );
 });

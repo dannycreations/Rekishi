@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useConfirm } from '../../hooks/useConfirm';
+import { useToast } from '../../hooks/useToast';
 import { formatDayHeader } from '../../utilities/dateUtil';
 import { groupHistoryByDay, groupHistoryByHour } from '../../utilities/historyUtil';
 import { SearchIcon } from '../shared/Icons';
@@ -19,6 +20,14 @@ interface HistoryViewProps {
   loadMore: () => void;
   onDelete: (id: string) => Promise<void>;
   scrollContainerRef: RefObject<HTMLElement | null>;
+}
+
+interface ProcessedDayGroup {
+  date: Date;
+  items: ChromeHistoryItem[];
+  hourlyGroups: HistoryItemGroup[];
+  hourlyGroupsMap: Map<string, HistoryItemGroup>;
+  selectedInDayCount: number;
 }
 
 export const HistoryViewItemSkeleton = memo(() => {
@@ -88,6 +97,7 @@ export const HistoryView = memo(
   ({ deleteHistoryItems, hasMore, historyItems, isLoadingMore, loadMore, onDelete, scrollContainerRef }: HistoryViewProps): JSX.Element => {
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
     const { Modal: DeleteModal, openModal: openDeleteModal } = useConfirm();
+    const { addToast } = useToast();
     const [stickyState, setStickyState] = useState<{
       dayKey: string | null;
       hourText: string | null;
@@ -108,10 +118,12 @@ export const HistoryView = memo(
 
     const handleConfirmDeleteSelected = useCallback(async () => {
       if (selectedItems.size > 0) {
+        const count = selectedItems.size;
         await deleteHistoryItems(Array.from(selectedItems));
         setSelectedItems(new Set());
+        addToast(`${count} item${count > 1 ? 's' : ''} deleted.`, 'success');
       }
-    }, [selectedItems, deleteHistoryItems]);
+    }, [selectedItems, deleteHistoryItems, addToast]);
 
     const handleOpenDeleteSelectedModal = useCallback(() => {
       if (selectedItems.size > 0) {
@@ -142,32 +154,28 @@ export const HistoryView = memo(
                 undone.
               </>
             ),
-            onConfirm: async () => await deleteHistoryItems(items.map((i) => i.id)),
+            onConfirm: async () => {
+              await deleteHistoryItems(items.map((i) => i.id));
+              addToast(`${items.length} item${items.length > 1 ? 's' : ''} deleted from this ${type}.`, 'success');
+            },
             title: `Delete Entire ${type === 'day' ? 'Day' : 'Hour'}`,
           });
         }
       },
-      [openDeleteModal, deleteHistoryItems],
+      [openDeleteModal, deleteHistoryItems, addToast],
     );
-
-    const dailyGroupsWithHourlySubgroups = useMemo(() => {
-      const dayGroups = groupHistoryByDay(historyItems);
-      return dayGroups.map((dayGroup) => ({
-        ...dayGroup,
-        hourlyGroups: groupHistoryByHour(dayGroup.items),
-      }));
-    }, [historyItems]);
 
     const itemIdToDayKeyMap = useMemo(() => {
       const map = new Map<string, string>();
-      dailyGroupsWithHourlySubgroups.forEach((group) => {
+      const dayGroups = groupHistoryByDay(historyItems);
+      dayGroups.forEach((group) => {
         const dayKey = group.date.toISOString();
         group.items.forEach((item) => {
           map.set(item.id, dayKey);
         });
       });
       return map;
-    }, [dailyGroupsWithHourlySubgroups]);
+    }, [historyItems]);
 
     const selectedCountByDay = useMemo(() => {
       const counts = new Map<string, number>();
@@ -179,6 +187,23 @@ export const HistoryView = memo(
       });
       return counts;
     }, [selectedItems, itemIdToDayKeyMap]);
+
+    const { processedDailyGroups, dailyGroupsMap } = useMemo(() => {
+      const dayGroups = groupHistoryByDay(historyItems);
+      const groups: ProcessedDayGroup[] = dayGroups.map((dayGroup) => {
+        const hourlyGroupsArray = groupHistoryByHour(dayGroup.items);
+        const hourlyGroupsMap = new Map(hourlyGroupsArray.map((hg) => [hg.time, hg]));
+        return {
+          ...dayGroup,
+          hourlyGroups: hourlyGroupsArray,
+          hourlyGroupsMap: hourlyGroupsMap,
+          selectedInDayCount: selectedCountByDay.get(dayGroup.date.toISOString()) || 0,
+        };
+      });
+
+      const map = new Map<string, ProcessedDayGroup>(groups.map((g) => [g.date.toISOString(), g]));
+      return { processedDailyGroups: groups, dailyGroupsMap: map };
+    }, [historyItems, selectedCountByDay]);
 
     const handleToggleDaySelection = useCallback(
       (dayItems: ChromeHistoryItem[]) => {
@@ -203,15 +228,6 @@ export const HistoryView = memo(
         });
       },
       [selectedCountByDay],
-    );
-
-    const processedDailyGroups = useMemo(
-      () =>
-        dailyGroupsWithHourlySubgroups.map((dayGroup) => ({
-          ...dayGroup,
-          selectedInDayCount: selectedCountByDay.get(dayGroup.date.toISOString()) || 0,
-        })),
-      [dailyGroupsWithHourlySubgroups, selectedCountByDay],
     );
 
     useLayoutEffect(() => {
@@ -281,8 +297,8 @@ export const HistoryView = memo(
 
     const stickyDayGroup = useMemo(() => {
       if (!stickyState.dayKey) return null;
-      return processedDailyGroups.find((g) => g.date.toISOString() === stickyState.dayKey);
-    }, [stickyState.dayKey, processedDailyGroups]);
+      return dailyGroupsMap.get(stickyState.dayKey) ?? null;
+    }, [stickyState.dayKey, dailyGroupsMap]);
 
     const stickyHeaderData = useMemo(() => {
       if (!stickyDayGroup) {
@@ -290,7 +306,7 @@ export const HistoryView = memo(
       }
 
       if (stickyState.hourText) {
-        const hourlyGroup = stickyDayGroup.hourlyGroups.find((hg) => hg.time === stickyState.hourText);
+        const hourlyGroup = stickyDayGroup.hourlyGroupsMap.get(stickyState.hourText);
         if (hourlyGroup) {
           const selectedCount = hourlyGroup.items.reduce((count, item) => count + (selectedItems.has(item.id) ? 1 : 0), 0);
           return { items: hourlyGroup.items, selectedCount };
@@ -349,7 +365,7 @@ export const HistoryView = memo(
               isHourHeader={!!stickyState.hourText}
               onDeleteAll={() => handleOpenDeleteAllModal(stickyHeaderData.items, stickyState.hourText ? 'hour' : 'day')}
               onDeleteSelected={handleOpenDeleteSelectedModal}
-              onToggleDaySelection={handleToggleDaySelection}
+              onToggleDaySelection={() => handleToggleDaySelection(stickyHeaderData.items)}
               selectedItemsCount={stickyHeaderData.selectedCount}
               totalSelectedCount={selectedItems.size}
             />
@@ -360,7 +376,7 @@ export const HistoryView = memo(
           {processedDailyGroups.map((dayGroup) => {
             const dayKey = dayGroup.date.toISOString();
             const dayHeaderText = formatDayHeader(dayGroup.date);
-            const isDayHeaderCovered = stickyState.dayKey === dayKey;
+            const isDayHeaderCovered = stickyState.dayKey === dayKey && !stickyState.hourText;
 
             return (
               <section key={dayKey}>
@@ -377,7 +393,7 @@ export const HistoryView = memo(
                     isHourHeader={false}
                     onDeleteAll={() => handleOpenDeleteAllModal(dayGroup.items, 'day')}
                     onDeleteSelected={handleOpenDeleteSelectedModal}
-                    onToggleDaySelection={handleToggleDaySelection}
+                    onToggleDaySelection={() => handleToggleDaySelection(dayGroup.items)}
                     selectedItemsCount={dayGroup.selectedInDayCount}
                     totalSelectedCount={selectedItems.size}
                   />
@@ -385,7 +401,7 @@ export const HistoryView = memo(
                 </div>
                 <div className="space-y-2">
                   {dayGroup.hourlyGroups.map((group) => {
-                    const isHourHeaderCovered = isDayHeaderCovered && stickyState.hourText === group.time;
+                    const isHourHeaderCovered = stickyState.dayKey === dayKey && stickyState.hourText === group.time;
 
                     return (
                       <div key={group.time} data-day-key={dayKey} data-hour-key={group.time}>

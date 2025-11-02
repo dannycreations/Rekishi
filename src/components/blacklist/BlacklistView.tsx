@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useToast } from '../../hooks/useToast';
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
 import { parseInput } from '../../utilities/blacklistUtil';
 import { CheckIcon, CloseIcon, PencilIcon, TrashIcon } from '../shared/Icons';
@@ -16,6 +17,7 @@ interface BlacklistItemProps {
 export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.isRegex ? `/${item.value}/` : item.value);
+  const { addToast } = useToast();
 
   const handleRemove = useCallback(() => {
     onRemove(item.value);
@@ -37,7 +39,7 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
       return;
     }
     if ('error' in parsed) {
-      alert(parsed.error);
+      addToast(parsed.error, 'error');
       return;
     }
 
@@ -49,7 +51,7 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
 
     onEdit(item.value, newValue, newIsRegex);
     setIsEditing(false);
-  }, [editValue, item, onEdit]);
+  }, [editValue, item, onEdit, addToast]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
@@ -120,6 +122,7 @@ export const BlacklistView = memo((): JSX.Element => {
   const [newDomain, setNewDomain] = useState('');
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { addToast } = useToast();
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -154,27 +157,30 @@ export const BlacklistView = memo((): JSX.Element => {
       }
 
       addDomain(value, isRegex);
+      addToast(`'${value}' added to blacklist.`, 'success');
       setNewDomain('');
     },
-    [newDomain, addDomain, blacklistedValues],
+    [newDomain, addDomain, blacklistedValues, addToast],
   );
 
   const handleRemoveDomain = useCallback(
     (valueToRemove: string): void => {
       removeDomain(valueToRemove);
+      addToast(`'${valueToRemove}' removed from blacklist.`, 'success');
     },
-    [removeDomain],
+    [removeDomain, addToast],
   );
 
   const handleEditDomain = useCallback(
     (oldValue: string, newValue: string, newIsRegex: boolean) => {
       if (oldValue !== newValue && blacklistedValues.has(newValue)) {
-        alert('This item already exists in the blacklist.');
+        addToast('This item already exists in the blacklist.', 'error');
         return;
       }
       editDomain(oldValue, newValue, newIsRegex);
+      addToast('Blacklist item updated.', 'success');
     },
-    [blacklistedValues, editDomain],
+    [blacklistedValues, editDomain, addToast],
   );
 
   return (

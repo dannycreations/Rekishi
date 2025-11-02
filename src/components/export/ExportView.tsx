@@ -1,5 +1,6 @@
 import { memo, useCallback, useState } from 'react';
 
+import { useToast } from '../../hooks/useToast';
 import { search } from '../../services/chromeApi';
 import { LoadingSpinnerIcon } from '../shared/Icons';
 
@@ -55,10 +56,33 @@ function downloadFile(content: string, format: ExportFormat, startDate: string, 
   URL.revokeObjectURL(url);
 }
 
+interface RadioCardProps {
+  checked: boolean;
+  description: string;
+  label: string;
+  onChange: (value: ExportFormat) => void;
+  value: ExportFormat;
+}
+
+const RadioCard = memo(({ checked, value, label, description, onChange }: RadioCardProps) => (
+  <label className="flex flex-1 cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 p-3 has-checked:border-slate-400 has-checked:bg-slate-50">
+    <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
+      <input checked={checked} className="peer sr-only" name="format" onChange={() => onChange(value)} type="radio" value={value} />
+      <div className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-300 transition-colors peer-checked:border-slate-800">
+        <div className="h-2 w-2 rounded-full transition-colors peer-checked:bg-slate-800" />
+      </div>
+    </div>
+    <div>
+      <span className="font-semibold text-slate-700">{label}</span>
+      <p className="text-xs text-slate-500">{description}</p>
+    </div>
+  </label>
+));
+
 export const ExportView = memo((): JSX.Element => {
   const [format, setFormat] = useState<ExportFormat>('json');
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: 'error' | 'info' } | null>(null);
+  const { addToast } = useToast();
 
   const [endDate, setEndDate] = useState(() => {
     return formatDateForInput(new Date());
@@ -71,7 +95,6 @@ export const ExportView = memo((): JSX.Element => {
 
   const handleExport = useCallback(async () => {
     setIsLoading(true);
-    setMessage(null);
 
     try {
       const start = new Date(startDate);
@@ -81,7 +104,7 @@ export const ExportView = memo((): JSX.Element => {
       end.setHours(23, 59, 59, 999);
 
       if (start > end) {
-        setMessage({ type: 'error', text: 'Start date cannot be after end date.' });
+        addToast('Start date cannot be after end date.', 'error');
         return;
       }
 
@@ -92,19 +115,20 @@ export const ExportView = memo((): JSX.Element => {
       });
 
       if (historyItems.length === 0) {
-        setMessage({ type: 'info', text: 'No history found for the selected date range.' });
+        addToast('No history found for the selected date range.', 'info');
         return;
       }
 
       const fileContent = generateFileContent(historyItems, format);
       downloadFile(fileContent, format, startDate, endDate);
+      addToast('History export started.', 'success');
     } catch (err: unknown) {
-      setMessage({ type: 'error', text: 'An error occurred during export. Please try again.' });
+      addToast('An error occurred during export. Please try again.', 'error');
       console.error(err);
     } finally {
       setIsLoading(false);
     }
-  }, [startDate, endDate, format]);
+  }, [startDate, endDate, format, addToast]);
 
   return (
     <div className="space-y-3">
@@ -141,37 +165,8 @@ export const ExportView = memo((): JSX.Element => {
         <div>
           <h3 className="text-lg font-semibold text-slate-800">Format</h3>
           <div className="mt-1 flex space-x-2">
-            <label className="flex flex-1 cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 p-3 has-checked:border-slate-400 has-checked:bg-slate-50">
-              <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
-                <input
-                  checked={format === 'json'}
-                  className="peer sr-only"
-                  name="format"
-                  onChange={() => setFormat('json')}
-                  type="radio"
-                  value="json"
-                />
-                <div className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-300 transition-colors peer-checked:border-slate-800">
-                  <div className="h-2 w-2 rounded-full transition-colors peer-checked:bg-slate-800" />
-                </div>
-              </div>
-              <div>
-                <span className="font-semibold text-slate-700">JSON</span>
-                <p className="text-xs text-slate-500">JavaScript Object Notation</p>
-              </div>
-            </label>
-            <label className="flex flex-1 cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 p-3 has-checked:border-slate-400 has-checked:bg-slate-50">
-              <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
-                <input checked={format === 'csv'} className="peer sr-only" name="format" onChange={() => setFormat('csv')} type="radio" value="csv" />
-                <div className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-300 transition-colors peer-checked:border-slate-800">
-                  <div className="h-2 w-2 rounded-full transition-colors peer-checked:bg-slate-800" />
-                </div>
-              </div>
-              <div>
-                <span className="font-semibold text-slate-700">CSV</span>
-                <p className="text-xs text-slate-500">Comma-Separated Values</p>
-              </div>
-            </label>
+            <RadioCard checked={format === 'json'} description="JavaScript Object Notation" label="JSON" onChange={setFormat} value="json" />
+            <RadioCard checked={format === 'csv'} description="Comma-Separated Values" label="CSV" onChange={setFormat} value="csv" />
           </div>
         </div>
 
@@ -189,8 +184,6 @@ export const ExportView = memo((): JSX.Element => {
             'Export History'
           )}
         </button>
-
-        {message && <p className={`text-center text-sm ${message.type === 'error' ? 'text-red-600' : 'text-slate-600'}`}>{message.text}</p>}
       </div>
     </div>
   );

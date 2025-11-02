@@ -32,10 +32,10 @@ function getDeviceTypeFromName(name: string): Device['type'] {
 export async function search(params: SearchParams): Promise<ChromeHistoryItem[]> {
   if (typeof chrome !== 'undefined' && chrome.history?.search) {
     const results = await chrome.history.search({
-      text: params.text,
-      startTime: params.startTime,
       endTime: params.endTime,
-      maxResults: params.maxResults ?? 0,
+      maxResults: params.maxResults,
+      startTime: params.startTime,
+      text: params.text,
     });
     const mappedResults = results.map((item) => {
       return {

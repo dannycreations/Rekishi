@@ -16,7 +16,7 @@ type StoredBlacklist = {
 };
 
 let blacklistData: BlacklistData = { items: [], json: null };
-let blacklistMatchers: BlacklistMatchers = { plain: new Set(), regex: [] };
+let blacklistMatchers: BlacklistMatchers = { plain: new Set(), combinedRegex: null };
 
 function updateBlacklistCache(items: BlacklistItem[], json: string | null) {
   blacklistData = { items, json };
@@ -258,7 +258,7 @@ if (typeof chrome !== 'undefined' && chrome.alarms) {
 
   chrome.alarms.create(ALARM_NAME, {
     delayInMinutes: 1,
-    periodInMinutes: 1,
+    periodInMinutes: 15,
   });
 
   chrome.alarms.onAlarm.addListener(async (alarm) => {

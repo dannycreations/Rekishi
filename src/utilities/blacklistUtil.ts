@@ -5,39 +5,36 @@ export interface BlacklistItem {
 
 export interface BlacklistMatchers {
   plain: Set<string>;
-  regex: RegExp[];
+  combinedRegex: RegExp | null;
 }
 
 export function createBlacklistMatchers(items: BlacklistItem[]): BlacklistMatchers {
   const plain = new Set<string>();
-  const regex: RegExp[] = [];
+  const regexSources: string[] = [];
 
   for (const item of items) {
     if (item.isRegex) {
       try {
-        regex.push(new RegExp(item.value, 'i'));
+        new RegExp(item.value);
+        regexSources.push(item.value);
       } catch (e: unknown) {
-        console.error(`Invalid regex in blacklist: ${item.value}`, e);
+        console.error(`Invalid regex in blacklist, skipping: ${item.value}`, e);
       }
     } else {
       plain.add(item.value);
     }
   }
-  return { plain, regex };
+
+  const combinedRegex = regexSources.length > 0 ? new RegExp(regexSources.map((source) => `(${source})`).join('|'), 'i') : null;
+
+  return { plain, combinedRegex };
 }
 
 export function isDomainBlacklisted(domain: string, matchers: BlacklistMatchers): boolean {
   if (matchers.plain.has(domain)) {
     return true;
   }
-
-  for (const re of matchers.regex) {
-    if (re.test(domain)) {
-      return true;
-    }
-  }
-
-  return false;
+  return !!matchers.combinedRegex?.test(domain);
 }
 
 export function parseInput(input: string): { value: string; isRegex: boolean } | { error: string } | null {

@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useConfirm } from '../../hooks/useConfirm';
+import { useToast } from '../../hooks/useToast';
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
 import { useHistoryStore } from '../../stores/useHistoryStore';
 import { getHostnameFromUrl } from '../../utilities/urlUtil';
@@ -52,6 +53,7 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
   const [isCopied, setIsCopied] = useState(false);
   const { Modal: BlacklistModal, openModal: openBlacklistModal } = useConfirm();
   const { Modal: DeleteModal, openModal: openDeleteModal } = useConfirm();
+  const { addToast } = useToast();
 
   const hostname = useMemo(() => getHostnameFromUrl(url), [url]);
   const shouldHighlight = searchQuery && !isRegex;
@@ -76,7 +78,8 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
 
   const handleConfirmDelete = useCallback(async (): Promise<void> => {
     await onDelete(id);
-  }, [id, onDelete]);
+    addToast('History item deleted.', 'success');
+  }, [id, onDelete, addToast]);
 
   const handleOpenDeleteModal = useCallback(
     (e: MouseEvent): void => {
@@ -99,8 +102,9 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
   const handleConfirmBlacklist = useCallback((): void => {
     if (hostname) {
       addDomain(hostname, false);
+      addToast(`'${hostname}' has been blacklisted.`, 'success');
     }
-  }, [hostname, addDomain]);
+  }, [hostname, addDomain, addToast]);
 
   const handleOpenBlacklistModal = useCallback(
     (e: MouseEvent): void => {
@@ -137,11 +141,12 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
     (e: MouseEvent): void => {
       e.stopPropagation();
       navigator.clipboard.writeText(url).then(() => {
+        addToast('URL copied to clipboard', 'success');
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 1500);
       });
     },
-    [url],
+    [url, addToast],
   );
 
   return (

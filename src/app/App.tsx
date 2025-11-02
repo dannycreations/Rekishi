@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BlacklistView } from '../components/blacklist/BlacklistView';
 import { DeviceView } from '../components/device/DeviceView';
@@ -8,6 +8,7 @@ import { Header } from '../components/main/Header';
 import { SettingView } from '../components/setting/SettingView';
 import { LogoIcon } from '../components/shared/Icons';
 import { ScrollToTop } from '../components/shared/ScrollToTop';
+import { ToastContainer } from '../components/shared/Toast';
 import { ViewModal } from '../components/shared/ViewModal';
 import { useHistory } from '../hooks/useHistory';
 import { useHistoryDate } from '../hooks/useHistoryDate';
@@ -34,7 +35,7 @@ interface ModalContentProps {
   view: ModalViewType;
 }
 
-export const ModalContent = ({ view }: ModalContentProps): JSX.Element => {
+export const ModalContent = memo(({ view }: ModalContentProps): JSX.Element => {
   switch (view) {
     case 'devices':
       return <DeviceView />;
@@ -45,7 +46,7 @@ export const ModalContent = ({ view }: ModalContentProps): JSX.Element => {
     case 'settings':
       return <SettingView />;
   }
-};
+});
 
 export const App = (): JSX.Element => {
   const [activeModal, setActiveModal] = useState<ModalViewType | null>(null);
@@ -143,6 +144,7 @@ export const App = (): JSX.Element => {
       </div>
 
       <ScrollToTop isVisible={showScrollToTop} onClick={handleScrollToTop} />
+      <ToastContainer />
     </div>
   );
 };

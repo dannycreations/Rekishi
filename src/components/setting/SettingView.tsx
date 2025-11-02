@@ -1,6 +1,7 @@
 import { memo, useCallback } from 'react';
 
 import { useConfirm } from '../../hooks/useConfirm';
+import { useToast } from '../../hooks/useToast';
 import { deleteAllHistory } from '../../services/chromeApi';
 import { useSettingStore } from '../../stores/useSettingStore';
 import { ToggleSwitch } from '../shared/ToggleSwitch';
@@ -42,17 +43,21 @@ export const SettingSection = memo(({ title, children }: SettingSectionProps): J
 export const SettingView = memo((): JSX.Element => {
   const { syncEnabled, dataRetention, setSyncEnabled, setDataRetention } = useSettingStore();
   const { Modal: ClearHistoryModal, openModal: openClearHistoryModal } = useConfirm();
+  const { addToast } = useToast();
 
   const handleConfirmClearHistory = useCallback(async (): Promise<void> => {
     try {
       await deleteAllHistory();
-      alert('All history has been cleared.');
-      window.location.reload();
+      addToast('All history has been cleared.', 'success');
+      // A small delay to allow the user to see the toast before the page reloads
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (e: unknown) {
-      alert('Failed to clear history. Please try again.');
+      addToast('Failed to clear history. Please try again.', 'error');
       console.error(e);
     }
-  }, []);
+  }, [addToast]);
 
   const handleOpenClearHistoryModal = useCallback(() => {
     openClearHistoryModal({

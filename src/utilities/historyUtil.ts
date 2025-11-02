@@ -1,37 +1,35 @@
 import type { ChromeHistoryItem, HistoryItemGroup } from '../app/types';
 
 export const groupHistoryByHour = (items: ChromeHistoryItem[]): HistoryItemGroup[] => {
-  if (!items) {
+  if (!items || items.length === 0) {
     return [];
   }
 
-  const groups = items.reduce<Record<number, ChromeHistoryItem[]>>((acc, item) => {
-    const hour = new Date(item.lastVisitTime).getHours();
-    if (!acc[hour]) {
-      acc[hour] = [];
-    }
-    acc[hour].push(item);
-    return acc;
-  }, {});
+  const groups: HistoryItemGroup[] = [];
+  let currentHour = -1;
+  let currentGroup: HistoryItemGroup | null = null;
 
-  const dateForFormatting = new Date();
-  dateForFormatting.setMinutes(0, 0, 0);
+  for (const item of items) {
+    const itemDate = new Date(item.lastVisitTime);
+    const hour = itemDate.getHours();
 
-  return Object.entries(groups)
-    .sort(([hourA], [hourB]) => {
-      return Number(hourB) - Number(hourA);
-    })
-    .map(([hour, itemsInGroup]) => {
-      dateForFormatting.setHours(Number(hour));
-      return {
-        items: itemsInGroup,
-        time: dateForFormatting.toLocaleTimeString('en-US', {
+    if (hour !== currentHour) {
+      currentHour = hour;
+      itemDate.setMinutes(0, 0, 0);
+      currentGroup = {
+        time: itemDate.toLocaleTimeString('en-US', {
           hour: 'numeric',
           minute: '2-digit',
           hour12: true,
         }),
+        items: [],
       };
-    });
+      groups.push(currentGroup);
+    }
+    currentGroup!.items.push(item);
+  }
+
+  return groups;
 };
 
 export const groupHistoryByDay = (
@@ -44,19 +42,19 @@ export const groupHistoryByDay = (
     return [];
   }
 
-  const groups = items.reduce<Record<string, { date: Date; items: ChromeHistoryItem[] }>>((acc, item) => {
-    const date = new Date(item.lastVisitTime);
-    date.setHours(0, 0, 0, 0);
-    const dateStr = date.toISOString().split('T')[0];
+  const groups: { date: Date; items: ChromeHistoryItem[] }[] = [];
+  let currentGroup: { date: Date; items: ChromeHistoryItem[] } | null = null;
 
-    if (!acc[dateStr]) {
-      acc[dateStr] = { date: date, items: [] };
+  for (const item of items) {
+    const itemDate = new Date(item.lastVisitTime);
+    itemDate.setHours(0, 0, 0, 0);
+
+    if (!currentGroup || currentGroup.date.getTime() !== itemDate.getTime()) {
+      currentGroup = { date: itemDate, items: [] };
+      groups.push(currentGroup);
     }
-    acc[dateStr].items.push(item);
-    return acc;
-  }, {});
+    currentGroup.items.push(item);
+  }
 
-  return Object.values(groups).sort((a, b) => {
-    return b.date.getTime() - a.date.getTime();
-  });
+  return groups;
 };

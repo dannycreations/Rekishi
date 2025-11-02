@@ -1,5 +1,6 @@
 import { createBlacklistMatchers, isDomainBlacklisted } from '../utilities/blacklistUtil';
 import { getHostnameFromUrl } from '../utilities/urlUtil';
+import { BLACKLIST_STORAGE_KEY, CLEANER_ALARM_KEY, CLEANUP_STORAGE_KEY, RETENTION_STORAGE_KEY, SETTINGS_STORAGE_KEY } from './constants';
 
 import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
 import type { ChromeHistoryItem } from './types';
@@ -26,12 +27,12 @@ function updateBlacklistCache(items: BlacklistItem[], json: string | null) {
 function getBlacklistFromStorage(): Promise<string | null> {
   return new Promise((resolve) => {
     if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-      chrome.storage.local.get(['rekishi-blacklist'], (result: { 'rekishi-blacklist'?: string }) => {
-        resolve(result['rekishi-blacklist'] ?? null);
+      chrome.storage.local.get([BLACKLIST_STORAGE_KEY], (result: { [key: string]: string | undefined }) => {
+        resolve(result[BLACKLIST_STORAGE_KEY] ?? null);
       });
     } else {
       try {
-        resolve(localStorage.getItem('rekishi-blacklist'));
+        resolve(localStorage.getItem(BLACKLIST_STORAGE_KEY));
       } catch (e: unknown) {
         console.error('Could not access localStorage', e);
         resolve(null);
@@ -58,8 +59,8 @@ async function initializeBlacklist(): Promise<void> {
 
 if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === 'local' && changes['rekishi-blacklist']) {
-      const newStorageValue = changes['rekishi-blacklist'].newValue ?? null;
+    if (areaName === 'local' && changes[BLACKLIST_STORAGE_KEY]) {
+      const newStorageValue = changes[BLACKLIST_STORAGE_KEY].newValue ?? null;
       if (typeof newStorageValue === 'string') {
         try {
           const parsed: StoredBlacklist = JSON.parse(newStorageValue);
@@ -85,8 +86,6 @@ function isBlacklisted(domain: string): boolean {
   return isDomainBlacklisted(domain, blacklistMatchers);
 }
 
-const LAST_CLEANUP_KEY = 'rekishi-last-cleanup';
-
 async function runBlacklistCleanup() {
   if (typeof chrome === 'undefined' || !chrome.history?.search || !chrome.history?.deleteUrl) {
     return;
@@ -97,9 +96,9 @@ async function runBlacklistCleanup() {
   }
 
   const result = await new Promise<{ [key: string]: number }>((resolve) =>
-    chrome.storage.local.get(LAST_CLEANUP_KEY, (res) => resolve(res as { [key: string]: number })),
+    chrome.storage.local.get(CLEANUP_STORAGE_KEY, (res) => resolve(res as { [key: string]: number })),
   );
-  const lastCleanupTime = result[LAST_CLEANUP_KEY] || 0;
+  const lastCleanupTime = result[CLEANUP_STORAGE_KEY] || 0;
   const now = Date.now();
 
   chrome.history.search({ text: '', maxResults: 0, startTime: lastCleanupTime }, (historyItems) => {
@@ -129,7 +128,7 @@ async function runBlacklistCleanup() {
       );
 
     Promise.all(deletions).then(() => {
-      chrome.storage.local.set({ [LAST_CLEANUP_KEY]: now }, () => {
+      chrome.storage.local.set({ [CLEANUP_STORAGE_KEY]: now }, () => {
         if (chrome.runtime.lastError) {
           console.error('Failed to set last cleanup time:', chrome.runtime.lastError.message);
         }
@@ -137,8 +136,6 @@ async function runBlacklistCleanup() {
     });
   });
 }
-
-const LAST_RETENTION_KEY = 'rekishi-last-retention';
 
 type StoredSettings = {
   state?: {
@@ -151,8 +148,8 @@ function getSettingsFromStorage(): Promise<{ dataRetention: string; syncEnabled:
   const defaults = { dataRetention: 'disabled', syncEnabled: true };
   return new Promise((resolve) => {
     if (typeof chrome !== 'undefined' && chrome.storage?.sync) {
-      chrome.storage.sync.get(['rekishi-setting'], (result) => {
-        const storageValue = result['rekishi-setting'];
+      chrome.storage.sync.get([SETTINGS_STORAGE_KEY], (result) => {
+        const storageValue = result[SETTINGS_STORAGE_KEY];
         if (typeof storageValue === 'string') {
           try {
             const parsed: StoredSettings = JSON.parse(storageValue);
@@ -179,10 +176,10 @@ async function runRetentionCleanup() {
   }
 
   const result = await new Promise<{ [key: string]: number | undefined }>((resolve) =>
-    chrome.storage.local.get(LAST_RETENTION_KEY, (res) => resolve(res as { [key: string]: number | undefined })),
+    chrome.storage.local.get(RETENTION_STORAGE_KEY, (res) => resolve(res as { [key: string]: number | undefined })),
   );
 
-  const lastCleanupTime = result[LAST_RETENTION_KEY] || 0;
+  const lastCleanupTime = result[RETENTION_STORAGE_KEY] || 0;
   const now = Date.now();
   if (now - lastCleanupTime < 24 * 60 * 60 * 1000) {
     return;
@@ -208,7 +205,7 @@ async function runRetentionCleanup() {
     if (chrome.runtime.lastError) {
       console.error('Error cleaning up old history:', chrome.runtime.lastError.message);
     } else {
-      chrome.storage.local.set({ [LAST_RETENTION_KEY]: now }, () => {
+      chrome.storage.local.set({ [RETENTION_STORAGE_KEY]: now }, () => {
         if (chrome.runtime.lastError) {
           console.error('Failed to set last history cleanup time:', chrome.runtime.lastError.message);
         }
@@ -254,15 +251,13 @@ if (typeof chrome !== 'undefined' && chrome.history?.onVisited) {
 }
 
 if (typeof chrome !== 'undefined' && chrome.alarms) {
-  const ALARM_NAME = 'blacklist-cleaner';
-
-  chrome.alarms.create(ALARM_NAME, {
+  chrome.alarms.create(CLEANER_ALARM_KEY, {
     delayInMinutes: 1,
     periodInMinutes: 15,
   });
 
   chrome.alarms.onAlarm.addListener(async (alarm) => {
-    if (alarm.name === ALARM_NAME) {
+    if (alarm.name === CLEANER_ALARM_KEY) {
       await runBlacklistCleanup();
       await runRetentionCleanup();
     }

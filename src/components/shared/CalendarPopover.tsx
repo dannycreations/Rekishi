@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
+import { DAYS_OF_WEEK } from '../../app/constants';
 import { isSameDay } from '../../utilities/dateUtil';
 import { ChevronLeftIcon, ChevronRightIcon } from './Icons';
 import { Skeleton } from './Skeleton';
@@ -13,8 +14,6 @@ interface CalendarPopoverProps {
   onDateSelect: (date: Date) => void;
   selectedDate: Date;
 }
-
-const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export const CalendarSkeleton = memo(() => {
   return (

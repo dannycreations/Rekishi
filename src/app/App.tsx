@@ -13,23 +13,10 @@ import { ViewModal } from '../components/shared/ViewModal';
 import { useHistory } from '../hooks/useHistory';
 import { useHistoryDate } from '../hooks/useHistoryDate';
 import { useHistoryStore } from '../stores/useHistoryStore';
+import { VIEW_MODAL_SIZES, VIEW_TITLES } from './constants';
 
 import type { JSX } from 'react';
 import type { ModalViewType } from './types';
-
-const VIEW_TITLES: Record<ModalViewType, string> = {
-  devices: 'Devices',
-  blacklist: 'Blacklist',
-  export: 'Export',
-  settings: 'Settings',
-};
-
-const VIEW_MODAL_SIZES: Partial<Record<ModalViewType, 'md' | 'lg' | 'xl' | '2xl' | '3xl'>> = {
-  devices: '3xl',
-  blacklist: 'lg',
-  export: 'md',
-  settings: 'lg',
-};
 
 interface ModalContentProps {
   view: ModalViewType;
@@ -65,22 +52,24 @@ export const App = (): JSX.Element => {
     fetchDatesForMonth(selectedDate);
   }, [fetchDatesForMonth, selectedDate]);
 
+  const handleScroll = useCallback(() => {
+    if (mainContentRef.current) {
+      setShowScrollToTop(mainContentRef.current.scrollTop > 300);
+    }
+  }, []);
+
   useEffect(() => {
     const mainContent = mainContentRef.current;
     if (!mainContent) {
       return;
     }
 
-    const handleScroll = (): void => {
-      setShowScrollToTop(mainContent.scrollTop > 300);
-    };
-
     mainContent.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
       mainContent.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [handleScroll]);
 
   const handleScrollToTop = useCallback(() => {
     mainContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { BLACKLIST_STORAGE_KEY } from '../app/constants';
 import { createBlacklistMatchers, isDomainBlacklisted } from '../utilities/blacklistUtil';
 import { chromeLocalStorage } from '../utilities/storageUtil';
 
@@ -57,7 +58,7 @@ export const useBlacklistStore = create<BlacklistState>()(
       },
     }),
     {
-      name: 'rekishi-blacklist',
+      name: BLACKLIST_STORAGE_KEY,
       storage: createJSONStorage(() => chromeLocalStorage),
     },
   ),

@@ -195,8 +195,8 @@ export const HistoryItem = memo(({ item, onDelete, isChecked, onToggleSelection 
           </p>
         </div>
         <div className="relative ml-2 flex h-6 w-32 shrink-0 items-center justify-end">
-          <span className="text-right text-xs text-slate-500 opacity-100 transition-opacity duration-200 group-hover:opacity-0">{visitTime}</span>
-          <div className="absolute inset-0 flex items-center justify-end space-x-1 opacity-0 transition-all duration-300 ease-out transform translate-x-4 group-hover:translate-x-0 group-hover:opacity-100">
+          <span className="text-right text-xs text-slate-500 group-hover:hidden">{visitTime}</span>
+          <div className="absolute inset-0 hidden items-center justify-end space-x-1 group-hover:flex">
             <button
               className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
               onClick={handleCopyUrl}

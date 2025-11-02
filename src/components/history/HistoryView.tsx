@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useConfirm } from '../../hooks/useConfirm';
 import { useToast } from '../../hooks/useToast';
@@ -22,11 +22,15 @@ interface HistoryViewProps {
   scrollContainerRef: RefObject<HTMLElement | null>;
 }
 
+interface ProcessedHourGroup extends HistoryItemGroup {
+  selectedInHourCount: number;
+}
+
 interface ProcessedDayGroup {
   date: Date;
   items: ChromeHistoryItem[];
-  hourlyGroups: HistoryItemGroup[];
-  hourlyGroupsMap: Map<string, HistoryItemGroup>;
+  hourlyGroups: ProcessedHourGroup[];
+  hourlyGroupsMap: Map<string, ProcessedHourGroup>;
   selectedInDayCount: number;
 }
 
@@ -47,9 +51,9 @@ export const HistoryViewItemSkeleton = memo(() => {
 export const HistoryViewGroupSkeleton = memo(() => {
   return (
     <section>
-      <div className="mb-1 flex items-center justify-between">
-        <Skeleton className="h-5 w-24 rounded" />
-        <Skeleton className="h-8 w-20 rounded-md" />
+      <div className="mb-1 flex items-center justify-between px-2">
+        <Skeleton className="h-5 w-16 rounded" />
+        <Skeleton className="h-6 w-20 rounded-md" />
       </div>
       <div className="flex flex-col">
         <HistoryViewItemSkeleton />
@@ -65,8 +69,9 @@ export const DailyGroupHeaderSkeleton = memo(() => {
     <div className="mb-3 flex items-center justify-between px-2">
       <div className="flex items-center gap-2">
         <Skeleton className="h-4 w-4 rounded" />
-        <Skeleton className="h-6 w-32 rounded" />
+        <Skeleton className="h-7 w-40 rounded" />
       </div>
+      <Skeleton className="h-6 w-32 rounded-md" />
     </div>
   );
 });
@@ -191,8 +196,13 @@ export const HistoryView = memo(
     const { processedDailyGroups, dailyGroupsMap } = useMemo(() => {
       const dayGroups = groupHistoryByDay(historyItems);
       const groups: ProcessedDayGroup[] = dayGroups.map((dayGroup) => {
-        const hourlyGroupsArray = groupHistoryByHour(dayGroup.items);
-        const hourlyGroupsMap = new Map(hourlyGroupsArray.map((hg) => [hg.time, hg]));
+        const hourlyGroupsArray = groupHistoryByHour(dayGroup.items).map((group) => ({
+          ...group,
+          selectedInHourCount: group.items.reduce((count, item) => (selectedItems.has(item.id) ? count + 1 : count), 0),
+        }));
+
+        const hourlyGroupsMap = new Map<string, ProcessedHourGroup>(hourlyGroupsArray.map((hg) => [hg.time, hg]));
+
         return {
           ...dayGroup,
           hourlyGroups: hourlyGroupsArray,
@@ -203,7 +213,7 @@ export const HistoryView = memo(
 
       const map = new Map<string, ProcessedDayGroup>(groups.map((g) => [g.date.toISOString(), g]));
       return { processedDailyGroups: groups, dailyGroupsMap: map };
-    }, [historyItems, selectedCountByDay]);
+    }, [historyItems, selectedCountByDay, selectedItems]);
 
     const handleToggleDaySelection = useCallback(
       (dayItems: ChromeHistoryItem[]) => {
@@ -245,23 +255,18 @@ export const HistoryView = memo(
         });
       });
       headerPositions.current = positions;
-    }, [processedDailyGroups, scrollContainerRef]);
-
-    useEffect(() => {
-      const container = scrollContainerRef.current;
-      if (!container) return;
 
       const handleScroll = (): void => {
         const scrollTop = container.scrollTop;
-        const positions = headerPositions.current;
+        const currentPositions = headerPositions.current;
 
         let low = 0;
-        let high = positions.length - 1;
+        let high = currentPositions.length - 1;
         let activeIndex = -1;
 
         while (low <= high) {
           const mid = Math.floor((low + high) / 2);
-          if (positions[mid].top <= scrollTop) {
+          if (currentPositions[mid].top <= scrollTop) {
             activeIndex = mid;
             low = mid + 1;
           } else {
@@ -273,8 +278,8 @@ export const HistoryView = memo(
         let activeHourText: string | null = null;
 
         if (activeIndex !== -1) {
-          activeDayKey = positions[activeIndex].dayKey;
-          activeHourText = positions[activeIndex].hourText;
+          activeDayKey = currentPositions[activeIndex].dayKey;
+          activeHourText = currentPositions[activeIndex].hourText;
         } else if (processedDailyGroups.length > 0) {
           activeDayKey = processedDailyGroups[0].date.toISOString();
         }
@@ -308,13 +313,18 @@ export const HistoryView = memo(
       if (stickyState.hourText) {
         const hourlyGroup = stickyDayGroup.hourlyGroupsMap.get(stickyState.hourText);
         if (hourlyGroup) {
-          const selectedCount = hourlyGroup.items.reduce((count, item) => count + (selectedItems.has(item.id) ? 1 : 0), 0);
-          return { items: hourlyGroup.items, selectedCount };
+          return {
+            items: hourlyGroup.items,
+            selectedCount: hourlyGroup.selectedInHourCount,
+          };
         }
       }
 
-      return { items: stickyDayGroup.items, selectedCount: stickyDayGroup.selectedInDayCount };
-    }, [stickyDayGroup, stickyState.hourText, selectedItems]);
+      return {
+        items: stickyDayGroup.items,
+        selectedCount: stickyDayGroup.selectedInDayCount,
+      };
+    }, [stickyDayGroup, stickyState.hourText]);
 
     const observer = useRef<IntersectionObserver | null>(null);
     const lastElementRef = useCallback(

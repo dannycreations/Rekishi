@@ -49,7 +49,6 @@ export const SettingView = memo((): JSX.Element => {
     try {
       await deleteAllHistory();
       addToast('All history has been cleared.', 'success');
-      // A small delay to allow the user to see the toast before the page reloads
       setTimeout(() => {
         window.location.reload();
       }, 1000);

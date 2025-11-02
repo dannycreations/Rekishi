@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { DAILY_PAGE_SIZE, INIT_CHUNK_SIZE, SEARCH_PAGE_SIZE } from '../app/constants';
 import { deleteUrl, search } from '../services/chromeApi';
 import { useBlacklistStore } from '../stores/useBlacklistStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
@@ -7,11 +8,6 @@ import { isSameDay } from '../utilities/dateUtil';
 import { getHostnameFromUrl } from '../utilities/urlUtil';
 
 import type { ChromeHistoryItem } from '../app/types';
-
-const SEARCH_PAGE_SIZE = 100;
-const SEARCH_CHUNK_SIZE = 20;
-const DAILY_PAGE_SIZE = 500;
-const DAILY_CHUNK_SIZE = 20;
 
 interface NewHistoryItemMessage {
   type: 'NEW_HISTORY_ITEM';
@@ -100,7 +96,7 @@ export const useHistory = (): UseHistoryReturn => {
     try {
       initialItems = await search({
         endTime: endTime.getTime(),
-        maxResults: DAILY_CHUNK_SIZE,
+        maxResults: INIT_CHUNK_SIZE,
         startTime: startTime.getTime(),
         text: '',
       });
@@ -120,7 +116,7 @@ export const useHistory = (): UseHistoryReturn => {
       }
     }
 
-    if (initialItems.length < DAILY_CHUNK_SIZE) {
+    if (initialItems.length < INIT_CHUNK_SIZE) {
       return;
     }
 
@@ -159,7 +155,7 @@ export const useHistory = (): UseHistoryReturn => {
 
     try {
       initialItems = await search({
-        maxResults: SEARCH_CHUNK_SIZE,
+        maxResults: INIT_CHUNK_SIZE,
         text: textForSearch,
       });
 
@@ -185,7 +181,7 @@ export const useHistory = (): UseHistoryReturn => {
       setIsLoading(false);
     }
 
-    if (initialItems.length < SEARCH_CHUNK_SIZE) {
+    if (initialItems.length < INIT_CHUNK_SIZE) {
       setHasMoreSearchResults(false);
       return;
     }
@@ -235,12 +231,8 @@ export const useHistory = (): UseHistoryReturn => {
     setHistory((prev) => prev.filter((item) => !idsToRemove.has(item.id)));
   }, []);
 
-  useEffect(() => {
-    if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) {
-      return undefined;
-    }
-
-    const messageListener = (message: unknown): void => {
+  const messageListener = useCallback(
+    (message: unknown): void => {
       if (isNewHistoryItemMessage(message)) {
         const newItem = message.payload;
 
@@ -273,30 +265,34 @@ export const useHistory = (): UseHistoryReturn => {
         rawHistoryRef.current.unshift(newItem);
 
         setHistory((prev) => {
-          const prevIdx = prev.findIndex((i) => i.id === newItem.id);
+          const existingItemIndex = prev.findIndex((i) => i.id === newItem.id);
 
-          if (prevIdx === -1 && !isMatch) {
+          if (existingItemIndex === -1 && !isMatch) {
             return prev;
           }
 
-          const newHistory = [...prev];
-          if (prevIdx !== -1) {
-            newHistory.splice(prevIdx, 1);
-          }
+          const newHistory = prev.filter((i) => i.id !== newItem.id);
           if (isMatch) {
             newHistory.unshift(newItem);
           }
           return newHistory;
         });
       }
-    };
+    },
+    [isBlacklisted, removeItemsByIds, searchQuery, isRegex, compiledRegex, selectedDate],
+  );
+
+  useEffect(() => {
+    if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) {
+      return undefined;
+    }
 
     chrome.runtime.onMessage.addListener(messageListener);
 
     return () => {
       chrome.runtime.onMessage.removeListener(messageListener);
     };
-  }, [searchQuery, isRegex, selectedDate, isBlacklisted, compiledRegex, removeItemsByIds]);
+  }, [messageListener]);
 
   const loadMore = useCallback(async () => {
     if (isLoading || isLoadingMore) {

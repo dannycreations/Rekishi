@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { SETTINGS_STORAGE_KEY } from '../app/constants';
 import { chromeSyncStorage } from '../utilities/storageUtil';
 
 interface SettingState {
@@ -23,7 +24,7 @@ export const useSettingStore = create<SettingState>()(
       },
     }),
     {
-      name: 'rekishi-setting',
+      name: SETTINGS_STORAGE_KEY,
       storage: createJSONStorage(() => chromeSyncStorage),
     },
   ),

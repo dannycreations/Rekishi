@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { HISTORY_STORAGE_KEY } from '../app/constants';
 import { chromeLocalStorage } from '../utilities/storageUtil';
 
 interface HistoryState {
@@ -28,7 +29,7 @@ export const useHistoryStore = create<HistoryState>()(
       },
     }),
     {
-      name: 'rekishi-history',
+      name: HISTORY_STORAGE_KEY,
       storage: createJSONStorage(() => chromeLocalStorage, {
         reviver: (key: string, value: unknown) => {
           if (key === 'selectedDate' && typeof value === 'string') {

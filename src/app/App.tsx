@@ -14,17 +14,16 @@ import { useHistoryDate } from '../hooks/useHistoryDate';
 import { useHistoryStore } from '../stores/useHistoryStore';
 
 import type { JSX } from 'react';
-import type { ViewType } from './types';
+import type { ModalViewType } from './types';
 
-const VIEW_TITLES: Record<ViewType, string> = {
-  activity: 'Activity',
+const VIEW_TITLES: Record<ModalViewType, string> = {
   devices: 'Devices',
   blacklist: 'Blacklist',
   export: 'Export',
   settings: 'Settings',
 };
 
-const VIEW_MODAL_SIZES: Partial<Record<ViewType, 'md' | 'lg' | 'xl' | '2xl' | '3xl'>> = {
+const VIEW_MODAL_SIZES: Partial<Record<ModalViewType, 'md' | 'lg' | 'xl' | '2xl' | '3xl'>> = {
   devices: '3xl',
   blacklist: 'lg',
   export: 'md',
@@ -32,10 +31,10 @@ const VIEW_MODAL_SIZES: Partial<Record<ViewType, 'md' | 'lg' | 'xl' | '2xl' | '3
 };
 
 interface ModalContentProps {
-  view: ViewType;
+  view: ModalViewType;
 }
 
-export const ModalContent = ({ view }: ModalContentProps): JSX.Element | null => {
+export const ModalContent = ({ view }: ModalContentProps): JSX.Element => {
   switch (view) {
     case 'devices':
       return <DeviceView />;
@@ -45,14 +44,11 @@ export const ModalContent = ({ view }: ModalContentProps): JSX.Element | null =>
       return <ExportView />;
     case 'settings':
       return <SettingView />;
-    case 'activity':
-    default:
-      return null;
   }
 };
 
 export const App = (): JSX.Element => {
-  const [activeModal, setActiveModal] = useState<ViewType | null>(null);
+  const [activeModal, setActiveModal] = useState<ModalViewType | null>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const mainContentRef = useRef<HTMLElement>(null);
 
@@ -109,7 +105,7 @@ export const App = (): JSX.Element => {
 
   return (
     <div className="h-screen bg-slate-100 text-slate-900">
-      <div className="absolute inset-0 flex flex-col max-w-6xl mx-auto overflow-hidden bg-slate-50 shadow-xl sm:inset-6 sm:rounded-lg">
+      <div className="absolute inset-0 mx-auto flex max-w-6xl flex-col overflow-hidden rounded-lg bg-slate-50 shadow-xl sm:inset-6">
         <Header
           datesWithHistory={datesWithHistory}
           fetchDatesForMonth={fetchDatesForMonth}
@@ -121,16 +117,16 @@ export const App = (): JSX.Element => {
           setSelectedDate={setSelectedDate}
         />
 
-        <main ref={mainContentRef} className="flex-1 min-h-0 overflow-y-auto">
+        <main ref={mainContentRef} className="min-h-0 flex-1 overflow-y-auto">
           {isLoading ? (
             <HistoryViewSkeleton />
           ) : error ? (
-            <div className="flex items-center justify-center h-full p-3 text-red-500">
+            <div className="flex h-full items-center justify-center p-3 text-red-500">
               <p>Error loading history: {error}</p>
             </div>
           ) : noHistoryEver ? (
-            <div className="flex flex-col items-center justify-center h-full p-3 text-center text-slate-500">
-              <LogoIcon className="w-16 h-16 mb-4 text-slate-400" />
+            <div className="flex h-full flex-col items-center justify-center p-3 text-center text-slate-500">
+              <LogoIcon className="mb-4 h-16 w-16 text-slate-400" />
               <h2 className="text-2xl font-bold text-slate-800">Welcome to Rekishi!</h2>
               <p className="mt-2">Start browsing the web to see your history here.</p>
             </div>

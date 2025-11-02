@@ -24,13 +24,13 @@ interface HistoryViewProps {
 export const HistoryViewItemSkeleton = memo(() => {
   return (
     <div className="flex items-center p-2">
-      <Skeleton className="shrink-0 w-4 h-4 mr-2 rounded" />
-      <Skeleton className="shrink-0 w-4 h-4 mr-2 rounded-full" />
-      <div className="flex-1 min-w-0">
-        <Skeleton className="w-3/4 h-4 rounded" />
-        <Skeleton className="w-1/2 h-3 mt-2 rounded" />
+      <Skeleton className="mr-2 h-4 w-4 shrink-0 rounded" />
+      <Skeleton className="mr-2 h-4 w-4 shrink-0 rounded-full" />
+      <div className="min-w-0 flex-1">
+        <Skeleton className="h-4 w-3/4 rounded" />
+        <Skeleton className="mt-2 h-3 w-1/2 rounded" />
       </div>
-      <Skeleton className="shrink-0 w-20 h-4 ml-2 rounded" />
+      <Skeleton className="ml-2 h-4 w-20 shrink-0 rounded" />
     </div>
   );
 });
@@ -38,9 +38,9 @@ export const HistoryViewItemSkeleton = memo(() => {
 export const HistoryViewGroupSkeleton = memo(() => {
   return (
     <section>
-      <div className="flex items-center justify-between mb-1">
-        <Skeleton className="w-24 h-5 rounded" />
-        <Skeleton className="w-20 h-8 rounded-md" />
+      <div className="mb-1 flex items-center justify-between">
+        <Skeleton className="h-5 w-24 rounded" />
+        <Skeleton className="h-8 w-20 rounded-md" />
       </div>
       <div className="flex flex-col">
         <HistoryViewItemSkeleton />
@@ -53,10 +53,10 @@ export const HistoryViewGroupSkeleton = memo(() => {
 
 export const DailyGroupHeaderSkeleton = memo(() => {
   return (
-    <div className="flex items-center justify-between px-2 mb-3">
+    <div className="mb-3 flex items-center justify-between px-2">
       <div className="flex items-center gap-2">
-        <Skeleton className="w-4 h-4 rounded" />
-        <Skeleton className="w-32 h-6 rounded" />
+        <Skeleton className="h-4 w-4 rounded" />
+        <Skeleton className="h-6 w-32 rounded" />
       </div>
     </div>
   );
@@ -64,7 +64,7 @@ export const DailyGroupHeaderSkeleton = memo(() => {
 
 export const HistoryViewSkeleton = memo(() => {
   return (
-    <div className="p-3 space-y-3">
+    <div className="space-y-3 p-3">
       <section>
         <DailyGroupHeaderSkeleton />
         <hr className="mb-3 border-slate-200" />
@@ -331,8 +331,8 @@ export const HistoryView = memo(
 
     if (processedDailyGroups.length === 0 && !isLoadingMore) {
       return (
-        <div className="flex flex-col items-center justify-center h-full p-3 pt-12 text-center text-slate-500">
-          <SearchIcon className="w-12 h-12 mb-4 text-slate-400" />
+        <div className="flex h-full flex-col items-center justify-center p-3 pt-12 text-center text-slate-500">
+          <SearchIcon className="mb-4 h-12 w-12 text-slate-400" />
           <h2 className="text-xl font-semibold">No History Found</h2>
           <p className="mt-2">Your browsing history for the selected period is empty.</p>
         </div>
@@ -342,7 +342,7 @@ export const HistoryView = memo(
     return (
       <div className="relative">
         {stickyDayGroup && (
-          <div className="sticky top-0 z-10 px-3 pt-3 bg-slate-50/95 backdrop-blur-sm">
+          <div className="sticky top-0 z-10 bg-slate-50/95 px-3 pt-3 backdrop-blur-sm">
             <HistoryGroupHeader
               dayHeaderText={`${formatDayHeader(stickyDayGroup.date)}${stickyState.hourText ? ` ${stickyState.hourText}` : ''}`}
               dayItems={stickyHeaderData.items}
@@ -356,7 +356,7 @@ export const HistoryView = memo(
             <hr className="mt-3 border-slate-200" />
           </div>
         )}
-        <div className="p-3 space-y-3">
+        <div className="space-y-3 p-3">
           {processedDailyGroups.map((dayGroup) => {
             const dayKey = dayGroup.date.toISOString();
             const dayHeaderText = formatDayHeader(dayGroup.date);

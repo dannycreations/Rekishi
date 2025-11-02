@@ -12,15 +12,14 @@ interface ScrollToTopProps {
 export const ScrollToTop = memo(({ isVisible, onClick }: ScrollToTopProps): JSX.Element => {
   return (
     <button
-      className={`
-        fixed bottom-6 right-6 z-10 p-3 rounded-full shadow-lg transition-transform duration-300 ease-in-out cursor-pointer
-        bg-slate-800 text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 ${isVisible ? 'scale-100' : 'scale-0'}
-      `}
+      className={`fixed bottom-6 right-6 z-10 cursor-pointer rounded-full bg-slate-800 p-3 text-white shadow-lg transition-transform duration-300 ease-in-out hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 ${
+        isVisible ? 'scale-100' : 'scale-0'
+      }`}
       onClick={onClick}
       title="Scroll to top"
       type="button"
     >
-      <ArrowUpIcon className="w-6 h-6" />
+      <ArrowUpIcon className="h-6 w-6" />
     </button>
   );
 });

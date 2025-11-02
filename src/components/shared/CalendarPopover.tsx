@@ -18,13 +18,13 @@ const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export const CalendarSkeleton = memo(() => {
   return (
-    <div className="absolute right-0 z-10 p-2 mt-2 bg-white border rounded-lg shadow-lg top-full w-72 border-slate-200">
-      <div className="flex items-center justify-between mb-2">
-        <Skeleton className="w-8 h-8 rounded-full" />
-        <Skeleton className="w-32 h-5 rounded" />
-        <Skeleton className="w-8 h-8 rounded-full" />
+    <div className="absolute right-0 top-full z-10 mt-2 w-72 rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+      <div className="mb-2 flex items-center justify-between">
+        <Skeleton className="h-8 w-8 rounded-full" />
+        <Skeleton className="h-5 w-32 rounded" />
+        <Skeleton className="h-8 w-8 rounded-full" />
       </div>
-      <div className="grid grid-cols-7 text-center gap-y-1">
+      <div className="grid grid-cols-7 gap-y-1 text-center">
         {DAYS_OF_WEEK.map((day) => (
           <div key={day} className="text-xs font-medium text-slate-500">
             {day}
@@ -32,7 +32,7 @@ export const CalendarSkeleton = memo(() => {
         ))}
         {Array.from({ length: 35 }).map((_, index) => (
           <div key={`skeleton-day-${index}`} className="flex items-center justify-center py-1">
-            <Skeleton className="w-8 h-8 rounded-full" />
+            <Skeleton className="h-8 w-8 rounded-full" />
           </div>
         ))}
       </div>
@@ -98,29 +98,29 @@ export const CalendarPopover = memo(
     }
 
     return (
-      <div className="absolute right-0 z-10 p-2 mt-2 origin-top-right bg-white border rounded-lg shadow-lg top-full w-72 border-slate-200 popover-animate-enter">
-        <div className="flex items-center justify-between mb-2">
-          <button className="p-2 text-slate-500 transition-colors rounded-full cursor-pointer hover:bg-slate-100" onClick={handlePrevMonth}>
-            <ChevronLeftIcon className="w-5 h-5" />
+      <div className="absolute right-0 top-full z-10 mt-2 w-72 origin-top-right rounded-lg border border-slate-200 bg-white p-2 shadow-lg popover-animate-enter">
+        <div className="mb-2 flex items-center justify-between">
+          <button className="cursor-pointer rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100" onClick={handlePrevMonth}>
+            <ChevronLeftIcon className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-slate-700">{monthName}</span>
             <button
-              className="px-2 py-0.5 text-xs font-semibold rounded-md cursor-pointer bg-slate-100 text-slate-700 hover:bg-slate-200"
+              className="cursor-pointer rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 hover:bg-slate-200"
               onClick={handleGoToToday}
             >
               Today
             </button>
           </div>
           <button
-            className="p-2 text-slate-500 transition-colors rounded-full cursor-pointer hover:bg-slate-100 disabled:text-slate-300 disabled:cursor-not-allowed"
+            className="cursor-pointer rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-300"
             disabled={isCurrentMonth}
             onClick={handleNextMonth}
           >
-            <ChevronRightIcon className="w-5 h-5" />
+            <ChevronRightIcon className="h-5 w-5" />
           </button>
         </div>
-        <div className="grid grid-cols-7 text-center gap-y-1">
+        <div className="grid grid-cols-7 gap-y-1 text-center">
           {DAYS_OF_WEEK.map((day) => (
             <div key={day} className="text-xs font-medium text-slate-500">
               {day}
@@ -134,7 +134,7 @@ export const CalendarPopover = memo(
             if (date > today) {
               return (
                 <div key={date.toISOString()} className="flex items-center justify-center py-1">
-                  <button disabled className="w-8 h-8 text-sm rounded-full cursor-not-allowed text-slate-300">
+                  <button disabled className="h-8 w-8 cursor-not-allowed rounded-full text-sm text-slate-300">
                     {date.getDate()}
                   </button>
                 </div>
@@ -150,17 +150,13 @@ export const CalendarPopover = memo(
               <div key={date.toISOString()} className="flex items-center justify-center py-1">
                 <button
                   disabled={!hasHistory}
-                  className={`
-                    w-8 h-8 rounded-full text-sm transition-colors cursor-pointer
-                    ${
-                      isSelected
-                        ? 'bg-slate-800 text-white font-semibold hover:bg-slate-700'
-                        : hasHistory
-                          ? 'text-slate-600 hover:bg-slate-100'
-                          : 'text-slate-300 cursor-not-allowed'
-                    }
-                    ${!isSelected && isToday && hasHistory ? 'ring-1 ring-slate-400' : ''}
-                  `}
+                  className={`h-8 w-8 cursor-pointer rounded-full text-sm transition-colors ${
+                    isSelected
+                      ? 'bg-slate-800 font-semibold text-white hover:bg-slate-700'
+                      : hasHistory
+                        ? 'text-slate-600 hover:bg-slate-100'
+                        : 'cursor-not-allowed text-slate-300'
+                  } ${!isSelected && isToday && hasHistory ? 'ring-1 ring-slate-400' : ''}`}
                   onClick={() => onDateSelect(date)}
                 >
                   {date.getDate()}

@@ -18,3 +18,4 @@ export interface HistoryItemGroup {
 }
 
 export type ViewType = 'activity' | 'devices' | 'blacklist' | 'export' | 'settings';
+export type ModalViewType = Exclude<ViewType, 'activity'>;

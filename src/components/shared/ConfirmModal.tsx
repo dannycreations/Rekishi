@@ -52,29 +52,29 @@ export const ConfirmModal = memo(
       >
         <div
           ref={modalRef}
-          className={`relative w-full max-w-md p-3 mx-3 bg-white rounded-lg shadow-xl outline-none transition-all duration-200 ${
-            isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+          className={`relative mx-3 w-full max-w-md rounded-lg bg-white p-3 shadow-xl outline-none transition-all duration-200 ${
+            isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
           }`}
           onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
         >
           <div className="flex items-start justify-between">
             <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-            <button className="p-1 text-slate-400 rounded-md cursor-pointer hover:bg-slate-100 hover:text-slate-800" onClick={onClose}>
-              <CloseIcon className="w-5 h-5" />
+            <button className="cursor-pointer rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-800" onClick={onClose}>
+              <CloseIcon className="h-5 w-5" />
             </button>
           </div>
           <div className="mt-2">
             <div className="text-sm text-slate-600">{message}</div>
           </div>
-          <div className="flex justify-end mt-3 space-x-2">
+          <div className="mt-3 flex justify-end space-x-2">
             <button
-              className="px-2 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg cursor-pointer transition-colors hover:bg-slate-50"
+              className="cursor-pointer rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
               onClick={onClose}
             >
               {cancelText}
             </button>
             <button
-              className={`px-2 py-2 text-sm font-semibold text-white rounded-lg transition-colors cursor-pointer ${confirmButtonClass}`}
+              className={`cursor-pointer rounded-lg px-2 py-2 text-sm font-semibold text-white transition-colors ${confirmButtonClass}`}
               onClick={onConfirm}
             >
               {confirmText}

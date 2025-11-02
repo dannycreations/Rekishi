@@ -47,18 +47,18 @@ export const ViewModal = memo(({ isOpen, onClose, title, children, size = '3xl' 
     >
       <div
         ref={modalRef}
-        className={`relative flex flex-col w-full ${sizeClass} max-h-[90vh] mx-3 bg-slate-50 rounded-lg shadow-xl outline-none transition-all duration-200 ${
-          isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+        className={`relative mx-3 flex w-full ${sizeClass} max-h-[90vh] flex-col rounded-lg bg-slate-50 shadow-xl outline-none transition-all duration-200 ${
+          isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
         onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
       >
-        <header className="flex items-start justify-between shrink-0 p-3 bg-white border-b border-slate-200 rounded-t-lg">
+        <header className="flex shrink-0 items-start justify-between rounded-t-lg border-b border-slate-200 bg-white p-3">
           <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-          <button className="p-1 text-slate-400 rounded-md cursor-pointer hover:bg-slate-100 hover:text-slate-800" onClick={onClose}>
-            <CloseIcon className="w-5 h-5" />
+          <button className="cursor-pointer rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-800" onClick={onClose}>
+            <CloseIcon className="h-5 w-5" />
           </button>
         </header>
-        <div className="flex-1 p-3 overflow-y-auto">{children}</div>
+        <div className="flex-1 overflow-y-auto p-3">{children}</div>
       </div>
     </div>
   );

@@ -64,25 +64,25 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
 
   if (isEditing) {
     return (
-      <li className="flex items-center justify-between p-2 rounded-md bg-slate-100">
+      <li className="flex items-center justify-between rounded-md bg-slate-100 p-2">
         <input
           autoFocus
-          className="w-full px-2 py-1 text-sm bg-white border rounded-md outline-none text-slate-900 transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
+          className="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           type="text"
           value={editValue}
         />
-        <div className="flex items-center ml-2 space-x-1">
-          <button className="p-1 rounded-md cursor-pointer text-slate-400 hover:bg-green-100 hover:text-green-600" onClick={handleSave} title="Save">
-            <CheckIcon className="w-4 h-4" />
+        <div className="ml-2 flex items-center space-x-1">
+          <button className="cursor-pointer rounded-md p-1 text-slate-400 hover:bg-green-100 hover:text-green-600" onClick={handleSave} title="Save">
+            <CheckIcon className="h-4 w-4" />
           </button>
           <button
-            className="p-1 rounded-md cursor-pointer text-slate-400 hover:bg-slate-200 hover:text-slate-800"
+            className="cursor-pointer rounded-md p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-800"
             onClick={handleCancel}
             title="Cancel"
           >
-            <CloseIcon className="w-4 h-4" />
+            <CloseIcon className="h-4 w-4" />
           </button>
         </div>
       </li>
@@ -90,25 +90,25 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
   }
 
   return (
-    <li className="flex items-center justify-between p-2 transition-colors rounded-md group hover:bg-slate-50">
+    <li className="group flex items-center justify-between rounded-md p-2 transition-colors hover:bg-slate-50">
       <div className="flex items-center space-x-2">
         <span className="text-sm text-slate-600">{item.value}</span>
-        {item.isRegex && <span className="px-2 py-1 text-xs font-mono font-semibold rounded-md bg-slate-200 text-slate-600">REGEX</span>}
+        {item.isRegex && <span className="rounded-md bg-slate-200 px-2 py-1 font-mono text-xs font-semibold text-slate-600">REGEX</span>}
       </div>
       <div className="flex items-center space-x-1">
         <button
-          className="p-1 transition-all rounded-md cursor-pointer text-slate-400 hover:bg-slate-100 hover:text-slate-800"
+          className="cursor-pointer rounded-md p-1 text-slate-400 transition-all hover:bg-slate-100 hover:text-slate-800"
           onClick={handleEdit}
           title={`Edit ${item.value}`}
         >
-          <PencilIcon className="w-4 h-4" />
+          <PencilIcon className="h-4 w-4" />
         </button>
         <button
-          className="p-1 transition-all rounded-md cursor-pointer text-slate-400 hover:bg-red-100 hover:text-red-500"
+          className="cursor-pointer rounded-md p-1 text-slate-400 transition-all hover:bg-red-100 hover:text-red-500"
           onClick={handleRemove}
           title={`Remove ${item.value}`}
         >
-          <TrashIcon className="w-4 h-4" />
+          <TrashIcon className="h-4 w-4" />
         </button>
       </div>
     </li>
@@ -118,6 +118,7 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
 export const BlacklistView = memo((): JSX.Element => {
   const { addDomain, blacklistedItems, removeDomain, editDomain } = useBlacklistStore();
   const [newDomain, setNewDomain] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -133,6 +134,7 @@ export const BlacklistView = memo((): JSX.Element => {
   const handleAddDomain = useCallback(
     (e: FormEvent): void => {
       e.preventDefault();
+      setError(null);
       const parsed = parseInput(newDomain);
 
       if (!parsed) {
@@ -140,14 +142,14 @@ export const BlacklistView = memo((): JSX.Element => {
       }
 
       if ('error' in parsed) {
-        alert(parsed.error);
+        setError(parsed.error);
         return;
       }
 
       const { value, isRegex } = parsed;
 
       if (blacklistedValues.has(value)) {
-        alert('This item already exists in the blacklist.');
+        setError('This item already exists in the blacklist.');
         return;
       }
 
@@ -177,39 +179,45 @@ export const BlacklistView = memo((): JSX.Element => {
 
   return (
     <div className="space-y-4">
-      <form className="flex items-center space-x-2" onSubmit={handleAddDomain}>
-        <div className="relative grow">
-          <input
-            ref={inputRef}
-            className="w-full py-2 pl-4 pr-10 text-sm bg-white text-slate-900 border rounded-lg outline-none transition-colors border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
-            onChange={(e) => setNewDomain(e.target.value)}
-            placeholder="e.g., example.com or /.*\\.bad-site\\.com/"
-            type="text"
-            value={newDomain}
-          />
-          <div className="absolute inset-y-0 right-0 flex items-center pr-2">
-            {newDomain && (
-              <button
-                className="p-1 rounded-md transition-colors cursor-pointer text-slate-400 hover:bg-slate-100 hover:text-slate-800"
-                onClick={() => setNewDomain('')}
-                title="Clear input"
-                type="button"
-              >
-                <CloseIcon className="w-4 h-4" />
-              </button>
-            )}
+      <div>
+        <form className="flex items-center space-x-2" onSubmit={handleAddDomain}>
+          <div className="relative grow">
+            <input
+              ref={inputRef}
+              className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-4 pr-10 text-sm text-slate-900 outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
+              onChange={(e) => {
+                setNewDomain(e.target.value);
+                setError(null);
+              }}
+              placeholder="e.g., example.com or /.*\\.bad-site\\.com/"
+              type="text"
+              value={newDomain}
+            />
+            <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+              {newDomain && (
+                <button
+                  className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
+                  onClick={() => setNewDomain('')}
+                  title="Clear input"
+                  type="button"
+                >
+                  <CloseIcon className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-        <button
-          className="px-2 py-2 text-sm font-semibold text-white transition-colors rounded-lg cursor-pointer bg-slate-800 hover:bg-slate-700 disabled:bg-slate-500 disabled:cursor-not-allowed"
-          disabled={!newDomain.trim()}
-          type="submit"
-        >
-          Add
-        </button>
-      </form>
+          <button
+            className="cursor-pointer rounded-lg bg-slate-800 px-2 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-500"
+            disabled={!newDomain.trim()}
+            type="submit"
+          >
+            Add
+          </button>
+        </form>
+        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      </div>
 
-      <div className="p-3 bg-white border rounded-lg shadow-sm border-slate-200">
+      <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
         <h3 className="mb-2 font-semibold text-slate-800">Blacklisted Items ({sortedItems.length})</h3>
         {sortedItems.length > 0 ? (
           <ul className="space-y-1">
@@ -218,7 +226,7 @@ export const BlacklistView = memo((): JSX.Element => {
             ))}
           </ul>
         ) : (
-          <p className="py-4 text-sm text-center text-slate-500">Your blacklist is empty. Add domains using the form above.</p>
+          <p className="py-4 text-center text-sm text-slate-500">Your blacklist is empty. Add domains using the form above.</p>
         )}
       </div>
     </div>

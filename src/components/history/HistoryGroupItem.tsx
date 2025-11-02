@@ -44,7 +44,7 @@ export const HistoryGroupItem = memo(
       <>
         <section>
           <div
-            className="flex items-center justify-between px-2 mb-1"
+            className="mb-1 flex items-center justify-between px-2"
             style={{
               visibility: isSticky ? 'hidden' : 'visible',
               height: isSticky ? 0 : 'auto',
@@ -52,10 +52,10 @@ export const HistoryGroupItem = memo(
           >
             <h2 className="text-sm font-semibold text-slate-800">{group.time}</h2>
             <button
-              className="flex items-center px-2 py-1 text-xs font-medium text-red-600 transition-colors bg-red-50 border border-red-200 rounded-md cursor-pointer hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
+              className="flex cursor-pointer items-center rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
               onClick={handleOpenDeleteModal}
             >
-              <TrashIcon className="w-3 h-3 mr-1" />
+              <TrashIcon className="mr-1 h-3 w-3" />
               Delete
             </button>
           </div>

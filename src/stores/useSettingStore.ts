@@ -15,8 +15,12 @@ export const useSettingStore = create<SettingState>()(
     (set) => ({
       dataRetention: 'disabled',
       syncEnabled: true,
-      setDataRetention: (retention) => set({ dataRetention: retention }),
-      setSyncEnabled: (enabled) => set({ syncEnabled: enabled }),
+      setDataRetention: (retention) => {
+        set({ dataRetention: retention });
+      },
+      setSyncEnabled: (enabled) => {
+        set({ syncEnabled: enabled });
+      },
     }),
     {
       name: 'rekishi-setting',

@@ -29,90 +29,73 @@ function getDeviceTypeFromName(name: string): Device['type'] {
   return 'desktop';
 }
 
-export function search(params: SearchParams): Promise<ChromeHistoryItem[]> {
+export async function search(params: SearchParams): Promise<ChromeHistoryItem[]> {
   if (typeof chrome !== 'undefined' && chrome.history?.search) {
-    return new Promise((resolve) => {
-      chrome.history.search(
-        {
-          text: params.text,
-          startTime: params.startTime,
-          endTime: params.endTime,
-          maxResults: params.maxResults ?? 0,
-        },
-        (results: chrome.history.HistoryItem[]) => {
-          const validResults: ChromeHistoryItem[] = results
-            .map((item) => ({
-              id: item.id,
-              url: item.url ?? '',
-              title: item.title ?? item.url ?? '',
-              lastVisitTime: item.lastVisitTime ?? 0,
-              visitCount: item.visitCount ?? 0,
-            }))
-            .filter((item) => item.url);
-
-          validResults.sort((a, b) => b.lastVisitTime - a.lastVisitTime);
-          resolve(validResults);
-        },
-      );
+    const results = await chrome.history.search({
+      text: params.text,
+      startTime: params.startTime,
+      endTime: params.endTime,
+      maxResults: params.maxResults ?? 0,
+    });
+    const mappedResults = results.map((item) => {
+      return {
+        id: item.id,
+        url: item.url ?? '',
+        title: item.title ?? item.url ?? '',
+        lastVisitTime: item.lastVisitTime ?? 0,
+        visitCount: item.visitCount ?? 0,
+      };
+    });
+    return mappedResults.filter((item) => {
+      return item.url;
     });
   }
   return fakeSearch(params);
 }
 
-export function deleteUrl(details: { url: string }): Promise<void> {
+export async function deleteUrl(details: { url: string }): Promise<void> {
   if (typeof chrome !== 'undefined' && chrome.history?.deleteUrl) {
-    return new Promise((resolve, reject) => {
-      chrome.history.deleteUrl(details, () => {
-        const lastError: chrome.runtime.LastError | undefined = chrome.runtime.lastError;
-        if (lastError) {
-          console.error('Error deleting history item:', lastError.message);
-          reject(new Error(lastError.message));
-        } else {
-          resolve();
-        }
-      });
-    });
+    try {
+      await chrome.history.deleteUrl(details);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'An unknown error occurred';
+      console.error('Error deleting history item:', message);
+      throw new Error(message);
+    }
   }
   return fakeDeleteUrl(details);
 }
 
-export function getDevices(): Promise<Device[]> {
+export async function getDevices(): Promise<Device[]> {
   if (typeof chrome !== 'undefined' && chrome.sessions?.getDevices) {
-    return new Promise((resolve) => {
-      chrome.sessions.getDevices((devices: chrome.sessions.Device[] | undefined) => {
-        if (!devices) {
-          resolve([]);
-          return;
-        }
-        const mappedDevices = devices.map((d) => {
-          const mostRecent = d.sessions.reduce((latest, session) => Math.max(latest, session.lastModified * 1000), 0);
+    const devices = await chrome.sessions.getDevices();
+    if (!devices) {
+      return [];
+    }
+    return devices.map((d) => {
+      const mostRecent = d.sessions.reduce((latest, session) => {
+        return Math.max(latest, session.lastModified * 1000);
+      }, 0);
 
-          return {
-            lastSync: mostRecent > 0 ? formatTimeAgo(mostRecent) : 'Unknown',
-            name: d.deviceName,
-            type: getDeviceTypeFromName(d.deviceName),
-          };
-        });
-        resolve(mappedDevices);
-      });
+      return {
+        lastSync: mostRecent > 0 ? formatTimeAgo(mostRecent) : 'Unknown',
+        name: d.deviceName,
+        type: getDeviceTypeFromName(d.deviceName),
+      };
     });
   }
   return fakeGetDevices();
 }
 
-export function deleteAllHistory(): Promise<void> {
+export async function deleteAllHistory(): Promise<void> {
   if (typeof chrome !== 'undefined' && chrome.history?.deleteAll) {
-    return new Promise((resolve, reject) => {
-      chrome.history.deleteAll(() => {
-        const lastError: chrome.runtime.LastError | undefined = chrome.runtime.lastError;
-        if (lastError) {
-          console.error('Error deleting all history:', lastError.message);
-          reject(new Error(lastError.message));
-        } else {
-          resolve();
-        }
-      });
-    });
+    try {
+      await chrome.history.deleteAll();
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'An unknown error occurred';
+      console.error('Error deleting all history:', message);
+      throw new Error(message);
+    }
   }
   return fakeDeleteAllHistory();
 }

@@ -105,18 +105,26 @@ const getFakeHistory = (params: SearchParams): ChromeHistoryItem[] => {
   let items = Object.values(FAKE_DATA_STORE);
 
   if (params.startTime) {
-    items = items.filter((item) => item.lastVisitTime >= params.startTime!);
+    items = items.filter((item) => {
+      return item.lastVisitTime >= params.startTime!;
+    });
   }
   if (params.endTime) {
-    items = items.filter((item) => item.lastVisitTime < params.endTime!);
+    items = items.filter((item) => {
+      return item.lastVisitTime < params.endTime!;
+    });
   }
 
   if (params.text) {
     const query = params.text.toLowerCase();
-    items = items.filter((item) => (item.title?.toLowerCase() ?? '').includes(query) || (item.url?.toLowerCase() ?? '').includes(query));
+    items = items.filter((item) => {
+      return (item.title?.toLowerCase() ?? '').includes(query) || (item.url?.toLowerCase() ?? '').includes(query);
+    });
   }
 
-  items.sort((a, b) => b.lastVisitTime - a.lastVisitTime);
+  items.sort((a, b) => {
+    return b.lastVisitTime - a.lastVisitTime;
+  });
 
   if (params.maxResults) {
     return items.slice(0, params.maxResults);
@@ -127,7 +135,9 @@ const getFakeHistory = (params: SearchParams): ChromeHistoryItem[] => {
 
 const deleteFakeHistoryUrl = (details: { url: string }): void => {
   initializeFakeData();
-  const idsToDelete = Object.keys(FAKE_DATA_STORE).filter((id) => FAKE_DATA_STORE[id].url === details.url);
+  const idsToDelete = Object.keys(FAKE_DATA_STORE).filter((id) => {
+    return FAKE_DATA_STORE[id].url === details.url;
+  });
   for (const id of idsToDelete) {
     delete FAKE_DATA_STORE[id];
   }
@@ -181,7 +191,9 @@ export const getDevices = (): Promise<Device[]> => {
 
 export const deleteAllHistory = (): Promise<void> => {
   return new Promise((resolve) => {
-    Object.keys(FAKE_DATA_STORE).forEach((key) => delete FAKE_DATA_STORE[key]);
+    Object.keys(FAKE_DATA_STORE).forEach((key) => {
+      delete FAKE_DATA_STORE[key];
+    });
     FAKE_DATA_INITIALIZED = false;
     setTimeout(() => {
       resolve();

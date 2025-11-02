@@ -170,25 +170,30 @@ export const useHistory = (): UseHistoryReturn => {
           return;
         }
 
-        const isMatch = (() => {
-          if (searchQuery) {
-            if (isRegex) {
-              if (compiledRegex.error || !compiledRegex.regex) return false;
-              return compiledRegex.regex.test(newItem.title) || compiledRegex.regex.test(newItem.url);
+        let isMatch: boolean;
+        if (searchQuery) {
+          if (isRegex) {
+            if (compiledRegex.error || !compiledRegex.regex) {
+              isMatch = false;
+            } else {
+              isMatch = compiledRegex.regex.test(newItem.title) || compiledRegex.regex.test(newItem.url);
             }
+          } else {
             const query = searchQuery.toLowerCase();
-            return (newItem.title ?? '').toLowerCase().includes(query) || (newItem.url ?? '').toLowerCase().includes(query);
+            isMatch = (newItem.title ?? '').toLowerCase().includes(query) || (newItem.url ?? '').toLowerCase().includes(query);
           }
-          return isSameDay(selectedDate, new Date(newItem.lastVisitTime));
-        })();
+        } else {
+          isMatch = isSameDay(selectedDate, new Date(newItem.lastVisitTime));
+        }
 
         rawHistoryRef.current = [newItem, ...rawHistoryRef.current.filter((item) => item.id !== newItem.id)];
-
-        if (isMatch) {
-          setHistory((prev) => [newItem, ...prev.filter((item) => item.id !== newItem.id)]);
-        } else {
-          setHistory((prev) => prev.filter((item) => item.id !== newItem.id));
-        }
+        setHistory((prev) => {
+          const updatedHistory = prev.filter((item) => item.id !== newItem.id);
+          if (isMatch) {
+            updatedHistory.unshift(newItem);
+          }
+          return updatedHistory;
+        });
       }
     };
 
@@ -197,7 +202,7 @@ export const useHistory = (): UseHistoryReturn => {
     return () => {
       chrome.runtime.onMessage.removeListener(messageListener);
     };
-  }, [searchQuery, isRegex, selectedDate, isBlacklisted, compiledRegex]);
+  }, [searchQuery, isRegex, selectedDate, isBlacklisted, compiledRegex, applyBlacklistFilter]);
 
   const loadMore = useCallback(async () => {
     if (isLoading || isLoadingMore) {
@@ -284,11 +289,17 @@ export const useHistory = (): UseHistoryReturn => {
   const deleteHistoryItems = useCallback(async (ids: string[]): Promise<void> => {
     try {
       const idsToDelete = new Set(ids);
-      const deletePromises = rawHistoryRef.current
-        .filter((item) => idsToDelete.has(item.id) && item.url)
-        .map((item) => deleteUrl({ url: item.url as string }));
+      const urlsToDelete = new Set<string>();
 
+      for (const item of rawHistoryRef.current) {
+        if (idsToDelete.has(item.id) && item.url) {
+          urlsToDelete.add(item.url);
+        }
+      }
+
+      const deletePromises = Array.from(urlsToDelete).map((url) => deleteUrl({ url }));
       await Promise.all(deletePromises);
+
       rawHistoryRef.current = rawHistoryRef.current.filter((item) => !idsToDelete.has(item.id));
       setHistory((prev) => prev.filter((item) => !idsToDelete.has(item.id)));
     } catch (err: unknown) {

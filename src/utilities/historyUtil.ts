@@ -18,7 +18,9 @@ export const groupHistoryByHour = (items: ChromeHistoryItem[]): HistoryItemGroup
   dateForFormatting.setMinutes(0, 0, 0);
 
   return Object.entries(groups)
-    .sort(([hourA], [hourB]) => Number(hourB) - Number(hourA))
+    .sort(([hourA], [hourB]) => {
+      return Number(hourB) - Number(hourA);
+    })
     .map(([hour, itemsInGroup]) => {
       dateForFormatting.setHours(Number(hour));
       return {
@@ -54,5 +56,7 @@ export const groupHistoryByDay = (
     return acc;
   }, {});
 
-  return Object.values(groups).sort((a, b) => b.date.getTime() - a.date.getTime());
+  return Object.values(groups).sort((a, b) => {
+    return b.date.getTime() - a.date.getTime();
+  });
 };

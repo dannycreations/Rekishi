@@ -31,7 +31,12 @@ export const useBlacklistStore = create<BlacklistState>()(
       },
       editDomain: (oldValue, newValue, newIsRegex) => {
         set((state) => ({
-          blacklistedItems: state.blacklistedItems.map((item) => (item.value === oldValue ? { value: newValue, isRegex: newIsRegex } : item)),
+          blacklistedItems: state.blacklistedItems.map((item) => {
+            if (item.value === oldValue) {
+              return { value: newValue, isRegex: newIsRegex };
+            }
+            return item;
+          }),
         }));
       },
       isBlacklisted: (domain: string): boolean => {
@@ -45,7 +50,9 @@ export const useBlacklistStore = create<BlacklistState>()(
       },
       removeDomain: (value) => {
         set((state) => ({
-          blacklistedItems: state.blacklistedItems.filter((item) => item.value !== value),
+          blacklistedItems: state.blacklistedItems.filter((item) => {
+            return item.value !== value;
+          }),
         }));
       },
     }),

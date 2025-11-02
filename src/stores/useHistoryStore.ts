@@ -17,12 +17,15 @@ export const useHistoryStore = create<HistoryState>()(
       isRegex: false,
       searchQuery: '',
       selectedDate: new Date(),
-      setSearchQuery: (query) =>
+      setSearchQuery: (query) => {
         set({
           searchQuery: query,
           isRegex: query.length > 2 && query.startsWith('/') && query.endsWith('/'),
-        }),
-      setSelectedDate: (date) => set({ selectedDate: date, searchQuery: '', isRegex: false }),
+        });
+      },
+      setSelectedDate: (date) => {
+        set({ selectedDate: date, searchQuery: '', isRegex: false });
+      },
     }),
     {
       name: 'rekishi-history',

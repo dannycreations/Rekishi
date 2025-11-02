@@ -17,12 +17,18 @@ interface HistoryItemProps {
 }
 
 const Highlight = memo(({ text, highlight }: { text: string; highlight: string }) => {
-  if (!highlight) {
+  const parts = useMemo(() => {
+    if (!highlight) {
+      return [text];
+    }
+    const escapedHighlight = highlight.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    return text.split(new RegExp(`(${escapedHighlight})`, 'gi'));
+  }, [text, highlight]);
+
+  if (!highlight || parts.length <= 1) {
     return <>{text}</>;
   }
 
-  const escapedHighlight = highlight.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-  const parts = text.split(new RegExp(`(${escapedHighlight})`, 'gi'));
   return (
     <>
       {parts.map((part, i) =>

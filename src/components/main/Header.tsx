@@ -26,6 +26,7 @@ export const NavButton = memo(({ icon, onClick, title }: NavButtonProps): JSX.El
 
 interface HeaderProps {
   datesWithHistory: Set<string>;
+  fetchDatesForMonth: (date: Date) => void;
   isLoadingDates: boolean;
   onOpenModal: (view: ViewType) => void;
   onSearch: (query: string) => void;
@@ -35,7 +36,16 @@ interface HeaderProps {
 }
 
 export const Header = memo(
-  ({ onOpenModal, onSearch, searchQuery, selectedDate, setSelectedDate, datesWithHistory, isLoadingDates }: HeaderProps): JSX.Element => {
+  ({
+    onOpenModal,
+    onSearch,
+    searchQuery,
+    selectedDate,
+    setSelectedDate,
+    datesWithHistory,
+    isLoadingDates,
+    fetchDatesForMonth,
+  }: HeaderProps): JSX.Element => {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
 
@@ -161,6 +171,7 @@ export const Header = memo(
             {isCalendarOpen && (
               <CalendarPopover
                 datesWithHistory={datesWithHistory}
+                fetchDatesForMonth={fetchDatesForMonth}
                 isLoading={isLoadingDates}
                 onDateSelect={(date) => {
                   setSelectedDate(date);

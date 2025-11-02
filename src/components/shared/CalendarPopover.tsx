@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { isSameDay } from '../../utilities/dateUtil';
 import { ChevronLeftIcon, ChevronRightIcon } from './Icons';
@@ -8,6 +8,7 @@ import type { JSX } from 'react';
 
 interface CalendarPopoverProps {
   datesWithHistory: Set<string>;
+  fetchDatesForMonth: (date: Date) => void;
   isLoading: boolean;
   onDateSelect: (date: Date) => void;
   selectedDate: Date;
@@ -39,112 +40,117 @@ export const CalendarSkeleton = memo(() => {
   );
 });
 
-export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHistory, isLoading }: CalendarPopoverProps): JSX.Element => {
-  const [displayDate, setDisplayDate] = useState(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
+export const CalendarPopover = memo(
+  ({ selectedDate, onDateSelect, datesWithHistory, isLoading, fetchDatesForMonth }: CalendarPopoverProps): JSX.Element => {
+    const [displayDate, setDisplayDate] = useState(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
 
-  const today = useMemo(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }, []);
+    useEffect(() => {
+      fetchDatesForMonth(displayDate);
+    }, [displayDate, fetchDatesForMonth]);
 
-  const monthName = useMemo(() => displayDate.toLocaleString('default', { month: 'long', year: 'numeric' }), [displayDate]);
+    const today = useMemo(() => {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }, []);
 
-  const calendarGrid = useMemo(() => {
-    const year = displayDate.getFullYear();
-    const month = displayDate.getMonth();
-    const firstDayOfMonth = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const days: (Date | null)[] = Array.from({ length: firstDayOfMonth }, () => null);
+    const monthName = useMemo(() => displayDate.toLocaleString('default', { month: 'long', year: 'numeric' }), [displayDate]);
 
-    for (let i = 1; i <= daysInMonth; i++) {
-      const dayDate = new Date(year, month, i);
-      dayDate.setHours(0, 0, 0, 0);
-      days.push(dayDate);
+    const calendarGrid = useMemo(() => {
+      const year = displayDate.getFullYear();
+      const month = displayDate.getMonth();
+      const firstDayOfMonth = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const days: (Date | null)[] = Array.from({ length: firstDayOfMonth }, () => null);
+
+      for (let i = 1; i <= daysInMonth; i++) {
+        const dayDate = new Date(year, month, i);
+        dayDate.setHours(0, 0, 0, 0);
+        days.push(dayDate);
+      }
+
+      return days;
+    }, [displayDate]);
+
+    const handlePrevMonth = useCallback(() => {
+      setDisplayDate((d) => {
+        return new Date(d.getFullYear(), d.getMonth() - 1, 1);
+      });
+    }, []);
+
+    const handleNextMonth = useCallback(() => {
+      setDisplayDate((d) => {
+        return new Date(d.getFullYear(), d.getMonth() + 1, 1);
+      });
+    }, []);
+
+    const handleGoToToday = useCallback(() => {
+      onDateSelect(new Date());
+    }, [onDateSelect]);
+
+    const isCurrentMonth = useMemo(
+      () => displayDate.getFullYear() === today.getFullYear() && displayDate.getMonth() === today.getMonth(),
+      [displayDate, today],
+    );
+
+    if (isLoading && datesWithHistory.size === 0) {
+      return <CalendarSkeleton />;
     }
 
-    return days;
-  }, [displayDate]);
-
-  const handlePrevMonth = useCallback(() => {
-    setDisplayDate((d) => {
-      return new Date(d.getFullYear(), d.getMonth() - 1, 1);
-    });
-  }, []);
-
-  const handleNextMonth = useCallback(() => {
-    setDisplayDate((d) => {
-      return new Date(d.getFullYear(), d.getMonth() + 1, 1);
-    });
-  }, []);
-
-  const handleGoToToday = useCallback(() => {
-    onDateSelect(new Date());
-  }, [onDateSelect]);
-
-  const isCurrentMonth = useMemo(
-    () => displayDate.getFullYear() === today.getFullYear() && displayDate.getMonth() === today.getMonth(),
-    [displayDate, today],
-  );
-
-  if (isLoading) {
-    return <CalendarSkeleton />;
-  }
-
-  return (
-    <div className="absolute right-0 z-10 p-2 mt-2 origin-top-right bg-white border rounded-lg shadow-lg top-full w-72 border-slate-200 popover-animate-enter">
-      <div className="flex items-center justify-between mb-2">
-        <button className="p-2 text-slate-500 transition-colors rounded-full cursor-pointer hover:bg-slate-100" onClick={handlePrevMonth}>
-          <ChevronLeftIcon className="w-5 h-5" />
-        </button>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-slate-700">{monthName}</span>
+    return (
+      <div className="absolute right-0 z-10 p-2 mt-2 origin-top-right bg-white border rounded-lg shadow-lg top-full w-72 border-slate-200 popover-animate-enter">
+        <div className="flex items-center justify-between mb-2">
+          <button className="p-2 text-slate-500 transition-colors rounded-full cursor-pointer hover:bg-slate-100" onClick={handlePrevMonth}>
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-slate-700">{monthName}</span>
+            <button
+              className="px-2 py-0.5 text-xs font-semibold rounded-md cursor-pointer bg-slate-100 text-slate-700 hover:bg-slate-200"
+              onClick={handleGoToToday}
+            >
+              Today
+            </button>
+          </div>
           <button
-            className="px-2 py-0.5 text-xs font-semibold rounded-md cursor-pointer bg-slate-100 text-slate-700 hover:bg-slate-200"
-            onClick={handleGoToToday}
+            className="p-2 text-slate-500 transition-colors rounded-full cursor-pointer hover:bg-slate-100 disabled:text-slate-300 disabled:cursor-not-allowed"
+            disabled={isCurrentMonth}
+            onClick={handleNextMonth}
           >
-            Today
+            <ChevronRightIcon className="w-5 h-5" />
           </button>
         </div>
-        <button
-          className="p-2 text-slate-500 transition-colors rounded-full cursor-pointer hover:bg-slate-100 disabled:text-slate-300 disabled:cursor-not-allowed"
-          disabled={isCurrentMonth}
-          onClick={handleNextMonth}
-        >
-          <ChevronRightIcon className="w-5 h-5" />
-        </button>
-      </div>
-      <div className="grid grid-cols-7 text-center gap-y-1">
-        {DAYS_OF_WEEK.map((day) => (
-          <div key={day} className="text-xs font-medium text-slate-500">
-            {day}
-          </div>
-        ))}
-        {calendarGrid.map((date, index) => {
-          if (!date) {
-            return <div key={`empty-${index}`} />;
-          }
+        <div className="grid grid-cols-7 text-center gap-y-1">
+          {DAYS_OF_WEEK.map((day) => (
+            <div key={day} className="text-xs font-medium text-slate-500">
+              {day}
+            </div>
+          ))}
+          {calendarGrid.map((date, index) => {
+            if (!date) {
+              return <div key={`empty-${index}`} />;
+            }
 
-          if (date > today) {
+            if (date > today) {
+              return (
+                <div key={date.toISOString()} className="flex items-center justify-center py-1">
+                  <button disabled className="w-8 h-8 text-sm rounded-full cursor-not-allowed text-slate-300">
+                    {date.getDate()}
+                  </button>
+                </div>
+              );
+            }
+
+            const dateString = date.toISOString().split('T')[0];
+            const hasHistory = datesWithHistory.has(dateString);
+            const isSelected = isSameDay(date, selectedDate);
+            const isToday = isSameDay(date, today);
+
             return (
               <div key={date.toISOString()} className="flex items-center justify-center py-1">
-                <button disabled className="w-8 h-8 text-sm rounded-full cursor-not-allowed text-slate-300">
-                  {date.getDate()}
-                </button>
-              </div>
-            );
-          }
-
-          const dateString = date.toISOString().split('T')[0];
-          const hasHistory = datesWithHistory.has(dateString);
-          const isSelected = isSameDay(date, selectedDate);
-          const isToday = isSameDay(date, today);
-
-          return (
-            <div key={date.toISOString()} className="flex items-center justify-center py-1">
-              <button
-                disabled={!hasHistory}
-                className={`
+                <button
+                  disabled={!hasHistory}
+                  className={`
                     w-8 h-8 rounded-full text-sm transition-colors cursor-pointer
                     ${
                       isSelected
@@ -155,14 +161,15 @@ export const CalendarPopover = memo(({ selectedDate, onDateSelect, datesWithHist
                     }
                     ${!isSelected && isToday && hasHistory ? 'ring-1 ring-slate-400' : ''}
                   `}
-                onClick={() => onDateSelect(date)}
-              >
-                {date.getDate()}
-              </button>
-            </div>
-          );
-        })}
+                  onClick={() => onDateSelect(date)}
+                >
+                  {date.getDate()}
+                </button>
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);

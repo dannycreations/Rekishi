@@ -58,11 +58,15 @@ export const App = (): JSX.Element => {
 
   const { searchQuery, selectedDate, setSearchQuery, setSelectedDate } = useHistoryStore();
   const { deleteHistoryItem, deleteHistoryItems, error, hasMore, history, isLoading, isLoadingMore, loadMore } = useHistory();
-  const { datesWithHistory, isLoading: isLoadingDates } = useHistoryDate();
+  const { datesWithHistory, fetchDatesForMonth, isLoading: isLoadingDates } = useHistoryDate();
 
   useEffect(() => {
     mainContentRef.current?.scrollTo(0, 0);
   }, [searchQuery, selectedDate]);
+
+  useEffect(() => {
+    fetchDatesForMonth(selectedDate);
+  }, [fetchDatesForMonth, selectedDate]);
 
   useEffect(() => {
     const mainContent = mainContentRef.current;
@@ -101,13 +105,14 @@ export const App = (): JSX.Element => {
     [history, deleteHistoryItem, deleteHistoryItems, loadMore, hasMore, isLoadingMore],
   );
 
-  const noHistoryEver = history.length === 0 && datesWithHistory.size === 0;
+  const noHistoryEver = history.length === 0 && datesWithHistory.size === 0 && !isLoading && !isLoadingDates;
 
   return (
     <div className="h-screen bg-slate-100 text-slate-900">
       <div className="absolute inset-0 flex flex-col max-w-6xl mx-auto overflow-hidden bg-slate-50 shadow-xl sm:inset-6 sm:rounded-lg">
         <Header
           datesWithHistory={datesWithHistory}
+          fetchDatesForMonth={fetchDatesForMonth}
           isLoadingDates={isLoadingDates}
           onOpenModal={setActiveModal}
           onSearch={setSearchQuery}
@@ -117,7 +122,7 @@ export const App = (): JSX.Element => {
         />
 
         <main ref={mainContentRef} className="flex-1 min-h-0 overflow-y-auto">
-          {isLoading || isLoadingDates ? (
+          {isLoading ? (
             <HistoryViewSkeleton />
           ) : error ? (
             <div className="flex items-center justify-center h-full p-3 text-red-500">

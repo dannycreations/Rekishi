@@ -39,3 +39,28 @@ export function isDomainBlacklisted(domain: string, matchers: BlacklistMatchers)
 
   return false;
 }
+
+export function parseInput(input: string): { value: string; isRegex: boolean } | { error: string } | null {
+  const trimmedValue = input.trim();
+  if (!trimmedValue) {
+    return null;
+  }
+
+  const isRegex = trimmedValue.length > 2 && trimmedValue.startsWith('/') && trimmedValue.endsWith('/');
+  const value = isRegex ? trimmedValue.slice(1, -1) : trimmedValue;
+
+  if (!value) {
+    return null;
+  }
+
+  if (isRegex) {
+    try {
+      // eslint-disable-next-line no-new
+      new RegExp(value);
+    } catch (error: unknown) {
+      return { error: 'Invalid Regular Expression' };
+    }
+  }
+
+  return { value, isRegex };
+}

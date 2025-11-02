@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useStat
 
 import { useConfirm } from '../../hooks/useConfirm';
 import { formatDayHeader } from '../../utilities/dateUtil';
+import { groupHistoryByDay, groupHistoryByHour } from '../../utilities/historyUtil';
 import { SearchIcon } from '../shared/Icons';
 import { Skeleton } from '../shared/Skeleton';
 import { HistoryGroupHeader } from './HistoryGroupHeader';
@@ -19,63 +20,6 @@ interface HistoryViewProps {
   onDelete: (id: string) => Promise<void>;
   scrollContainerRef: RefObject<HTMLElement | null>;
 }
-
-const groupHistoryByHour = (items: ChromeHistoryItem[]): HistoryItemGroup[] => {
-  if (!items) {
-    return [];
-  }
-
-  const groups = items.reduce<Record<number, ChromeHistoryItem[]>>((acc, item) => {
-    const hour = new Date(item.lastVisitTime).getHours();
-    if (!acc[hour]) {
-      acc[hour] = [];
-    }
-    acc[hour].push(item);
-    return acc;
-  }, {});
-
-  const dateForFormatting = new Date();
-  dateForFormatting.setMinutes(0, 0, 0);
-
-  return Object.entries(groups)
-    .sort(([hourA], [hourB]) => Number(hourB) - Number(hourA))
-    .map(([hour, itemsInGroup]) => {
-      dateForFormatting.setHours(Number(hour));
-      return {
-        items: itemsInGroup,
-        time: dateForFormatting.toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true,
-        }),
-      };
-    });
-};
-
-const groupHistoryByDay = (
-  items: ChromeHistoryItem[],
-): {
-  date: Date;
-  items: ChromeHistoryItem[];
-}[] => {
-  if (!items || items.length === 0) {
-    return [];
-  }
-
-  const groups = items.reduce<Record<string, { date: Date; items: ChromeHistoryItem[] }>>((acc, item) => {
-    const date = new Date(item.lastVisitTime);
-    date.setHours(0, 0, 0, 0);
-    const dateStr = date.toISOString().split('T')[0];
-
-    if (!acc[dateStr]) {
-      acc[dateStr] = { date: date, items: [] };
-    }
-    acc[dateStr].items.push(item);
-    return acc;
-  }, {});
-
-  return Object.values(groups).sort((a, b) => b.date.getTime() - a.date.getTime());
-};
 
 export const HistoryViewItemSkeleton = memo(() => {
   return (
@@ -206,24 +150,6 @@ export const HistoryView = memo(
       [openDeleteModal, deleteHistoryItems],
     );
 
-    const handleToggleDaySelection = useCallback(
-      (dayItems: ChromeHistoryItem[]) => {
-        const dayItemIds = dayItems.map((item) => item.id);
-        const allCurrentlySelected = dayItemIds.length > 0 && dayItemIds.every((id) => selectedItems.has(id));
-
-        setSelectedItems((prev) => {
-          const newSelectedItems = new Set(prev);
-          if (allCurrentlySelected) {
-            dayItemIds.forEach((id) => newSelectedItems.delete(id));
-          } else {
-            dayItemIds.forEach((id) => newSelectedItems.add(id));
-          }
-          return newSelectedItems;
-        });
-      },
-      [selectedItems],
-    );
-
     const dailyGroupsWithHourlySubgroups = useMemo(() => {
       const dayGroups = groupHistoryByDay(historyItems);
       return dayGroups.map((dayGroup) => ({
@@ -253,6 +179,31 @@ export const HistoryView = memo(
       });
       return counts;
     }, [selectedItems, itemIdToDayKeyMap]);
+
+    const handleToggleDaySelection = useCallback(
+      (dayItems: ChromeHistoryItem[]) => {
+        if (dayItems.length === 0) return;
+
+        const date = new Date(dayItems[0].lastVisitTime);
+        date.setHours(0, 0, 0, 0);
+        const dayKey = date.toISOString();
+        const selectedCountInDay = selectedCountByDay.get(dayKey) || 0;
+        const allCurrentlySelected = dayItems.length > 0 && selectedCountInDay === dayItems.length;
+
+        const dayItemIds = dayItems.map((item) => item.id);
+
+        setSelectedItems((prev) => {
+          const newSelectedItems = new Set(prev);
+          if (allCurrentlySelected) {
+            dayItemIds.forEach((id) => newSelectedItems.delete(id));
+          } else {
+            dayItemIds.forEach((id) => newSelectedItems.add(id));
+          }
+          return newSelectedItems;
+        });
+      },
+      [selectedCountByDay],
+    );
 
     const processedDailyGroups = useMemo(
       () =>
@@ -286,19 +237,29 @@ export const HistoryView = memo(
 
       const handleScroll = (): void => {
         const scrollTop = container.scrollTop;
-        let activeDayKey: string | null = null;
-        let activeHourText: string | null = null;
+        const positions = headerPositions.current;
 
-        for (const header of headerPositions.current) {
-          if (header.top <= scrollTop) {
-            activeDayKey = header.dayKey;
-            activeHourText = header.hourText;
+        let low = 0;
+        let high = positions.length - 1;
+        let activeIndex = -1;
+
+        while (low <= high) {
+          const mid = Math.floor((low + high) / 2);
+          if (positions[mid].top <= scrollTop) {
+            activeIndex = mid;
+            low = mid + 1;
           } else {
-            break;
+            high = mid - 1;
           }
         }
 
-        if (!activeDayKey && processedDailyGroups.length > 0) {
+        let activeDayKey: string | null = null;
+        let activeHourText: string | null = null;
+
+        if (activeIndex !== -1) {
+          activeDayKey = positions[activeIndex].dayKey;
+          activeHourText = positions[activeIndex].hourText;
+        } else if (processedDailyGroups.length > 0) {
           activeDayKey = processedDailyGroups[0].date.toISOString();
         }
 

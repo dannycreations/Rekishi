@@ -1,65 +1,63 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { search } from '../services/chromeApi';
 
 interface UseHistoryDateReturn {
   datesWithHistory: Set<string>;
   error: string | null;
+  fetchDatesForMonth: (date: Date) => void;
   isLoading: boolean;
 }
 
 export const useHistoryDate = (): UseHistoryDateReturn => {
   const [datesWithHistory, setDatesWithHistory] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fetchedMonths, setFetchedMonths] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const fetchAllHistoryDates = async (): Promise<void> => {
+  const fetchDatesForMonth = useCallback(
+    async (date: Date) => {
+      const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+      if (fetchedMonths.has(monthKey) || isLoading) {
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
+
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const startTime = new Date(year, month, 1);
+      startTime.setHours(0, 0, 0, 0);
+      const endTime = new Date(year, month + 1, 0);
+      endTime.setHours(23, 59, 59, 999);
+
       try {
-        const dates = new Set<string>();
-        const today = new Date();
-        const promises: Promise<void>[] = [];
+        const historyItems = await search({
+          endTime: endTime.getTime(),
+          maxResults: 0,
+          startTime: startTime.getTime(),
+          text: '',
+        });
 
-        for (let i = 0; i < 90; i++) {
-          const date = new Date();
-          date.setDate(today.getDate() - i);
-
-          const startTime = new Date(date);
-          startTime.setHours(0, 0, 0, 0);
-
-          const endTime = new Date(date);
-          endTime.setHours(23, 59, 59, 999);
-
-          promises.push(
-            search({
-              endTime: endTime.getTime(),
-              maxResults: 1,
-              startTime: startTime.getTime(),
-              text: '',
-            }).then((items) => {
-              if (items.length > 0) {
-                const itemDate = new Date(items[0].lastVisitTime);
-                const dateString = itemDate.toISOString().split('T')[0];
-                dates.add(dateString);
-              }
-            }),
-          );
+        const datesInMonth = new Set<string>();
+        for (const item of historyItems) {
+          const itemDate = new Date(item.lastVisitTime);
+          const dateString = itemDate.toISOString().split('T')[0];
+          datesInMonth.add(dateString);
         }
 
-        await Promise.all(promises);
-        setDatesWithHistory(dates);
+        setDatesWithHistory((prev) => new Set([...prev, ...datesInMonth]));
+        setFetchedMonths((prev) => new Set(prev).add(monthKey));
       } catch (e: unknown) {
-        console.error('Failed to load history dates:', e);
+        console.error('Failed to load history dates for month:', e);
         setError('Failed to load history dates.');
       } finally {
         setIsLoading(false);
       }
-    };
+    },
+    [fetchedMonths, isLoading],
+  );
 
-    fetchAllHistoryDates();
-  }, []);
-
-  return { datesWithHistory, isLoading, error };
+  return { datesWithHistory, isLoading, error, fetchDatesForMonth };
 };

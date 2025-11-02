@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
+import { parseInput } from '../../utilities/blacklistUtil';
 import { CheckIcon, CloseIcon, PencilIcon, TrashIcon } from '../shared/Icons';
 
 import type { FormEvent, JSX, KeyboardEvent } from 'react';
@@ -30,23 +31,17 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
   }, [item]);
 
   const handleSave = useCallback(() => {
-    const trimmedValue = editValue.trim();
-    if (!trimmedValue) return;
+    const parsed = parseInput(editValue);
 
-    const newIsRegex = trimmedValue.length > 2 && trimmedValue.startsWith('/') && trimmedValue.endsWith('/');
-    const newValue = newIsRegex ? trimmedValue.slice(1, -1) : trimmedValue;
-
-    if (!newValue) return;
-
-    if (newIsRegex) {
-      try {
-        new RegExp(newValue);
-      } catch (error) {
-        alert('Invalid Regular Expression');
-        return;
-      }
+    if (!parsed) {
+      return;
+    }
+    if ('error' in parsed) {
+      alert(parsed.error);
+      return;
     }
 
+    const { value: newValue, isRegex: newIsRegex } = parsed;
     if (item.value === newValue && item.isRegex === newIsRegex) {
       setIsEditing(false);
       return;
@@ -133,35 +128,33 @@ export const BlacklistView = memo((): JSX.Element => {
   }, []);
 
   const sortedItems = useMemo(() => [...blacklistedItems].sort((a, b) => a.value.localeCompare(b.value)), [blacklistedItems]);
+  const blacklistedValues = useMemo(() => new Set(blacklistedItems.map((item) => item.value)), [blacklistedItems]);
 
   const handleAddDomain = useCallback(
     (e: FormEvent): void => {
       e.preventDefault();
-      const trimmedDomain = newDomain.trim();
-      if (!trimmedDomain) {
+      const parsed = parseInput(newDomain);
+
+      if (!parsed) {
         return;
       }
 
-      const isRegex = trimmedDomain.length > 2 && trimmedDomain.startsWith('/') && trimmedDomain.endsWith('/');
-      const value = isRegex ? trimmedDomain.slice(1, -1) : trimmedDomain;
-
-      if (!value) {
+      if ('error' in parsed) {
+        alert(parsed.error);
         return;
       }
 
-      if (isRegex) {
-        try {
-          new RegExp(value);
-        } catch (error) {
-          alert('Invalid Regular Expression');
-          return;
-        }
+      const { value, isRegex } = parsed;
+
+      if (blacklistedValues.has(value)) {
+        alert('This item already exists in the blacklist.');
+        return;
       }
 
       addDomain(value, isRegex);
       setNewDomain('');
     },
-    [newDomain, addDomain],
+    [newDomain, addDomain, blacklistedValues],
   );
 
   const handleRemoveDomain = useCallback(
@@ -173,13 +166,13 @@ export const BlacklistView = memo((): JSX.Element => {
 
   const handleEditDomain = useCallback(
     (oldValue: string, newValue: string, newIsRegex: boolean) => {
-      if (oldValue !== newValue && blacklistedItems.some((item) => item.value === newValue)) {
+      if (oldValue !== newValue && blacklistedValues.has(newValue)) {
         alert('This item already exists in the blacklist.');
         return;
       }
       editDomain(oldValue, newValue, newIsRegex);
     },
-    [blacklistedItems, editDomain],
+    [blacklistedValues, editDomain],
   );
 
   return (

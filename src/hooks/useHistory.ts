@@ -31,14 +31,14 @@ interface UseHistoryReturn {
   deleteHistoryItems: (ids: string[]) => Promise<void>;
   error: string | null;
   hasMore: boolean;
-  history: ChromeHistoryItem[];
+  history: readonly ChromeHistoryItem[];
   isLoading: boolean;
   isLoadingMore: boolean;
   loadMore: () => void;
 }
 
 export const useHistory = (): UseHistoryReturn => {
-  const [rawHistory, setRawHistory] = useState<ChromeHistoryItem[]>([]);
+  const [rawHistory, setRawHistory] = useState<readonly ChromeHistoryItem[]>([]);
   const historyItemMap = useRef<Map<string, ChromeHistoryItem>>(new Map());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
@@ -57,7 +57,7 @@ export const useHistory = (): UseHistoryReturn => {
   const isRegex = useMemo(() => isPotentialRegex(searchQuery), [searchQuery]);
 
   const applyBlacklistFilter = useCallback(
-    (items: ChromeHistoryItem[]) => {
+    (items: readonly ChromeHistoryItem[]) => {
       if (blacklistedItems.length === 0) return items;
       return items.filter((item) => {
         const domain = getHostnameFromUrl(item.url);

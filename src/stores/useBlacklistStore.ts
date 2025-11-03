@@ -10,7 +10,7 @@ import type { StateStorage } from 'zustand/middleware';
 import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
 
 interface BlacklistState {
-  readonly blacklistedItems: BlacklistItem[];
+  blacklistedItems: readonly BlacklistItem[];
   blacklistMatchers: BlacklistMatchers;
   readonly addDomain: (value: string, isRegex: boolean) => void;
   readonly editDomain: (oldValue: string, newValue: string, newIsRegex: boolean) => void;

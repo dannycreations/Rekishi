@@ -11,7 +11,7 @@ interface HistoryItemGroupProps {
   isSticky?: boolean;
   onBlacklistRequest: (item: ChromeHistoryItem) => void;
   onDeleteRequest: (item: ChromeHistoryItem) => void;
-  onDeleteHourRequest: (items: ChromeHistoryItem[]) => void;
+  onDeleteHourRequest: (items: readonly ChromeHistoryItem[]) => void;
   onToggleSelection: (id: string) => void;
   selectedItems: Set<string>;
 }

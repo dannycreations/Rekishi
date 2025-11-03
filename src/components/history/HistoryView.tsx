@@ -5,6 +5,7 @@ import { useHistoryGroup } from '../../hooks/useHistoryGroup';
 import { useSelection } from '../../hooks/useSelection';
 import { useStickyHeader } from '../../hooks/useStickyHeader';
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
+import { useHistoryStore } from '../../stores/useHistoryStore';
 import { useToastStore } from '../../stores/useToastStore';
 import { formatDayHeader } from '../../utilities/dateUtil';
 import { getHostnameFromUrl } from '../../utilities/urlUtil';
@@ -19,7 +20,7 @@ import type { ChromeHistoryItem } from '../../app/types';
 interface HistoryViewProps {
   deleteHistoryItems: (ids: string[]) => Promise<void>;
   hasMore: boolean;
-  historyItems: ChromeHistoryItem[];
+  historyItems: readonly ChromeHistoryItem[];
   isLoadingMore: boolean;
   loadMore: () => void;
   onDelete: (id: string) => Promise<void>;
@@ -33,6 +34,7 @@ export const HistoryView = memo(
     const { Modal: BlacklistModal, openModal: openBlacklistModal } = useConfirm();
     const addToast = useToastStore((state) => state.addToast);
     const { addDomain } = useBlacklistStore();
+    const { searchQuery } = useHistoryStore((state) => ({ searchQuery: state.searchQuery }));
 
     const { dailyGroups, dailyGroupsMap, itemLocator } = useHistoryGroup(historyItems);
 
@@ -73,8 +75,30 @@ export const HistoryView = memo(
       }
     }, [selectedItems, deleteHistoryItems, addToast, openDeleteModal, clearSelection]);
 
+    const handleOpenDeleteSearchModal = useCallback(() => {
+      if (historyItems.length > 0) {
+        openDeleteModal({
+          confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+          confirmText: `Delete ${historyItems.length} items`,
+          message: (
+            <>
+              Are you sure you want to permanently delete all <strong>{historyItems.length}</strong> items from this search? This action cannot be
+              undone.
+            </>
+          ),
+          onConfirm: async () => {
+            const count = historyItems.length;
+            await deleteHistoryItems(historyItems.map((item) => item.id));
+            clearSelection();
+            addToast(`${count} item${count > 1 ? 's' : ''} deleted.`, 'success');
+          },
+          title: 'Delete Entire Search Results',
+        });
+      }
+    }, [historyItems, openDeleteModal, deleteHistoryItems, addToast, clearSelection]);
+
     const handleOpenDeleteAllModal = useCallback(
-      (items: ChromeHistoryItem[], type: 'day' | 'hour') => {
+      (items: readonly ChromeHistoryItem[], type: 'day' | 'hour') => {
         if (items.length > 0) {
           openDeleteModal({
             confirmButtonClass: 'bg-red-600 hover:bg-red-700',
@@ -217,10 +241,13 @@ export const HistoryView = memo(
               dayHeaderText={`${formatDayHeader(stickyDayGroup.date)}${stickyState.hourText ? ` ${stickyState.hourText}` : ''}`}
               dayItems={stickyHeaderData.items}
               isHourHeader={!!stickyState.hourText}
+              isSearchMode={!!searchQuery}
               onDeleteAll={() => handleOpenDeleteAllModal(stickyHeaderData.items, stickyState.hourText ? 'hour' : 'day')}
+              onDeleteSearch={handleOpenDeleteSearchModal}
               onDeleteSelected={handleOpenDeleteSelectedModal}
               onToggleDaySelection={() => toggleDaySelection(stickyHeaderData.items)}
               selectedItemsCount={stickyHeaderData.selectedCount}
+              totalSearchItemsCount={historyItems.length}
               totalSelectedCount={selectedItems.size}
             />
             <hr className="mt-3 border-slate-200" />
@@ -245,10 +272,13 @@ export const HistoryView = memo(
                     dayHeaderText={dayHeaderText}
                     dayItems={dayGroup.items}
                     isHourHeader={false}
+                    isSearchMode={!!searchQuery}
                     onDeleteAll={() => handleOpenDeleteAllModal(dayGroup.items, 'day')}
+                    onDeleteSearch={handleOpenDeleteSearchModal}
                     onDeleteSelected={handleOpenDeleteSelectedModal}
                     onToggleDaySelection={() => toggleDaySelection(dayGroup.items)}
                     selectedItemsCount={selectionCounts.byDay.get(dayKey) || 0}
+                    totalSearchItemsCount={historyItems.length}
                     totalSelectedCount={selectedItems.size}
                   />
                   <hr className="mt-3 mb-3 border-slate-200" />

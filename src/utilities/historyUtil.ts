@@ -2,20 +2,20 @@ import { isSameDay } from './dateUtil';
 
 import type { ChromeHistoryItem, HistoryItemGroup } from '../app/types';
 
-export const groupHistoryByDayAndHour = (
-  items: ChromeHistoryItem[],
-): {
+interface GroupHistoryReturn {
   date: Date;
-  items: ChromeHistoryItem[];
-  hourlyGroups: HistoryItemGroup[];
-}[] => {
+  items: readonly ChromeHistoryItem[];
+  hourlyGroups: readonly HistoryItemGroup[];
+}
+
+export function groupHistoryByDayAndHour(items: readonly ChromeHistoryItem[]): readonly GroupHistoryReturn[] {
   if (!items || items.length === 0) {
     return [];
   }
 
-  const dayGroups: { date: Date; items: ChromeHistoryItem[]; hourlyGroups: HistoryItemGroup[] }[] = [];
-  let currentDayGroup: { date: Date; items: ChromeHistoryItem[]; hourlyGroups: HistoryItemGroup[] } | null = null;
-  let currentHourGroup: HistoryItemGroup | null = null;
+  const dayGroups: { date: Date; items: ChromeHistoryItem[]; hourlyGroups: { time: string; items: ChromeHistoryItem[] }[] }[] = [];
+  let currentDayGroup: { date: Date; items: ChromeHistoryItem[]; hourlyGroups: { time: string; items: ChromeHistoryItem[] }[] } | null = null;
+  let currentHourGroup: { time: string; items: ChromeHistoryItem[] } | null = null;
   let currentHour = -1;
 
   for (const item of items) {
@@ -47,4 +47,4 @@ export const groupHistoryByDayAndHour = (
   }
 
   return dayGroups;
-};
+}

@@ -7,11 +7,9 @@ import type { ChromeHistoryItem } from './types';
 
 interface StoredBlacklist {
   readonly state?: {
-    readonly blacklistedItems?: BlacklistItem[];
+    readonly blacklistedItems?: readonly BlacklistItem[];
   };
 }
-let blacklistMatchers: BlacklistMatchers = { plain: new Set(), combinedRegex: null };
-let blacklistedItems: BlacklistItem[] = [];
 
 interface StoredSettings {
   readonly state?: {
@@ -23,10 +21,14 @@ interface Settings {
   readonly dataRetention: string;
   readonly syncEnabled: boolean;
 }
+
 const defaultSettings: Settings = { dataRetention: 'disabled', syncEnabled: true };
+
+let blacklistMatchers: BlacklistMatchers = { plain: new Set(), combinedRegex: null };
+let blacklistedItems: readonly BlacklistItem[] = [];
 let currentSettings: Settings = { ...defaultSettings };
 
-function parseBlacklistFromJSON(json: string | null): BlacklistItem[] {
+function parseBlacklistFromJSON(json: string | null): readonly BlacklistItem[] {
   if (!json) return [];
   try {
     const parsed: StoredBlacklist = JSON.parse(json);
@@ -51,7 +53,7 @@ function parseSettingsFromJSON(json: string | null): Settings {
   }
 }
 
-function updateBlacklistCache(items: BlacklistItem[]) {
+function updateBlacklistCache(items: readonly BlacklistItem[]) {
   blacklistedItems = items;
   blacklistMatchers = createBlacklistMatchers(items);
 }
@@ -87,19 +89,6 @@ async function initializeCaches(): Promise<void> {
 
   const settingsJson = await getFromStorage(SETTINGS_STORAGE_KEY, 'sync');
   updateSettingsCache(parseSettingsFromJSON(settingsJson));
-}
-
-if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
-  chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === 'local' && changes[BLACKLIST_STORAGE_KEY]) {
-      const json = (changes[BLACKLIST_STORAGE_KEY].newValue as string) ?? null;
-      updateBlacklistCache(parseBlacklistFromJSON(json));
-    }
-    if (areaName === 'sync' && changes[SETTINGS_STORAGE_KEY]) {
-      const json = (changes[SETTINGS_STORAGE_KEY].newValue as string) ?? null;
-      updateSettingsCache(parseSettingsFromJSON(json));
-    }
-  });
 }
 
 function isBlacklisted(domain: string): boolean {
@@ -206,7 +195,18 @@ async function handleVisited(historyItem: chrome.history.HistoryItem): Promise<v
   }
 }
 
-initializeCaches();
+if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === 'local' && changes[BLACKLIST_STORAGE_KEY]) {
+      const json = (changes[BLACKLIST_STORAGE_KEY].newValue as string) ?? null;
+      updateBlacklistCache(parseBlacklistFromJSON(json));
+    }
+    if (areaName === 'sync' && changes[SETTINGS_STORAGE_KEY]) {
+      const json = (changes[SETTINGS_STORAGE_KEY].newValue as string) ?? null;
+      updateSettingsCache(parseSettingsFromJSON(json));
+    }
+  });
+}
 
 if (typeof chrome !== 'undefined' && chrome.history?.onVisited) {
   chrome.history.onVisited.addListener(handleVisited);
@@ -226,4 +226,5 @@ if (typeof chrome !== 'undefined' && chrome.alarms) {
   });
 }
 
+initializeCaches();
 runRetentionCleanup();

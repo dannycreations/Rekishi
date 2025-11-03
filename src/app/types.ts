@@ -9,7 +9,9 @@ export interface ChromeHistoryItem {
 
 export interface ChromeDevice {
   readonly deviceName: string;
-  readonly sessions: { readonly lastModified: number }[];
+  readonly sessions: readonly {
+    readonly lastModified: number;
+  }[];
 }
 
 export interface Device {
@@ -20,7 +22,7 @@ export interface Device {
 
 export interface HistoryItemGroup {
   readonly time: string;
-  readonly items: ChromeHistoryItem[];
+  readonly items: readonly ChromeHistoryItem[];
 }
 
 export type ViewType = 'activity' | 'devices' | 'blacklist' | 'export' | 'settings';

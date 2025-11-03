@@ -8,12 +8,15 @@ import type { ChromeHistoryItem } from '../../app/types';
 
 interface HistoryItemHeaderProps {
   dayHeaderText: string;
-  dayItems: ChromeHistoryItem[];
+  dayItems: readonly ChromeHistoryItem[];
   isHourHeader: boolean;
+  isSearchMode?: boolean;
   onDeleteAll: () => void;
+  onDeleteSearch?: () => void;
   onDeleteSelected: () => void;
-  onToggleDaySelection: (items: ChromeHistoryItem[]) => void;
+  onToggleDaySelection: (items: readonly ChromeHistoryItem[]) => void;
   selectedItemsCount: number;
+  totalSearchItemsCount?: number;
   totalSelectedCount: number;
 }
 
@@ -27,6 +30,9 @@ export const HistoryItemHeader = memo(
     onDeleteSelected,
     onDeleteAll,
     totalSelectedCount,
+    isSearchMode,
+    onDeleteSearch,
+    totalSearchItemsCount,
   }: HistoryItemHeaderProps): JSX.Element => {
     const allForDaySelected = useMemo(() => selectedItemsCount === dayItems.length && dayItems.length > 0, [selectedItemsCount, dayItems.length]);
     const someForDaySelected = useMemo(() => selectedItemsCount > 0 && !allForDaySelected, [selectedItemsCount, allForDaySelected]);
@@ -55,9 +61,16 @@ export const HistoryItemHeader = memo(
           </div>
           <h2 className="text-lg font-bold text-slate-800">{dayHeaderText}</h2>
         </div>
-        <DeleteButton disabled={totalSelectedCount === 0 && dayItems.length === 0} onClick={handleButtonClick}>
-          {buttonText}
-        </DeleteButton>
+        <div className="flex items-center space-x-2">
+          {isSearchMode && onDeleteSearch && (
+            <DeleteButton disabled={!totalSearchItemsCount || totalSearchItemsCount === 0} onClick={onDeleteSearch}>
+              Delete entire search
+            </DeleteButton>
+          )}
+          <DeleteButton disabled={totalSelectedCount === 0 && dayItems.length === 0} onClick={handleButtonClick}>
+            {buttonText}
+          </DeleteButton>
+        </div>
       </div>
     );
   },

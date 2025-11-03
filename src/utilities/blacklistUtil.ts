@@ -13,7 +13,7 @@ export function isPotentialRegex(input: string): boolean {
   return trimmed.length > 2 && trimmed.startsWith('/') && trimmed.endsWith('/');
 }
 
-export function createBlacklistMatchers(items: BlacklistItem[]): BlacklistMatchers {
+export function createBlacklistMatchers(items: readonly BlacklistItem[]): BlacklistMatchers {
   const plain = new Set<string>();
   const regexSources: string[] = [];
 

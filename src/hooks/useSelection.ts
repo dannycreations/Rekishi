@@ -5,7 +5,7 @@ import type { ChromeHistoryItem } from '../app/types';
 interface UseSelectionReturn {
   selectedItems: Set<string>;
   toggleSelection: (id: string) => void;
-  toggleDaySelection: (dayItems: ChromeHistoryItem[]) => void;
+  toggleDaySelection: (dayItems: readonly ChromeHistoryItem[]) => void;
   clearSelection: () => void;
 }
 
@@ -25,7 +25,7 @@ export const useSelection = (): UseSelectionReturn => {
   }, []);
 
   const toggleDaySelection = useCallback(
-    (dayItems: ChromeHistoryItem[]) => {
+    (dayItems: readonly ChromeHistoryItem[]) => {
       if (dayItems.length === 0) return;
       const dayItemIds = dayItems.map((item) => item.id);
       const allSelected = dayItems.every((item) => selectedItems.has(item.id));

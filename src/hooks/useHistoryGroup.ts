@@ -5,24 +5,24 @@ import { groupHistoryByDayAndHour } from '../utilities/historyUtil';
 import type { ChromeHistoryItem, HistoryItemGroup } from '../app/types';
 
 interface ProcessedDayGroup {
-  date: Date;
-  items: ChromeHistoryItem[];
-  hourlyGroups: HistoryItemGroup[];
-  hourlyGroupsMap: Map<string, HistoryItemGroup>;
+  readonly date: Date;
+  readonly items: readonly ChromeHistoryItem[];
+  readonly hourlyGroups: readonly HistoryItemGroup[];
+  readonly hourlyGroupsMap: Map<string, HistoryItemGroup>;
 }
 
 interface ItemLocation {
-  dayKey: string;
-  hourKey: string;
+  readonly dayKey: string;
+  readonly hourKey: string;
 }
 
 interface UseHistoryGroupReturn {
-  dailyGroups: ProcessedDayGroup[];
-  dailyGroupsMap: Map<string, ProcessedDayGroup>;
-  itemLocator: Map<string, ItemLocation>;
+  readonly dailyGroups: readonly ProcessedDayGroup[];
+  readonly dailyGroupsMap: Map<string, ProcessedDayGroup>;
+  readonly itemLocator: Map<string, ItemLocation>;
 }
 
-export const useHistoryGroup = (historyItems: ChromeHistoryItem[]): UseHistoryGroupReturn => {
+export const useHistoryGroup = (historyItems: readonly ChromeHistoryItem[]): UseHistoryGroupReturn => {
   const dailyGroupsRaw = useMemo(() => groupHistoryByDayAndHour(historyItems), [historyItems]);
 
   return useMemo(() => {

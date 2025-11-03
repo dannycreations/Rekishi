@@ -3,10 +3,10 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 
 interface ProcessedDayGroupForHook {
-  date: Date;
+  readonly date: Date;
 }
 
-export const useStickyHeader = (scrollContainerRef: RefObject<HTMLElement | null>, processedDailyGroups: ProcessedDayGroupForHook[]) => {
+export const useStickyHeader = (scrollContainerRef: RefObject<HTMLElement | null>, processedDailyGroups: readonly ProcessedDayGroupForHook[]) => {
   const [stickyState, setStickyState] = useState<{ dayKey: string | null; hourText: string | null }>({
     dayKey: null,
     hourText: null,

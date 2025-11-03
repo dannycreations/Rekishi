@@ -1,5 +1,3 @@
-import { memo } from 'react';
-
 import { useDevice } from '../../hooks/useDevice';
 import { DesktopIcon, DevicesIcon, LaptopIcon } from '../shared/Icons';
 import { Skeleton } from '../shared/Skeleton';
@@ -12,7 +10,7 @@ const ICONS = {
   desktop: DesktopIcon,
 } as const;
 
-export const DeviceCardSkeleton = memo((): JSX.Element => {
+export const DeviceCardSkeleton = (): JSX.Element => {
   return (
     <div className="flex items-center space-x-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
       <Skeleton className="h-14 w-14 rounded-full" />
@@ -22,9 +20,9 @@ export const DeviceCardSkeleton = memo((): JSX.Element => {
       </div>
     </div>
   );
-});
+};
 
-export const DeviceView = memo((): JSX.Element => {
+export const DeviceView = (): JSX.Element => {
   const { devices, isLoading, error } = useDevice();
 
   return (
@@ -65,4 +63,4 @@ export const DeviceView = memo((): JSX.Element => {
       )}
     </div>
   );
-});
+};

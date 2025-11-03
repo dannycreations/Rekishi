@@ -40,8 +40,13 @@ export const SettingSection = memo(({ title, children }: SettingSectionProps): J
   );
 });
 
-export const SettingView = memo((): JSX.Element => {
-  const { syncEnabled, dataRetention, setSyncEnabled, setDataRetention } = useSettingStore();
+export const SettingView = (): JSX.Element => {
+  const { syncEnabled, dataRetention, setSyncEnabled, setDataRetention } = useSettingStore((state) => ({
+    syncEnabled: state.syncEnabled,
+    dataRetention: state.dataRetention,
+    setSyncEnabled: state.setSyncEnabled,
+    setDataRetention: state.setDataRetention,
+  }));
   const { Modal: ClearHistoryModal, openModal: openClearHistoryModal } = useConfirm();
   const { addToast } = useToast();
 
@@ -86,11 +91,11 @@ export const SettingView = memo((): JSX.Element => {
               onChange={(e: ChangeEvent<HTMLSelectElement>) => setDataRetention(e.target.value)}
               value={dataRetention}
             >
-              <option value="disabled">Disabled</option>
-              <option value="7">7 days</option>
-              <option value="14">14 days</option>
-              <option value="30">30 days</option>
+              <option value="disabled">Keep Forever</option>
               <option value="90">90 days</option>
+              <option value="30">30 days</option>
+              <option value="14">14 days</option>
+              <option value="7">7 days</option>
             </select>
           </SettingRow>
         </SettingSection>
@@ -115,4 +120,4 @@ export const SettingView = memo((): JSX.Element => {
       <ClearHistoryModal />
     </>
   );
-});
+};

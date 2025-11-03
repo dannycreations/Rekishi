@@ -34,7 +34,7 @@ const RadioCard = memo(({ checked, value, label, description, onChange }: RadioC
   </label>
 ));
 
-export const ExportView = memo((): JSX.Element => {
+export const ExportView = (): JSX.Element => {
   const [format, setFormat] = useState<ExportFormat>('json');
   const [isLoading, setIsLoading] = useState(false);
   const { addToast } = useToast();
@@ -202,4 +202,4 @@ export const ExportView = memo((): JSX.Element => {
       />
     </>
   );
-});
+};

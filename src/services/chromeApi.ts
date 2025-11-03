@@ -17,19 +17,16 @@ export async function search(params: SearchParams): Promise<ChromeHistoryItem[]>
       startTime: params.startTime,
       text: params.text,
     });
-    const mappedResults = results.map((item) => {
-      return {
+    return results
+      .filter((item): item is chrome.history.HistoryItem & { url: string } => !!item.url)
+      .map((item) => ({
         id: `${item.id}-${item.lastVisitTime}`,
-        url: item.url ?? '',
-        title: item.title ?? item.url ?? '',
+        url: item.url,
+        title: item.title ?? item.url,
         lastVisitTime: item.lastVisitTime ?? 0,
         visitCount: item.visitCount ?? 0,
         typedCount: item.typedCount ?? 0,
-      };
-    });
-    return mappedResults.filter((item) => {
-      return item.url;
-    });
+      }));
   }
   return fakeSearch(params);
 }

@@ -4,6 +4,7 @@ import { DAILY_PAGE_SIZE, INIT_CHUNK_SIZE, SEARCH_PAGE_SIZE } from '../app/const
 import { deleteUrl, search } from '../services/chromeApi';
 import { useBlacklistStore } from '../stores/useBlacklistStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
+import { isPotentialRegex } from '../utilities/blacklistUtil';
 import { isSameDay } from '../utilities/dateUtil';
 import { getHostnameFromUrl } from '../utilities/urlUtil';
 
@@ -37,8 +38,7 @@ interface UseHistoryReturn {
 }
 
 export const useHistory = (): UseHistoryReturn => {
-  const [history, setHistory] = useState<ChromeHistoryItem[]>([]);
-  const rawHistoryRef = useRef<ChromeHistoryItem[]>([]);
+  const [rawHistory, setRawHistory] = useState<ChromeHistoryItem[]>([]);
   const historyItemMap = useRef<Map<string, ChromeHistoryItem>>(new Map());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
@@ -46,14 +46,33 @@ export const useHistory = (): UseHistoryReturn => {
   const [hasMoreSearchResults, setHasMoreSearchResults] = useState(true);
   const [lastLoadedDate, setLastLoadedDate] = useState(() => new Date());
 
-  const { isBlacklisted, blacklistedItems } = useBlacklistStore();
-  const { isRegex, searchQuery, selectedDate } = useHistoryStore();
+  const { isBlacklisted, blacklistedItems } = useBlacklistStore((state) => ({
+    isBlacklisted: state.isBlacklisted,
+    blacklistedItems: state.blacklistedItems,
+  }));
+  const { searchQuery, selectedDate } = useHistoryStore((state) => ({
+    searchQuery: state.searchQuery,
+    selectedDate: state.selectedDate,
+  }));
+  const isRegex = useMemo(() => isPotentialRegex(searchQuery), [searchQuery]);
 
-  const removeItemsByIds = useCallback((idsToRemove: Set<string>) => {
-    rawHistoryRef.current = rawHistoryRef.current.filter((item) => !idsToRemove.has(item.id));
-    setHistory((prev) => prev.filter((item) => !idsToRemove.has(item.id)));
-    idsToRemove.forEach((id) => historyItemMap.current.delete(id));
-  }, []);
+  const applyBlacklistFilter = useCallback(
+    (items: ChromeHistoryItem[]) => {
+      if (blacklistedItems.length === 0) return items;
+      return items.filter((item) => {
+        const domain = getHostnameFromUrl(item.url);
+        return !domain || !isBlacklisted(domain);
+      });
+    },
+    [isBlacklisted, blacklistedItems],
+  );
+
+  const history = useMemo(() => applyBlacklistFilter(rawHistory), [rawHistory, applyBlacklistFilter]);
+
+  useEffect(() => {
+    historyItemMap.current.clear();
+    rawHistory.forEach((item) => historyItemMap.current.set(item.id, item));
+  }, [rawHistory]);
 
   const compiledRegex = useMemo(() => {
     if (!isRegex || searchQuery.length <= 2) {
@@ -71,37 +90,10 @@ export const useHistory = (): UseHistoryReturn => {
     }
   }, [isRegex, searchQuery]);
 
-  const applyBlacklistFilter = useCallback(
-    (items: ChromeHistoryItem[]) => {
-      if (blacklistedItems.length === 0) return items;
-      return items.filter((item) => {
-        const domain = getHostnameFromUrl(item.url);
-        return !domain || !isBlacklisted(domain);
-      });
-    },
-    [isBlacklisted, blacklistedItems.length],
-  );
-
-  useEffect(() => {
-    const blacklistedIds = new Set<string>();
-    rawHistoryRef.current.forEach((item) => {
-      const domain = getHostnameFromUrl(item.url);
-      if (domain && isBlacklisted(domain)) {
-        blacklistedIds.add(item.id);
-      }
-    });
-
-    if (blacklistedIds.size > 0) {
-      removeItemsByIds(blacklistedIds);
-    }
-  }, [blacklistedItems, isBlacklisted, removeItemsByIds]);
-
   const fetchInitialDailyHistory = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    setHistory([]);
-    rawHistoryRef.current = [];
-    historyItemMap.current.clear();
+    setRawHistory([]);
     setLastLoadedDate(selectedDate);
 
     const dateToFetch = selectedDate;
@@ -121,9 +113,7 @@ export const useHistory = (): UseHistoryReturn => {
       });
 
       if (isSameDay(dateToFetch, useHistoryStore.getState().selectedDate)) {
-        initialItems.forEach((item) => historyItemMap.current.set(item.id, item));
-        rawHistoryRef.current = initialItems;
-        setHistory(applyBlacklistFilter(initialItems));
+        setRawHistory(initialItems);
       }
     } catch (error: unknown) {
       console.error('Failed to fetch initial daily history:', error);
@@ -150,23 +140,18 @@ export const useHistory = (): UseHistoryReturn => {
         });
 
         if (isSameDay(dateToFetch, useHistoryStore.getState().selectedDate)) {
-          historyItemMap.current.clear();
-          allItemsForDay.forEach((item) => historyItemMap.current.set(item.id, item));
-          rawHistoryRef.current = allItemsForDay;
-          setHistory(applyBlacklistFilter(allItemsForDay));
+          setRawHistory(allItemsForDay);
         }
       } catch (error: unknown) {
         console.error('Failed to fetch rest of daily history in background:', error);
       }
     })();
-  }, [selectedDate, applyBlacklistFilter]);
+  }, [selectedDate]);
 
   const fetchInitialSearchHistory = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    setHistory([]);
-    rawHistoryRef.current = [];
-    historyItemMap.current.clear();
+    setRawHistory([]);
     setHasMoreSearchResults(true);
 
     const textForSearch = isRegex ? '' : searchQuery;
@@ -190,9 +175,7 @@ export const useHistory = (): UseHistoryReturn => {
           filteredInitialItems = [];
         }
       }
-      filteredInitialItems.forEach((item) => historyItemMap.current.set(item.id, item));
-      rawHistoryRef.current = filteredInitialItems;
-      setHistory(applyBlacklistFilter(filteredInitialItems));
+      setRawHistory(filteredInitialItems);
     } catch (error: unknown) {
       console.error('Failed to fetch initial search history:', error);
       setError('Failed to fetch history data.');
@@ -225,10 +208,7 @@ export const useHistory = (): UseHistoryReturn => {
         }
 
         if (searchQuery === useHistoryStore.getState().searchQuery) {
-          historyItemMap.current.clear();
-          filteredMoreItems.forEach((item) => historyItemMap.current.set(item.id, item));
-          rawHistoryRef.current = filteredMoreItems;
-          setHistory(applyBlacklistFilter(filteredMoreItems));
+          setRawHistory(filteredMoreItems);
           if (moreItems.length < SEARCH_PAGE_SIZE) {
             setHasMoreSearchResults(false);
           }
@@ -237,7 +217,7 @@ export const useHistory = (): UseHistoryReturn => {
         console.error('Failed to fetch rest of search history in background:', error);
       }
     })();
-  }, [searchQuery, isRegex, applyBlacklistFilter, compiledRegex]);
+  }, [searchQuery, isRegex, compiledRegex]);
 
   useEffect(() => {
     if (searchQuery) {
@@ -251,10 +231,10 @@ export const useHistory = (): UseHistoryReturn => {
     (message: unknown): void => {
       if (isNewHistoryItemMessage(message)) {
         const newItem = message.payload;
-
         const domain = getHostnameFromUrl(newItem.url);
+
         if (isBlacklisted(domain)) {
-          removeItemsByIds(new Set([newItem.id]));
+          setRawHistory((prev) => prev.filter((item) => item.id !== newItem.id));
           return;
         }
 
@@ -274,17 +254,16 @@ export const useHistory = (): UseHistoryReturn => {
           isMatch = isSameDay(selectedDate, new Date(newItem.lastVisitTime));
         }
 
-        removeItemsByIds(new Set([newItem.id]));
-
-        historyItemMap.current.set(newItem.id, newItem);
-        rawHistoryRef.current.unshift(newItem);
-
-        if (isMatch) {
-          setHistory((prev) => [newItem, ...prev]);
-        }
+        setRawHistory((prev) => {
+          const filtered = prev.filter((item) => item.id !== newItem.id);
+          if (isMatch) {
+            return [newItem, ...filtered];
+          }
+          return filtered;
+        });
       }
     },
-    [isBlacklisted, removeItemsByIds, searchQuery, isRegex, compiledRegex, selectedDate],
+    [isBlacklisted, searchQuery, isRegex, compiledRegex, selectedDate],
   );
 
   useEffect(() => {
@@ -307,7 +286,7 @@ export const useHistory = (): UseHistoryReturn => {
 
     try {
       if (searchQuery) {
-        const lastItem = rawHistoryRef.current[rawHistoryRef.current.length - 1];
+        const lastItem = rawHistory[rawHistory.length - 1];
         if (!lastItem || !hasMoreSearchResults) {
           setIsLoadingMore(false);
           return;
@@ -337,10 +316,7 @@ export const useHistory = (): UseHistoryReturn => {
             itemsToAdd = [];
           }
         }
-
-        itemsToAdd.forEach((item) => historyItemMap.current.set(item.id, item));
-        rawHistoryRef.current.push(...itemsToAdd);
-        setHistory((prev) => [...prev, ...applyBlacklistFilter(itemsToAdd)]);
+        setRawHistory((prev) => [...prev, ...itemsToAdd]);
       } else {
         const nextDate = new Date(lastLoadedDate);
         nextDate.setDate(lastLoadedDate.getDate() - 1);
@@ -357,9 +333,7 @@ export const useHistory = (): UseHistoryReturn => {
           text: '',
         });
         const uniqueNewItems = newItems.filter((i) => !historyItemMap.current.has(i.id));
-        uniqueNewItems.forEach((item) => historyItemMap.current.set(item.id, item));
-        rawHistoryRef.current.push(...uniqueNewItems);
-        setHistory((prev) => [...prev, ...applyBlacklistFilter(uniqueNewItems)]);
+        setRawHistory((prev) => [...prev, ...uniqueNewItems]);
         setLastLoadedDate(nextDate);
       }
     } catch (error: unknown) {
@@ -368,46 +342,41 @@ export const useHistory = (): UseHistoryReturn => {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoading, isLoadingMore, searchQuery, lastLoadedDate, hasMoreSearchResults, isRegex, error, applyBlacklistFilter, compiledRegex]);
+  }, [isLoading, isLoadingMore, searchQuery, lastLoadedDate, hasMoreSearchResults, isRegex, error, compiledRegex, rawHistory]);
 
-  const deleteHistoryItem = useCallback(
-    async (id: string): Promise<void> => {
-      try {
-        const itemToDelete = historyItemMap.current.get(id);
-        if (itemToDelete?.url) {
-          await deleteUrl({ url: itemToDelete.url });
-          removeItemsByIds(new Set([id]));
-        }
-      } catch (error: unknown) {
-        console.error('Failed to delete history item:', error);
-        setError('Failed to delete history item.');
+  const deleteHistoryItem = useCallback(async (id: string): Promise<void> => {
+    try {
+      const itemToDelete = historyItemMap.current.get(id);
+      if (itemToDelete?.url) {
+        await deleteUrl({ url: itemToDelete.url });
+        setRawHistory((prev) => prev.filter((item) => item.id !== id));
       }
-    },
-    [removeItemsByIds],
-  );
+    } catch (error: unknown) {
+      console.error('Failed to delete history item:', error);
+      setError('Failed to delete history item.');
+    }
+  }, []);
 
-  const deleteHistoryItems = useCallback(
-    async (ids: string[]): Promise<void> => {
-      try {
-        const urlsToDelete = new Set<string>();
-        for (const id of ids) {
-          const item = historyItemMap.current.get(id);
-          if (item?.url) {
-            urlsToDelete.add(item.url);
-          }
+  const deleteHistoryItems = useCallback(async (ids: string[]): Promise<void> => {
+    try {
+      const idsToRemove = new Set(ids);
+      const urlsToDelete = new Set<string>();
+      for (const id of ids) {
+        const item = historyItemMap.current.get(id);
+        if (item?.url) {
+          urlsToDelete.add(item.url);
         }
-
-        const deletePromises = Array.from(urlsToDelete).map((url) => deleteUrl({ url }));
-        await Promise.all(deletePromises);
-
-        removeItemsByIds(new Set(ids));
-      } catch (error: unknown) {
-        console.error('Failed to delete history items:', error);
-        setError('Failed to delete history items.');
       }
-    },
-    [removeItemsByIds],
-  );
+
+      const deletePromises = Array.from(urlsToDelete).map((url) => deleteUrl({ url }));
+      await Promise.all(deletePromises);
+
+      setRawHistory((prev) => prev.filter((item) => !idsToRemove.has(item.id)));
+    } catch (error: unknown) {
+      console.error('Failed to delete history items:', error);
+      setError('Failed to delete history items.');
+    }
+  }, []);
 
   const hasMore = useMemo(() => {
     if (searchQuery) {

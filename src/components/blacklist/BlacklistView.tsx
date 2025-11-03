@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useToast } from '../../hooks/useToast';
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
@@ -8,19 +8,16 @@ import { BlacklistItem } from './BlacklistItem';
 
 import type { FormEvent, JSX } from 'react';
 
-export const BlacklistView = memo((): JSX.Element => {
-  const { addDomain, blacklistedItems, removeDomain, editDomain } = useBlacklistStore();
+export const BlacklistView = (): JSX.Element => {
+  const { addDomain, blacklistedItems, removeDomain, editDomain } = useBlacklistStore((state) => ({
+    addDomain: state.addDomain,
+    blacklistedItems: state.blacklistedItems,
+    removeDomain: state.removeDomain,
+    editDomain: state.editDomain,
+  }));
   const [newDomain, setNewDomain] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const { addToast } = useToast();
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
-    return () => clearTimeout(timeoutId);
-  }, []);
 
   const sortedItems = useMemo(() => [...blacklistedItems].sort((a, b) => a.value.localeCompare(b.value)), [blacklistedItems]);
   const blacklistedValues = useMemo(() => new Set(blacklistedItems.map((item) => item.value)), [blacklistedItems]);
@@ -80,7 +77,7 @@ export const BlacklistView = memo((): JSX.Element => {
         <form className="flex items-center space-x-2" onSubmit={handleAddDomain}>
           <div className="relative grow">
             <input
-              ref={inputRef}
+              autoFocus
               className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-4 pr-10 text-sm text-slate-900 outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
               onChange={(e) => {
                 setNewDomain(e.target.value);
@@ -127,4 +124,4 @@ export const BlacklistView = memo((): JSX.Element => {
       </div>
     </div>
   );
-});
+};

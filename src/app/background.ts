@@ -5,89 +5,104 @@ import { BLACKLIST_STORAGE_KEY, CLEANER_ALARM_KEY, CLEANUP_STORAGE_KEY, RETENTIO
 import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
 import type { ChromeHistoryItem } from './types';
 
-interface BlacklistData {
-  items: BlacklistItem[];
-  json: string | null;
+interface StoredBlacklist {
+  state?: { blacklistedItems?: BlacklistItem[] };
+}
+let blacklistMatchers: BlacklistMatchers = { plain: new Set(), combinedRegex: null };
+let blacklistedItems: BlacklistItem[] = [];
+
+interface StoredSettings {
+  state?: { dataRetention?: string; syncEnabled?: boolean };
+}
+interface Settings {
+  dataRetention: string;
+  syncEnabled: boolean;
+}
+const defaultSettings: Settings = { dataRetention: 'disabled', syncEnabled: true };
+let currentSettings: Settings = { ...defaultSettings };
+
+function parseBlacklistFromJSON(json: string | null): BlacklistItem[] {
+  if (!json) return [];
+  try {
+    const parsed: StoredBlacklist = JSON.parse(json);
+    return parsed.state?.blacklistedItems ?? [];
+  } catch (error) {
+    console.error('Failed to parse blacklist from storage', error);
+    return [];
+  }
 }
 
-type StoredBlacklist = {
-  state?: {
-    blacklistedItems?: BlacklistItem[];
-  };
-};
+function parseSettingsFromJSON(json: string | null): Settings {
+  if (!json) return { ...defaultSettings };
+  try {
+    const parsed: StoredSettings = JSON.parse(json);
+    return {
+      dataRetention: parsed.state?.dataRetention ?? defaultSettings.dataRetention,
+      syncEnabled: parsed.state?.syncEnabled ?? defaultSettings.syncEnabled,
+    };
+  } catch (error) {
+    console.error('Failed to parse settings from storage', error);
+    return { ...defaultSettings };
+  }
+}
 
-let blacklistData: BlacklistData = { items: [], json: null };
-let blacklistMatchers: BlacklistMatchers = { plain: new Set(), combinedRegex: null };
-
-function updateBlacklistCache(items: BlacklistItem[], json: string | null) {
-  blacklistData = { items, json };
+function updateBlacklistCache(items: BlacklistItem[]) {
+  blacklistedItems = items;
   blacklistMatchers = createBlacklistMatchers(items);
 }
 
-async function getBlacklistFromStorage(): Promise<string | null> {
-  if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-    const result = await chrome.storage.local.get([BLACKLIST_STORAGE_KEY]);
-    return result[BLACKLIST_STORAGE_KEY] ?? null;
+function updateSettingsCache(settings: Settings) {
+  currentSettings = settings;
+}
+
+async function getFromStorage(key: string, area: 'local' | 'sync'): Promise<string | null> {
+  if (typeof chrome !== 'undefined' && chrome.storage?.[area]) {
+    try {
+      const result = await chrome.storage[area].get([key]);
+      return (result[key] as string) ?? null;
+    } catch (error) {
+      console.error(`Failed to read from chrome.storage.${area}`, error);
+      return null;
+    }
   }
   try {
-    return localStorage.getItem(BLACKLIST_STORAGE_KEY);
-  } catch (error: unknown) {
+    if (area === 'local') {
+      return localStorage.getItem(key);
+    }
+    return null;
+  } catch (error) {
     console.error('Could not access localStorage', error);
     return null;
   }
 }
 
-async function initializeBlacklist(): Promise<void> {
-  const storageValue = await getBlacklistFromStorage();
-  if (storageValue) {
-    try {
-      const parsed: StoredBlacklist = JSON.parse(storageValue);
-      if (parsed.state?.blacklistedItems) {
-        updateBlacklistCache(parsed.state.blacklistedItems, storageValue);
-        return;
-      }
-    } catch (error: unknown) {
-      console.error('Failed to parse blacklist from storage', error);
-    }
-  }
-  updateBlacklistCache([], storageValue);
+async function initializeCaches(): Promise<void> {
+  const blacklistJson = await getFromStorage(BLACKLIST_STORAGE_KEY, 'local');
+  updateBlacklistCache(parseBlacklistFromJSON(blacklistJson));
+
+  const settingsJson = await getFromStorage(SETTINGS_STORAGE_KEY, 'sync');
+  updateSettingsCache(parseSettingsFromJSON(settingsJson));
 }
 
 if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName === 'local' && changes[BLACKLIST_STORAGE_KEY]) {
-      const newStorageValue = changes[BLACKLIST_STORAGE_KEY].newValue ?? null;
-      if (typeof newStorageValue === 'string') {
-        try {
-          const parsed: StoredBlacklist = JSON.parse(newStorageValue);
-          if (parsed.state?.blacklistedItems) {
-            updateBlacklistCache(parsed.state.blacklistedItems, newStorageValue);
-          } else {
-            updateBlacklistCache([], newStorageValue);
-          }
-        } catch (error: unknown) {
-          console.error('Failed to parse updated blacklist from storage', error);
-          updateBlacklistCache([], newStorageValue);
-        }
-      } else {
-        updateBlacklistCache([], null);
-      }
+      const json = (changes[BLACKLIST_STORAGE_KEY].newValue as string) ?? null;
+      updateBlacklistCache(parseBlacklistFromJSON(json));
+    }
+    if (areaName === 'sync' && changes[SETTINGS_STORAGE_KEY]) {
+      const json = (changes[SETTINGS_STORAGE_KEY].newValue as string) ?? null;
+      updateSettingsCache(parseSettingsFromJSON(json));
     }
   });
 }
-
-initializeBlacklist();
 
 function isBlacklisted(domain: string): boolean {
   return isDomainBlacklisted(domain, blacklistMatchers);
 }
 
 async function runBlacklistCleanup() {
-  if (typeof chrome === 'undefined' || !chrome.history?.search || !chrome.history?.deleteUrl) {
-    return;
-  }
-
-  if (blacklistData.items.length === 0) {
+  if (typeof chrome === 'undefined' || !chrome.history?.search || !chrome.history?.deleteUrl || blacklistedItems.length === 0) {
     return;
   }
 
@@ -99,54 +114,21 @@ async function runBlacklistCleanup() {
     const historyItems = await chrome.history.search({ text: '', maxResults: 0, startTime: lastCleanupTime });
 
     const deletions = historyItems
-      .filter((item) => {
-        if (!item.url) {
-          return false;
-        }
-        const domain = getHostnameFromUrl(item.url);
-        return domain && isBlacklisted(domain);
-      })
+      .filter((item) => item.url && isBlacklisted(getHostnameFromUrl(item.url)))
       .map((item) =>
         chrome.history.deleteUrl({ url: item.url! }).catch((error) => {
           console.error(`Error deleting blacklisted URL during cleanup (${item.url!}):`, error.message);
         }),
       );
 
-    await Promise.all(deletions);
+    if (deletions.length > 0) {
+      await Promise.all(deletions);
+    }
     await chrome.storage.local.set({ [CLEANUP_STORAGE_KEY]: now });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error in blacklist cleanup:', message);
   }
-}
-
-type StoredSettings = {
-  state?: {
-    dataRetention?: string;
-    syncEnabled?: boolean;
-  };
-};
-
-type Settings = { dataRetention: string; syncEnabled: boolean };
-
-async function getSettingsFromStorage(): Promise<Settings> {
-  const defaults: Settings = { dataRetention: 'disabled', syncEnabled: true };
-  if (typeof chrome !== 'undefined' && chrome.storage?.sync) {
-    try {
-      const result = await chrome.storage.sync.get([SETTINGS_STORAGE_KEY]);
-      const storageValue = result[SETTINGS_STORAGE_KEY];
-      if (typeof storageValue === 'string') {
-        const parsed: StoredSettings = JSON.parse(storageValue);
-        return {
-          dataRetention: parsed.state?.dataRetention ?? defaults.dataRetention,
-          syncEnabled: parsed.state?.syncEnabled ?? defaults.syncEnabled,
-        };
-      }
-    } catch (error: unknown) {
-      console.error('Failed to parse settings from storage', error);
-    }
-  }
-  return defaults;
 }
 
 async function runRetentionCleanup() {
@@ -162,15 +144,14 @@ async function runRetentionCleanup() {
       return;
     }
 
-    const settings = await getSettingsFromStorage();
-    const { dataRetention } = settings;
+    const { dataRetention } = currentSettings;
 
     if (dataRetention === 'disabled') {
       return;
     }
 
     const retentionDays = parseInt(dataRetention, 10);
-    if (isNaN(retentionDays)) {
+    if (isNaN(retentionDays) || retentionDays <= 0) {
       return;
     }
 
@@ -219,6 +200,8 @@ async function handleVisited(historyItem: chrome.history.HistoryItem): Promise<v
     });
   }
 }
+
+initializeCaches();
 
 if (typeof chrome !== 'undefined' && chrome.history?.onVisited) {
   chrome.history.onVisited.addListener(handleVisited);

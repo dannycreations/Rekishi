@@ -24,7 +24,12 @@ export const Rekishi = (): JSX.Element => {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const mainContentRef = useRef<HTMLElement>(null);
 
-  const { searchQuery, selectedDate, setSearchQuery, setSelectedDate } = useHistoryStore();
+  const { searchQuery, selectedDate, setSearchQuery, setSelectedDate } = useHistoryStore((state) => ({
+    searchQuery: state.searchQuery,
+    selectedDate: state.selectedDate,
+    setSearchQuery: state.setSearchQuery,
+    setSelectedDate: state.setSelectedDate,
+  }));
   const { deleteHistoryItem, deleteHistoryItems, error, hasMore, history, isLoading, isLoadingMore, loadMore } = useHistory();
   const { datesWithHistory, fetchDatesForMonth, isLoading: isLoadingDates } = useHistoryDate();
 
@@ -63,18 +68,6 @@ export const Rekishi = (): JSX.Element => {
     setActiveModal(null);
   }, []);
 
-  const activityViewProps = useMemo(
-    () => ({
-      deleteHistoryItems,
-      hasMore,
-      historyItems: history,
-      isLoadingMore,
-      loadMore,
-      onDelete: deleteHistoryItem,
-    }),
-    [history, deleteHistoryItem, deleteHistoryItems, loadMore, hasMore, isLoadingMore],
-  );
-
   const noHistoryEver = useMemo(
     () => history.length === 0 && datesWithHistory.size === 0 && !isLoading && !isLoadingDates,
     [history, datesWithHistory, isLoading, isLoadingDates],
@@ -108,7 +101,15 @@ export const Rekishi = (): JSX.Element => {
               <p className="mt-2">Start browsing the web to see your history here.</p>
             </div>
           ) : (
-            <HistoryView {...activityViewProps} scrollContainerRef={mainContentRef} />
+            <HistoryView
+              deleteHistoryItems={deleteHistoryItems}
+              hasMore={hasMore}
+              historyItems={history}
+              isLoadingMore={isLoadingMore}
+              loadMore={loadMore}
+              onDelete={deleteHistoryItem}
+              scrollContainerRef={mainContentRef}
+            />
           )}
         </main>
 

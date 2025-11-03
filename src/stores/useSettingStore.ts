@@ -1,5 +1,6 @@
-import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { shallow } from 'zustand/shallow';
+import { createWithEqualityFn } from 'zustand/traditional';
 
 import { SETTINGS_STORAGE_KEY } from '../app/constants';
 import { chromeSyncStorage } from '../utilities/storageUtil';
@@ -11,8 +12,8 @@ interface SettingState {
   readonly setSyncEnabled: (enabled: boolean) => void;
 }
 
-export const useSettingStore = create<SettingState>()(
-  persist(
+export const useSettingStore = createWithEqualityFn(
+  persist<SettingState>(
     (set) => ({
       dataRetention: 'disabled',
       syncEnabled: true,
@@ -28,4 +29,5 @@ export const useSettingStore = create<SettingState>()(
       storage: createJSONStorage(() => chromeSyncStorage),
     },
   ),
+  shallow,
 );

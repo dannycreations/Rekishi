@@ -1,5 +1,3 @@
-import { memo } from 'react';
-
 import type { JSX } from 'react';
 
 interface ToggleSwitchProps {
@@ -7,7 +5,7 @@ interface ToggleSwitchProps {
   setEnabled: (enabled: boolean) => void;
 }
 
-export const ToggleSwitch = memo(({ enabled, setEnabled }: ToggleSwitchProps): JSX.Element => {
+export const ToggleSwitch = ({ enabled, setEnabled }: ToggleSwitchProps): JSX.Element => {
   return (
     <div className="flex cursor-pointer items-center" onClick={() => setEnabled(!enabled)}>
       <div className="relative">
@@ -16,4 +14,4 @@ export const ToggleSwitch = memo(({ enabled, setEnabled }: ToggleSwitchProps): J
       </div>
     </div>
   );
-});
+};

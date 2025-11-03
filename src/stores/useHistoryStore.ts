@@ -1,31 +1,29 @@
-import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { shallow } from 'zustand/shallow';
+import { createWithEqualityFn } from 'zustand/traditional';
 
 import { HISTORY_STORAGE_KEY } from '../app/constants';
 import { chromeLocalStorage } from '../utilities/storageUtil';
 
 interface HistoryState {
-  readonly isRegex: boolean;
   readonly searchQuery: string;
   readonly selectedDate: Date;
   readonly setSearchQuery: (query: string) => void;
   readonly setSelectedDate: (date: Date) => void;
 }
 
-export const useHistoryStore = create<HistoryState>()(
-  persist(
+export const useHistoryStore = createWithEqualityFn(
+  persist<HistoryState>(
     (set) => ({
-      isRegex: false,
       searchQuery: '',
       selectedDate: new Date(),
       setSearchQuery: (query) => {
         set({
           searchQuery: query,
-          isRegex: query.length > 2 && query.startsWith('/') && query.endsWith('/'),
         });
       },
       setSelectedDate: (date) => {
-        set({ selectedDate: date, searchQuery: '', isRegex: false });
+        set({ selectedDate: date, searchQuery: '' });
       },
     }),
     {
@@ -38,11 +36,11 @@ export const useHistoryStore = create<HistoryState>()(
           return value;
         },
       }),
-      partialize: (state) => {
-        return {
+      partialize: (state) =>
+        ({
           selectedDate: state.selectedDate,
-        };
-      },
+        }) as HistoryState,
     },
   ),
+  shallow,
 );

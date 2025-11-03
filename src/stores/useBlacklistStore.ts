@@ -1,65 +1,77 @@
-import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { shallow } from 'zustand/shallow';
+import { createWithEqualityFn } from 'zustand/traditional';
 
 import { BLACKLIST_STORAGE_KEY } from '../app/constants';
 import { createBlacklistMatchers, isDomainBlacklisted } from '../utilities/blacklistUtil';
 import { chromeLocalStorage } from '../utilities/storageUtil';
 
+import type { StateStorage } from 'zustand/middleware';
 import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
 
 interface BlacklistState {
-  readonly addDomain: (value: string, isRegex: boolean) => void;
   readonly blacklistedItems: BlacklistItem[];
+  blacklistMatchers: BlacklistMatchers;
+  readonly addDomain: (value: string, isRegex: boolean) => void;
   readonly editDomain: (oldValue: string, newValue: string, newIsRegex: boolean) => void;
-  readonly isBlacklisted: (domain: string) => boolean;
   readonly removeDomain: (value: string) => void;
+  readonly isBlacklisted: (domain: string) => boolean;
 }
 
-let lastBlacklistedItems: BlacklistItem[] | undefined;
-let cachedMatchers: BlacklistMatchers;
-
-export const useBlacklistStore = create<BlacklistState>()(
-  persist(
+export const useBlacklistStore = createWithEqualityFn(
+  persist<BlacklistState>(
     (set, get) => ({
       blacklistedItems: [],
+      blacklistMatchers: { plain: new Set(), combinedRegex: null },
       addDomain: (value, isRegex) => {
         set((state) => {
           if (state.blacklistedItems.some((item) => item.value === value)) {
             return state;
           }
-          return { blacklistedItems: [...state.blacklistedItems, { value, isRegex }] };
+          const newItems = [...state.blacklistedItems, { value, isRegex }];
+          return {
+            blacklistedItems: newItems,
+            blacklistMatchers: createBlacklistMatchers(newItems),
+          };
         });
       },
       editDomain: (oldValue, newValue, newIsRegex) => {
-        set((state) => ({
-          blacklistedItems: state.blacklistedItems.map((item) => {
+        set((state) => {
+          const newItems = state.blacklistedItems.map((item) => {
             if (item.value === oldValue) {
               return { value: newValue, isRegex: newIsRegex };
             }
             return item;
-          }),
-        }));
-      },
-      isBlacklisted: (domain: string): boolean => {
-        const { blacklistedItems } = get();
-        if (blacklistedItems !== lastBlacklistedItems) {
-          cachedMatchers = createBlacklistMatchers(blacklistedItems);
-          lastBlacklistedItems = blacklistedItems;
-        }
-
-        return isDomainBlacklisted(domain, cachedMatchers);
+          });
+          return {
+            blacklistedItems: newItems,
+            blacklistMatchers: createBlacklistMatchers(newItems),
+          };
+        });
       },
       removeDomain: (value) => {
-        set((state) => ({
-          blacklistedItems: state.blacklistedItems.filter((item) => {
-            return item.value !== value;
-          }),
-        }));
+        set((state) => {
+          const newItems = state.blacklistedItems.filter((item) => item.value !== value);
+          return {
+            blacklistedItems: newItems,
+            blacklistMatchers: createBlacklistMatchers(newItems),
+          };
+        });
+      },
+      isBlacklisted: (domain: string): boolean => {
+        return isDomainBlacklisted(domain, get().blacklistMatchers);
       },
     }),
     {
       name: BLACKLIST_STORAGE_KEY,
-      storage: createJSONStorage(() => chromeLocalStorage),
+      storage: createJSONStorage(() => chromeLocalStorage as StateStorage),
+      partialize: (state) => ({ blacklistedItems: state.blacklistedItems }) as BlacklistState,
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.blacklistMatchers = createBlacklistMatchers(state.blacklistedItems);
+        }
+      },
     },
   ),
+  shallow,
 );

@@ -8,6 +8,11 @@ export interface BlacklistMatchers {
   combinedRegex: RegExp | null;
 }
 
+export function isPotentialRegex(input: string): boolean {
+  const trimmed = input.trim();
+  return trimmed.length > 2 && trimmed.startsWith('/') && trimmed.endsWith('/');
+}
+
 export function createBlacklistMatchers(items: BlacklistItem[]): BlacklistMatchers {
   const plain = new Set<string>();
   const regexSources: string[] = [];
@@ -43,7 +48,7 @@ export function parseInput(input: string): { value: string; isRegex: boolean } |
     return null;
   }
 
-  const isRegex = trimmedValue.length > 2 && trimmedValue.startsWith('/') && trimmedValue.endsWith('/');
+  const isRegex = isPotentialRegex(trimmedValue);
   const value = isRegex ? trimmedValue.slice(1, -1) : trimmedValue;
 
   if (!value) {

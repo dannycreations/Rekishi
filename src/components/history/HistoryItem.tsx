@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useToast } from '../../hooks/useToast';
 import { useHistoryStore } from '../../stores/useHistoryStore';
+import { isPotentialRegex } from '../../utilities/blacklistUtil';
 import { getHostnameFromUrl } from '../../utilities/urlUtil';
 import { CheckIcon, ExternalLinkIcon, GlobeIcon } from '../shared/Icons';
 import { HistoryItemActions } from './HistoryItemActions';
@@ -14,7 +15,7 @@ interface HistoryHighlightProps {
   text: string;
 }
 
-const HistoryHighlight = memo(({ text, highlight }: HistoryHighlightProps) => {
+const HistoryHighlight = ({ text, highlight }: HistoryHighlightProps): JSX.Element => {
   const highlightRegex = useMemo(() => {
     if (!highlight) {
       return null;
@@ -47,7 +48,7 @@ const HistoryHighlight = memo(({ text, highlight }: HistoryHighlightProps) => {
       )}
     </>
   );
-});
+};
 
 interface HistoryItemProps {
   isChecked: boolean;
@@ -59,11 +60,15 @@ interface HistoryItemProps {
 
 export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, isChecked, onToggleSelection }: HistoryItemProps): JSX.Element => {
   const { id, lastVisitTime, title, url } = item;
-  const { searchQuery, isRegex, setSearchQuery } = useHistoryStore();
+  const { searchQuery, setSearchQuery } = useHistoryStore((state) => ({
+    searchQuery: state.searchQuery,
+    setSearchQuery: state.setSearchQuery,
+  }));
   const [faviconError, setFaviconError] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState(false);
   const { addToast } = useToast();
 
+  const isRegex = useMemo(() => isPotentialRegex(searchQuery), [searchQuery]);
   const hostname = useMemo(() => getHostnameFromUrl(url), [url]);
   const shouldHighlight = searchQuery && !isRegex;
 

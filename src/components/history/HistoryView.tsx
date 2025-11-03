@@ -1,6 +1,8 @@
-import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { useConfirm } from '../../hooks/useConfirm';
+import { useSelection } from '../../hooks/useSelection';
+import { useStickyHeader } from '../../hooks/useStickyHeader';
 import { useToast } from '../../hooks/useToast';
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
 import { formatDayHeader } from '../../utilities/dateUtil';
@@ -38,28 +40,11 @@ interface ProcessedDayGroup {
 
 export const HistoryView = memo(
   ({ deleteHistoryItems, hasMore, historyItems, isLoadingMore, loadMore, onDelete, scrollContainerRef }: HistoryViewProps): JSX.Element => {
-    const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+    const { selectedItems, toggleSelection, toggleDaySelection, clearSelection } = useSelection();
     const { Modal: DeleteModal, openModal: openDeleteModal } = useConfirm();
     const { Modal: BlacklistModal, openModal: openBlacklistModal } = useConfirm();
     const { addToast } = useToast();
     const { addDomain } = useBlacklistStore();
-    const [stickyState, setStickyState] = useState<{
-      dayKey: string | null;
-      hourText: string | null;
-    }>({ dayKey: null, hourText: null });
-    const headerPositions = useRef<{ top: number; dayKey: string; hourText: string | null }[]>([]);
-
-    const handleToggleSelection = useCallback((id: string): void => {
-      setSelectedItems((prev) => {
-        const newSelectedItems = new Set(prev);
-        if (newSelectedItems.has(id)) {
-          newSelectedItems.delete(id);
-        } else {
-          newSelectedItems.add(id);
-        }
-        return newSelectedItems;
-      });
-    }, []);
 
     const handleOpenDeleteSelectedModal = useCallback(() => {
       if (selectedItems.size > 0) {
@@ -75,13 +60,13 @@ export const HistoryView = memo(
           onConfirm: async () => {
             const count = selectedItems.size;
             await deleteHistoryItems(Array.from(selectedItems));
-            setSelectedItems(new Set());
+            clearSelection();
             addToast(`${count} item${count > 1 ? 's' : ''} deleted.`, 'success');
           },
           title: 'Delete Selected Items',
         });
       }
-    }, [selectedItems, deleteHistoryItems, addToast, openDeleteModal]);
+    }, [selectedItems, deleteHistoryItems, addToast, openDeleteModal, clearSelection]);
 
     const handleOpenDeleteAllModal = useCallback(
       (items: ChromeHistoryItem[], type: 'day' | 'hour') => {
@@ -150,6 +135,8 @@ export const HistoryView = memo(
       [addDomain, addToast, openBlacklistModal],
     );
 
+    const dailyGroups = useMemo(() => groupHistoryByDayAndHour(historyItems), [historyItems]);
+
     const itemIdToDayKeyMap = useMemo(() => {
       const map = new Map<string, string>();
       for (const item of historyItems) {
@@ -160,20 +147,15 @@ export const HistoryView = memo(
       return map;
     }, [historyItems]);
 
-    const selectedCountByDay = useMemo(() => {
-      const counts = new Map<string, number>();
+    const { processedDailyGroups, dailyGroupsMap } = useMemo(() => {
+      const selectedCountByDay = new Map<string, number>();
       selectedItems.forEach((itemId) => {
         const dayKey = itemIdToDayKeyMap.get(itemId);
         if (dayKey) {
-          counts.set(dayKey, (counts.get(dayKey) || 0) + 1);
+          selectedCountByDay.set(dayKey, (selectedCountByDay.get(dayKey) || 0) + 1);
         }
       });
-      return counts;
-    }, [selectedItems, itemIdToDayKeyMap]);
 
-    const dailyGroups = useMemo(() => groupHistoryByDayAndHour(historyItems), [historyItems]);
-
-    const { processedDailyGroups, dailyGroupsMap } = useMemo(() => {
       const groups: ProcessedDayGroup[] = dailyGroups.map((dayGroup) => {
         const hourlyGroupsArray = dayGroup.hourlyGroups.map((group) => ({
           ...group,
@@ -192,92 +174,9 @@ export const HistoryView = memo(
 
       const map = new Map<string, ProcessedDayGroup>(groups.map((g) => [g.date.toISOString(), g]));
       return { processedDailyGroups: groups, dailyGroupsMap: map };
-    }, [dailyGroups, selectedCountByDay, selectedItems]);
+    }, [dailyGroups, selectedItems, itemIdToDayKeyMap]);
 
-    const handleToggleDaySelection = useCallback(
-      (dayItems: ChromeHistoryItem[]) => {
-        if (dayItems.length === 0) return;
-
-        const date = new Date(dayItems[0].lastVisitTime);
-        date.setHours(0, 0, 0, 0);
-        const dayKey = date.toISOString();
-        const selectedCountInDay = selectedCountByDay.get(dayKey) || 0;
-        const allCurrentlySelected = dayItems.length > 0 && selectedCountInDay === dayItems.length;
-
-        const dayItemIds = dayItems.map((item) => item.id);
-
-        setSelectedItems((prev) => {
-          const newSelectedItems = new Set(prev);
-          if (allCurrentlySelected) {
-            dayItemIds.forEach((id) => newSelectedItems.delete(id));
-          } else {
-            dayItemIds.forEach((id) => newSelectedItems.add(id));
-          }
-          return newSelectedItems;
-        });
-      },
-      [selectedCountByDay],
-    );
-
-    useLayoutEffect(() => {
-      const container = scrollContainerRef.current;
-      if (!container) return;
-
-      const positions: { top: number; dayKey: string; hourText: string | null }[] = [];
-      const headerElements = container.querySelectorAll<HTMLElement>('[data-day-key]');
-
-      headerElements.forEach((el) => {
-        positions.push({
-          top: el.offsetTop,
-          dayKey: el.dataset.dayKey!,
-          hourText: el.dataset.hourKey || null,
-        });
-      });
-      headerPositions.current = positions;
-
-      const handleScroll = (): void => {
-        const scrollTop = container.scrollTop;
-        const currentPositions = headerPositions.current;
-
-        let low = 0;
-        let high = currentPositions.length - 1;
-        let activeIndex = -1;
-
-        while (low <= high) {
-          const mid = Math.floor((low + high) / 2);
-          if (currentPositions[mid].top <= scrollTop) {
-            activeIndex = mid;
-            low = mid + 1;
-          } else {
-            high = mid - 1;
-          }
-        }
-
-        let activeDayKey: string | null = null;
-        let activeHourText: string | null = null;
-
-        if (activeIndex !== -1) {
-          activeDayKey = currentPositions[activeIndex].dayKey;
-          activeHourText = currentPositions[activeIndex].hourText;
-        } else if (dailyGroups.length > 0) {
-          activeDayKey = dailyGroups[0].date.toISOString();
-        }
-
-        setStickyState((prev) => {
-          if (prev.dayKey === activeDayKey && prev.hourText === activeHourText) {
-            return prev;
-          }
-          return { dayKey: activeDayKey, hourText: activeHourText };
-        });
-      };
-
-      container.addEventListener('scroll', handleScroll, { passive: true });
-      handleScroll();
-
-      return () => {
-        container.removeEventListener('scroll', handleScroll);
-      };
-    }, [dailyGroups, scrollContainerRef]);
+    const stickyState = useStickyHeader(scrollContainerRef, processedDailyGroups);
 
     const stickyDayGroup = useMemo(() => {
       if (!stickyState.dayKey) return null;
@@ -354,7 +253,7 @@ export const HistoryView = memo(
               isHourHeader={!!stickyState.hourText}
               onDeleteAll={() => handleOpenDeleteAllModal(stickyHeaderData.items, stickyState.hourText ? 'hour' : 'day')}
               onDeleteSelected={handleOpenDeleteSelectedModal}
-              onToggleDaySelection={() => handleToggleDaySelection(stickyHeaderData.items)}
+              onToggleDaySelection={() => toggleDaySelection(stickyHeaderData.items)}
               selectedItemsCount={stickyHeaderData.selectedCount}
               totalSelectedCount={selectedItems.size}
             />
@@ -382,7 +281,7 @@ export const HistoryView = memo(
                     isHourHeader={false}
                     onDeleteAll={() => handleOpenDeleteAllModal(dayGroup.items, 'day')}
                     onDeleteSelected={handleOpenDeleteSelectedModal}
-                    onToggleDaySelection={() => handleToggleDaySelection(dayGroup.items)}
+                    onToggleDaySelection={() => toggleDaySelection(dayGroup.items)}
                     selectedItemsCount={dayGroup.selectedInDayCount}
                     totalSelectedCount={selectedItems.size}
                   />
@@ -400,7 +299,7 @@ export const HistoryView = memo(
                           onBlacklistRequest={handleBlacklistRequest}
                           onDeleteHourRequest={(items) => handleOpenDeleteAllModal(items, 'hour')}
                           onDeleteRequest={handleDeleteItemRequest}
-                          onToggleSelection={handleToggleSelection}
+                          onToggleSelection={toggleSelection}
                           selectedItems={selectedItems}
                         />
                       </div>

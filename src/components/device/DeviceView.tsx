@@ -4,7 +4,7 @@ import { Skeleton } from '../shared/Skeleton';
 
 import type { JSX } from 'react';
 
-const ICONS = {
+const DEVICE_ICONS = {
   laptop: LaptopIcon,
   phone: DevicesIcon,
   desktop: DesktopIcon,
@@ -46,7 +46,7 @@ export const DeviceView = (): JSX.Element => {
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {devices.map((device) => {
-            const IconComponent = ICONS[device.type] || DesktopIcon;
+            const IconComponent = DEVICE_ICONS[device.type] || DesktopIcon;
             return (
               <div key={device.name} className="flex items-center space-x-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="rounded-full bg-slate-100 p-3">

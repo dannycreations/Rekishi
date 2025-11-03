@@ -6,7 +6,7 @@ import { isSameDay } from '../../utilities/dateUtil';
 import { CalendarSkeleton } from './CalendarSkeleton';
 import { ChevronLeftIcon, ChevronRightIcon } from './Icons';
 
-import type { CSSProperties, JSX, ReactPortal } from 'react';
+import type { CSSProperties, ReactPortal } from 'react';
 
 interface CalendarPopoverProps {
   anchorEl: HTMLElement | null;

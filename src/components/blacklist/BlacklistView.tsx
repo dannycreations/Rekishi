@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { useToast } from '../../hooks/useToast';
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
+import { useToastStore } from '../../stores/useToastStore';
 import { parseInput } from '../../utilities/blacklistUtil';
 import { CloseIcon } from '../shared/Icons';
 import { BlacklistItem } from './BlacklistItem';
@@ -17,7 +17,7 @@ export const BlacklistView = (): JSX.Element => {
   }));
   const [newDomain, setNewDomain] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const { addToast } = useToast();
+  const addToast = useToastStore((state) => state.addToast);
 
   const sortedItems = useMemo(() => [...blacklistedItems].sort((a, b) => a.value.localeCompare(b.value)), [blacklistedItems]);
   const blacklistedValues = useMemo(() => new Set(blacklistedItems.map((item) => item.value)), [blacklistedItems]);

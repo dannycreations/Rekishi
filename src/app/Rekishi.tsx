@@ -19,6 +19,13 @@ import { VIEW_MODAL_SIZES, VIEW_TITLES } from './constants';
 import type { JSX } from 'react';
 import type { ModalViewType } from './types';
 
+const MODAL_COMPONENTS: Record<ModalViewType, JSX.Element> = {
+  devices: <DeviceView />,
+  blacklist: <BlacklistView />,
+  export: <ExportView />,
+  settings: <SettingView />,
+} as const;
+
 export const Rekishi = (): JSX.Element => {
   const [activeModal, setActiveModal] = useState<ModalViewType | null>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
@@ -115,10 +122,7 @@ export const Rekishi = (): JSX.Element => {
 
         {activeModal && (
           <ViewModal isOpen={!!activeModal} onClose={handleCloseModal} size={VIEW_MODAL_SIZES[activeModal]} title={VIEW_TITLES[activeModal] ?? ''}>
-            {activeModal === 'devices' && <DeviceView />}
-            {activeModal === 'blacklist' && <BlacklistView />}
-            {activeModal === 'export' && <ExportView />}
-            {activeModal === 'settings' && <SettingView />}
+            {MODAL_COMPONENTS[activeModal]}
           </ViewModal>
         )}
       </div>

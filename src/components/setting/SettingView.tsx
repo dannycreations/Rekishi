@@ -1,9 +1,9 @@
 import { memo, useCallback } from 'react';
 
 import { useConfirm } from '../../hooks/useConfirm';
-import { useToast } from '../../hooks/useToast';
 import { deleteAllHistory } from '../../services/chromeApi';
 import { useSettingStore } from '../../stores/useSettingStore';
+import { useToastStore } from '../../stores/useToastStore';
 import { ToggleSwitch } from '../shared/ToggleSwitch';
 
 import type { ChangeEvent, JSX, ReactNode } from 'react';
@@ -48,7 +48,7 @@ export const SettingView = (): JSX.Element => {
     setDataRetention: state.setDataRetention,
   }));
   const { Modal: ClearHistoryModal, openModal: openClearHistoryModal } = useConfirm();
-  const { addToast } = useToast();
+  const addToast = useToastStore((state) => state.addToast);
 
   const handleConfirmClearHistory = useCallback(async (): Promise<void> => {
     try {

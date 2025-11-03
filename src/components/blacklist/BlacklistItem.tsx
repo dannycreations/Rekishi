@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from 'react';
 
-import { useToast } from '../../hooks/useToast';
+import { useToastStore } from '../../stores/useToastStore';
 import { parseInput } from '../../utilities/blacklistUtil';
 import { CheckIcon, CloseIcon, PencilIcon, TrashIcon } from '../shared/Icons';
 
@@ -16,7 +16,7 @@ interface BlacklistItemProps {
 export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.isRegex ? `/${item.value}/` : item.value);
-  const { addToast } = useToast();
+  const addToast = useToastStore((state) => state.addToast);
 
   const handleRemove = useCallback(() => {
     onRemove(item.value);

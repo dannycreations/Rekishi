@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 
-import { useToast } from '../../hooks/useToast';
 import { useHistoryStore } from '../../stores/useHistoryStore';
+import { useToastStore } from '../../stores/useToastStore';
 import { isPotentialRegex } from '../../utilities/blacklistUtil';
 import { getHostnameFromUrl } from '../../utilities/urlUtil';
 import { CheckIcon, ExternalLinkIcon, GlobeIcon } from '../shared/Icons';
@@ -66,7 +66,7 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
   }));
   const [faviconError, setFaviconError] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState(false);
-  const { addToast } = useToast();
+  const addToast = useToastStore((state) => state.addToast);
 
   const isRegex = useMemo(() => isPotentialRegex(searchQuery), [searchQuery]);
   const hostname = useMemo(() => getHostnameFromUrl(url), [url]);

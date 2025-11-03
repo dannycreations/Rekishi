@@ -6,17 +6,22 @@ import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUti
 import type { ChromeHistoryItem } from './types';
 
 interface StoredBlacklist {
-  state?: { blacklistedItems?: BlacklistItem[] };
+  readonly state?: {
+    readonly blacklistedItems?: BlacklistItem[];
+  };
 }
 let blacklistMatchers: BlacklistMatchers = { plain: new Set(), combinedRegex: null };
 let blacklistedItems: BlacklistItem[] = [];
 
 interface StoredSettings {
-  state?: { dataRetention?: string; syncEnabled?: boolean };
+  readonly state?: {
+    readonly dataRetention?: string;
+    readonly syncEnabled?: boolean;
+  };
 }
 interface Settings {
-  dataRetention: string;
-  syncEnabled: boolean;
+  readonly dataRetention: string;
+  readonly syncEnabled: boolean;
 }
 const defaultSettings: Settings = { dataRetention: 'disabled', syncEnabled: true };
 let currentSettings: Settings = { ...defaultSettings };

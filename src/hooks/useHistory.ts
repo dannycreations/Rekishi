@@ -349,7 +349,7 @@ export const useHistory = (): UseHistoryReturn => {
       const itemToDelete = historyItemMap.current.get(id);
       if (itemToDelete?.url) {
         await deleteUrl({ url: itemToDelete.url });
-        setRawHistory((prev) => prev.filter((item) => item.id !== id));
+        setRawHistory((prev) => prev.filter((item) => item.url !== itemToDelete.url));
       }
     } catch (error: unknown) {
       console.error('Failed to delete history item:', error);
@@ -359,7 +359,6 @@ export const useHistory = (): UseHistoryReturn => {
 
   const deleteHistoryItems = useCallback(async (ids: string[]): Promise<void> => {
     try {
-      const idsToRemove = new Set(ids);
       const urlsToDelete = new Set<string>();
       for (const id of ids) {
         const item = historyItemMap.current.get(id);
@@ -371,7 +370,7 @@ export const useHistory = (): UseHistoryReturn => {
       const deletePromises = Array.from(urlsToDelete).map((url) => deleteUrl({ url }));
       await Promise.all(deletePromises);
 
-      setRawHistory((prev) => prev.filter((item) => !idsToRemove.has(item.id)));
+      setRawHistory((prev) => prev.filter((item) => !urlsToDelete.has(item.url)));
     } catch (error: unknown) {
       console.error('Failed to delete history items:', error);
       setError('Failed to delete history items.');

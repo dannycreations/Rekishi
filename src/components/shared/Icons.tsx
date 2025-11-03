@@ -1,14 +1,8 @@
-import { memo } from 'react';
-
-import type { FC, JSX, SVGProps } from 'react';
+import type { JSX, SVGProps } from 'react';
 
 export type IconProps = SVGProps<SVGSVGElement>;
 
-const createIcon = (Component: FC<IconProps>) => {
-  return memo(Component);
-};
-
-export const ExportIcon = createIcon((props: IconProps): JSX.Element => {
+export const ExportIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -18,9 +12,9 @@ export const ExportIcon = createIcon((props: IconProps): JSX.Element => {
       />
     </svg>
   );
-});
+};
 
-export const BlacklistDomainIcon = createIcon((props: IconProps): JSX.Element => {
+export const BlacklistDomainIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -31,9 +25,9 @@ export const BlacklistDomainIcon = createIcon((props: IconProps): JSX.Element =>
       <path d="M3 3l18 18" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-});
+};
 
-export const CalendarIcon = createIcon((props: IconProps) => {
+export const CalendarIcon = (props: IconProps) => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -43,41 +37,41 @@ export const CalendarIcon = createIcon((props: IconProps) => {
       />
     </svg>
   );
-});
+};
 
-export const CheckIcon = createIcon((props: IconProps): JSX.Element => {
+export const CheckIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path d="M4.5 12.75l6 6 9-13.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-});
+};
 
-export const ChevronLeftIcon = createIcon((props: IconProps): JSX.Element => {
+export const ChevronLeftIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path d="M15.75 19.5L8.25 12l7.5-7.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-});
+};
 
-export const ChevronRightIcon = createIcon((props: IconProps): JSX.Element => {
+export const ChevronRightIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path d="M8.25 4.5l7.5 7.5-7.5 7.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-});
+};
 
-export const CloseIcon = createIcon((props: IconProps): JSX.Element => {
+export const CloseIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-});
+};
 
-export const CopyIcon = createIcon((props: IconProps): JSX.Element => {
+export const CopyIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -87,9 +81,9 @@ export const CopyIcon = createIcon((props: IconProps): JSX.Element => {
       />
     </svg>
   );
-});
+};
 
-export const DesktopIcon = createIcon((props: IconProps): JSX.Element => {
+export const DesktopIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -99,9 +93,9 @@ export const DesktopIcon = createIcon((props: IconProps): JSX.Element => {
       />
     </svg>
   );
-});
+};
 
-export const DevicesIcon = createIcon((props: IconProps): JSX.Element => {
+export const DevicesIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -111,17 +105,17 @@ export const DevicesIcon = createIcon((props: IconProps): JSX.Element => {
       />
     </svg>
   );
-});
+};
 
-export const ErrorIcon = createIcon((props: IconProps): JSX.Element => {
+export const ErrorIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
     </svg>
   );
-});
+};
 
-export const ExternalLinkIcon = createIcon((props: IconProps) => {
+export const ExternalLinkIcon = (props: IconProps) => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -131,9 +125,9 @@ export const ExternalLinkIcon = createIcon((props: IconProps) => {
       />
     </svg>
   );
-});
+};
 
-export const GlobeIcon = createIcon((props: IconProps): JSX.Element => {
+export const GlobeIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -143,9 +137,9 @@ export const GlobeIcon = createIcon((props: IconProps): JSX.Element => {
       />
     </svg>
   );
-});
+};
 
-export const InfoIcon = createIcon((props: IconProps): JSX.Element => {
+export const InfoIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -155,9 +149,9 @@ export const InfoIcon = createIcon((props: IconProps): JSX.Element => {
       />
     </svg>
   );
-});
+};
 
-export const LaptopIcon = createIcon((props: IconProps): JSX.Element => {
+export const LaptopIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -167,9 +161,9 @@ export const LaptopIcon = createIcon((props: IconProps): JSX.Element => {
       />
     </svg>
   );
-});
+};
 
-export const LoadingSpinnerIcon = createIcon((props: IconProps): JSX.Element => {
+export const LoadingSpinnerIcon = (props: IconProps): JSX.Element => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -186,17 +180,17 @@ export const LoadingSpinnerIcon = createIcon((props: IconProps): JSX.Element => 
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>
   );
-});
+};
 
-export const LogoIcon = createIcon((props: IconProps): JSX.Element => {
+export const LogoIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-});
+};
 
-export const PencilIcon = createIcon((props: IconProps): JSX.Element => {
+export const PencilIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -206,17 +200,17 @@ export const PencilIcon = createIcon((props: IconProps): JSX.Element => {
       />
     </svg>
   );
-});
+};
 
-export const SearchIcon = createIcon((props: IconProps): JSX.Element => {
+export const SearchIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-});
+};
 
-export const SettingsIcon = createIcon((props: IconProps): JSX.Element => {
+export const SettingsIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -226,17 +220,17 @@ export const SettingsIcon = createIcon((props: IconProps): JSX.Element => {
       />
     </svg>
   );
-});
+};
 
-export const SuccessIcon = createIcon((props: IconProps): JSX.Element => {
+export const SuccessIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   );
-});
+};
 
-export const TrashIcon = createIcon((props: IconProps): JSX.Element => {
+export const TrashIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -246,12 +240,12 @@ export const TrashIcon = createIcon((props: IconProps): JSX.Element => {
       />
     </svg>
   );
-});
+};
 
-export const ArrowUpIcon = createIcon((props: IconProps): JSX.Element => {
+export const ArrowUpIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path d="M12 19.5v-15m-6.75 6.75L12 4.5l6.75 6.75" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-});
+};

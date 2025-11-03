@@ -1,8 +1,8 @@
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import { useHistoryDate } from '../../hooks/useHistoryDate';
-import { useToast } from '../../hooks/useToast';
 import { search } from '../../services/chromeApi';
+import { useToastStore } from '../../stores/useToastStore';
 import { formatDateForInput } from '../../utilities/dateUtil';
 import { downloadFile, generateFileContent } from '../../utilities/exportUtil';
 import { CalendarPopover } from '../shared/CalendarPopover';
@@ -37,7 +37,7 @@ const RadioCard = memo(({ checked, value, label, description, onChange }: RadioC
 export const ExportView = (): JSX.Element => {
   const [format, setFormat] = useState<ExportFormat>('json');
   const [isLoading, setIsLoading] = useState(false);
-  const { addToast } = useToast();
+  const addToast = useToastStore((state) => state.addToast);
 
   const [endDate, setEndDate] = useState(() => {
     return formatDateForInput(new Date());

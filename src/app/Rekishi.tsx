@@ -1,9 +1,10 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BlacklistView } from '../components/blacklist/BlacklistView';
 import { DeviceView } from '../components/device/DeviceView';
 import { ExportView } from '../components/export/ExportView';
-import { HistoryView, HistoryViewSkeleton } from '../components/history/HistoryView';
+import { HistoryView } from '../components/history/HistoryView';
+import { HistoryViewSkeleton } from '../components/history/HistoryViewSkeleton';
 import { Header } from '../components/main/Header';
 import { SettingView } from '../components/setting/SettingView';
 import { LogoIcon } from '../components/shared/Icons';
@@ -18,24 +19,7 @@ import { VIEW_MODAL_SIZES, VIEW_TITLES } from './constants';
 import type { JSX } from 'react';
 import type { ModalViewType } from './types';
 
-interface ModalContentProps {
-  view: ModalViewType;
-}
-
-export const ModalContent = memo(({ view }: ModalContentProps): JSX.Element => {
-  switch (view) {
-    case 'devices':
-      return <DeviceView />;
-    case 'blacklist':
-      return <BlacklistView />;
-    case 'export':
-      return <ExportView />;
-    case 'settings':
-      return <SettingView />;
-  }
-});
-
-export const App = (): JSX.Element => {
+export const Rekishi = (): JSX.Element => {
   const [activeModal, setActiveModal] = useState<ModalViewType | null>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const mainContentRef = useRef<HTMLElement>(null);
@@ -97,7 +81,7 @@ export const App = (): JSX.Element => {
   );
 
   return (
-    <div className="h-screen bg-slate-100 text-slate-900">
+    <div className="h-screen bg-slate-100 font-sans text-slate-900">
       <div className="absolute inset-0 mx-auto flex max-w-6xl flex-col overflow-hidden rounded-lg bg-slate-50 shadow-xl sm:inset-6">
         <Header
           datesWithHistory={datesWithHistory}
@@ -130,7 +114,10 @@ export const App = (): JSX.Element => {
 
         {activeModal && (
           <ViewModal isOpen={!!activeModal} onClose={handleCloseModal} size={VIEW_MODAL_SIZES[activeModal]} title={VIEW_TITLES[activeModal] ?? ''}>
-            <ModalContent view={activeModal} />
+            {activeModal === 'devices' && <DeviceView />}
+            {activeModal === 'blacklist' && <BlacklistView />}
+            {activeModal === 'export' && <ExportView />}
+            {activeModal === 'settings' && <SettingView />}
           </ViewModal>
         )}
       </div>

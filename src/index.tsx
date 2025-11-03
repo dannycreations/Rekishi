@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import { App } from './app/App';
+import { Rekishi } from './app/Rekishi';
 
 import './index.css';
 
@@ -15,6 +15,6 @@ const root = createRoot(rootElement);
 
 root.render(
   <StrictMode>
-    <App />
+    <Rekishi />
   </StrictMode>,
 );

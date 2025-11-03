@@ -1,20 +1,26 @@
 export interface ChromeHistoryItem {
-  id: string;
-  url: string;
-  title: string;
-  lastVisitTime: number;
-  visitCount: number;
+  readonly id: string;
+  readonly url: string;
+  readonly title: string;
+  readonly lastVisitTime: number;
+  readonly visitCount: number;
+  readonly typedCount?: number;
+}
+
+export interface ChromeDevice {
+  readonly deviceName: string;
+  readonly sessions: { readonly lastModified: number }[];
 }
 
 export interface Device {
-  name: string;
-  type: 'laptop' | 'phone' | 'desktop';
-  lastSync: string;
+  readonly name: string;
+  readonly type: 'laptop' | 'phone' | 'desktop';
+  readonly lastSync: string;
 }
 
 export interface HistoryItemGroup {
-  time: string;
-  items: ChromeHistoryItem[];
+  readonly time: string;
+  readonly items: ChromeHistoryItem[];
 }
 
 export type ViewType = 'activity' | 'devices' | 'blacklist' | 'export' | 'settings';

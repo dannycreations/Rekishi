@@ -1,11 +1,12 @@
 import { memo, useMemo } from 'react';
 
-import { CheckIcon, TrashIcon } from '../shared/Icons';
+import { DeleteButton } from '../shared/DeleteButton';
+import { CheckIcon } from '../shared/Icons';
 
 import type { JSX } from 'react';
 import type { ChromeHistoryItem } from '../../app/types';
 
-interface HistoryGroupHeaderProps {
+interface HistoryItemHeaderProps {
   dayHeaderText: string;
   dayItems: ChromeHistoryItem[];
   isHourHeader: boolean;
@@ -16,7 +17,7 @@ interface HistoryGroupHeaderProps {
   totalSelectedCount: number;
 }
 
-export const HistoryGroupHeader = memo(
+export const HistoryItemHeader = memo(
   ({
     dayHeaderText,
     dayItems,
@@ -26,7 +27,7 @@ export const HistoryGroupHeader = memo(
     onDeleteSelected,
     onDeleteAll,
     totalSelectedCount,
-  }: HistoryGroupHeaderProps): JSX.Element => {
+  }: HistoryItemHeaderProps): JSX.Element => {
     const allForDaySelected = useMemo(() => selectedItemsCount === dayItems.length && dayItems.length > 0, [selectedItemsCount, dayItems.length]);
     const someForDaySelected = useMemo(() => selectedItemsCount > 0 && !allForDaySelected, [selectedItemsCount, allForDaySelected]);
 
@@ -37,23 +38,12 @@ export const HistoryGroupHeader = memo(
       return isHourHeader ? 'Delete entire hour' : 'Delete entire day';
     }, [totalSelectedCount, isHourHeader]);
 
-    const buttonTooltip = useMemo(() => {
-      if (totalSelectedCount > 0) {
-        return `Delete ${totalSelectedCount} selected item(s)`;
-      }
-      return isHourHeader ? 'Delete all items in this hour' : 'Delete all items in this day';
-    }, [totalSelectedCount, isHourHeader]);
-
     const handleButtonClick = totalSelectedCount > 0 ? onDeleteSelected : onDeleteAll;
 
     return (
       <div className="mb-1 flex items-center justify-between px-2">
         <div className="flex items-center gap-2">
-          <div
-            className="flex cursor-pointer select-none items-center justify-center"
-            onClick={() => onToggleDaySelection(dayItems)}
-            title={allForDaySelected ? 'Deselect all' : 'Select all'}
-          >
+          <div className="flex cursor-pointer select-none items-center justify-center" onClick={() => onToggleDaySelection(dayItems)}>
             <div
               className={`flex h-4 w-4 items-center justify-center rounded border-2 transition-colors ${
                 allForDaySelected || someForDaySelected ? 'border-slate-800 bg-slate-800' : 'border-slate-300 hover:border-slate-400'
@@ -65,15 +55,9 @@ export const HistoryGroupHeader = memo(
           </div>
           <h2 className="text-lg font-bold text-slate-800">{dayHeaderText}</h2>
         </div>
-        <button
-          className="flex cursor-pointer items-center rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={totalSelectedCount === 0 && dayItems.length === 0}
-          onClick={handleButtonClick}
-          title={buttonTooltip}
-        >
-          <TrashIcon className="mr-1 h-3 w-3" />
+        <DeleteButton disabled={totalSelectedCount === 0 && dayItems.length === 0} onClick={handleButtonClick}>
           {buttonText}
-        </button>
+        </DeleteButton>
       </div>
     );
   },

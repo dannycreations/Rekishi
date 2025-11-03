@@ -17,8 +17,8 @@ export function createBlacklistMatchers(items: BlacklistItem[]): BlacklistMatche
       try {
         new RegExp(item.value);
         regexSources.push(item.value);
-      } catch (e: unknown) {
-        console.error(`Invalid regex in blacklist, skipping: ${item.value}`, e);
+      } catch (error: unknown) {
+        console.error(`Invalid regex in blacklist, skipping: ${item.value}`, error);
       }
     } else {
       plain.add(item.value);
@@ -52,7 +52,6 @@ export function parseInput(input: string): { value: string; isRegex: boolean } |
 
   if (isRegex) {
     try {
-      // eslint-disable-next-line no-new
       new RegExp(value);
     } catch (error: unknown) {
       return { error: 'Invalid Regular Expression' };

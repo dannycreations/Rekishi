@@ -2,15 +2,17 @@ import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'r
 
 import { useConfirm } from '../../hooks/useConfirm';
 import { useToast } from '../../hooks/useToast';
+import { useBlacklistStore } from '../../stores/useBlacklistStore';
 import { formatDayHeader } from '../../utilities/dateUtil';
 import { groupHistoryByDayAndHour } from '../../utilities/historyUtil';
+import { getHostnameFromUrl } from '../../utilities/urlUtil';
 import { SearchIcon } from '../shared/Icons';
-import { Skeleton } from '../shared/Skeleton';
-import { HistoryGroupHeader } from './HistoryGroupHeader';
-import { HistoryGroupItem as HistoryItemGroupComponent } from './HistoryGroupItem';
+import { HistoryItemGroup } from './HistoryItemGroup';
+import { HistoryItemHeader } from './HistoryItemHeader';
+import { HistoryViewGroupSkeleton } from './HistoryViewSkeleton';
 
 import type { JSX, RefObject } from 'react';
-import type { ChromeHistoryItem, HistoryItemGroup } from '../../app/types';
+import type { ChromeHistoryItem, HistoryItemGroup as HistoryItemGroupType } from '../../app/types';
 
 interface HistoryViewProps {
   deleteHistoryItems: (ids: string[]) => Promise<void>;
@@ -22,7 +24,7 @@ interface HistoryViewProps {
   scrollContainerRef: RefObject<HTMLElement | null>;
 }
 
-interface ProcessedHourGroup extends HistoryItemGroup {
+interface ProcessedHourGroup extends HistoryItemGroupType {
   selectedInHourCount: number;
 }
 
@@ -34,75 +36,13 @@ interface ProcessedDayGroup {
   selectedInDayCount: number;
 }
 
-export const HistoryViewItemSkeleton = memo(() => {
-  return (
-    <div className="flex items-center p-2">
-      <Skeleton className="mr-2 h-4 w-4 shrink-0 rounded" />
-      <Skeleton className="mr-2 h-4 w-4 shrink-0 rounded-full" />
-      <div className="min-w-0 flex-1">
-        <Skeleton className="h-4 w-3/4 rounded" />
-        <Skeleton className="mt-2 h-3 w-1/2 rounded" />
-      </div>
-      <Skeleton className="ml-2 h-4 w-20 shrink-0 rounded" />
-    </div>
-  );
-});
-
-export const HistoryViewGroupSkeleton = memo(() => {
-  return (
-    <section>
-      <div className="mb-1 flex items-center justify-between px-2">
-        <Skeleton className="h-5 w-16 rounded" />
-        <Skeleton className="h-6 w-20 rounded-md" />
-      </div>
-      <div className="flex flex-col">
-        <HistoryViewItemSkeleton />
-        <HistoryViewItemSkeleton />
-        <HistoryViewItemSkeleton />
-      </div>
-    </section>
-  );
-});
-
-export const DailyGroupHeaderSkeleton = memo(() => {
-  return (
-    <div className="mb-3 flex items-center justify-between px-2">
-      <div className="flex items-center gap-2">
-        <Skeleton className="h-4 w-4 rounded" />
-        <Skeleton className="h-7 w-40 rounded" />
-      </div>
-      <Skeleton className="h-6 w-32 rounded-md" />
-    </div>
-  );
-});
-
-export const HistoryViewSkeleton = memo(() => {
-  return (
-    <div className="space-y-3 p-3">
-      <section>
-        <DailyGroupHeaderSkeleton />
-        <hr className="mb-3 border-slate-200" />
-        <div className="space-y-2">
-          <HistoryViewGroupSkeleton />
-          <HistoryViewGroupSkeleton />
-        </div>
-      </section>
-      <section>
-        <DailyGroupHeaderSkeleton />
-        <hr className="mb-3 border-slate-200" />
-        <div className="space-y-2">
-          <HistoryViewGroupSkeleton />
-        </div>
-      </section>
-    </div>
-  );
-});
-
 export const HistoryView = memo(
   ({ deleteHistoryItems, hasMore, historyItems, isLoadingMore, loadMore, onDelete, scrollContainerRef }: HistoryViewProps): JSX.Element => {
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
     const { Modal: DeleteModal, openModal: openDeleteModal } = useConfirm();
+    const { Modal: BlacklistModal, openModal: openBlacklistModal } = useConfirm();
     const { addToast } = useToast();
+    const { addDomain } = useBlacklistStore();
     const [stickyState, setStickyState] = useState<{
       dayKey: string | null;
       hourText: string | null;
@@ -121,15 +61,6 @@ export const HistoryView = memo(
       });
     }, []);
 
-    const handleConfirmDeleteSelected = useCallback(async () => {
-      if (selectedItems.size > 0) {
-        const count = selectedItems.size;
-        await deleteHistoryItems(Array.from(selectedItems));
-        setSelectedItems(new Set());
-        addToast(`${count} item${count > 1 ? 's' : ''} deleted.`, 'success');
-      }
-    }, [selectedItems, deleteHistoryItems, addToast]);
-
     const handleOpenDeleteSelectedModal = useCallback(() => {
       if (selectedItems.size > 0) {
         openDeleteModal({
@@ -141,11 +72,16 @@ export const HistoryView = memo(
               undone.
             </>
           ),
-          onConfirm: handleConfirmDeleteSelected,
+          onConfirm: async () => {
+            const count = selectedItems.size;
+            await deleteHistoryItems(Array.from(selectedItems));
+            setSelectedItems(new Set());
+            addToast(`${count} item${count > 1 ? 's' : ''} deleted.`, 'success');
+          },
           title: 'Delete Selected Items',
         });
       }
-    }, [selectedItems, openDeleteModal, handleConfirmDeleteSelected]);
+    }, [selectedItems, deleteHistoryItems, addToast, openDeleteModal]);
 
     const handleOpenDeleteAllModal = useCallback(
       (items: ChromeHistoryItem[], type: 'day' | 'hour') => {
@@ -168,6 +104,50 @@ export const HistoryView = memo(
         }
       },
       [openDeleteModal, deleteHistoryItems, addToast],
+    );
+
+    const handleDeleteItemRequest = useCallback(
+      (item: ChromeHistoryItem) => {
+        openDeleteModal({
+          confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+          confirmText: 'Delete',
+          message: (
+            <>
+              Are you sure you want to permanently delete <strong>{item.title || item.url}</strong> from your history? This action cannot be undone.
+            </>
+          ),
+          onConfirm: async () => {
+            await onDelete(item.id);
+            addToast('History item deleted.', 'success');
+          },
+          title: 'Delete History Item',
+        });
+      },
+      [onDelete, openDeleteModal, addToast],
+    );
+
+    const handleBlacklistRequest = useCallback(
+      (item: ChromeHistoryItem) => {
+        const hostname = getHostnameFromUrl(item.url);
+        if (hostname) {
+          openBlacklistModal({
+            confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+            confirmText: 'Blacklist',
+            message: (
+              <>
+                Are you sure you want to blacklist <strong>{hostname}</strong>? This will hide all current and future history items from this domain.
+                You can manage your blacklist in the &quot;Blacklist Domain&quot; section.
+              </>
+            ),
+            onConfirm: () => {
+              addDomain(hostname, false);
+              addToast(`'${hostname}' has been blacklisted.`, 'success');
+            },
+            title: 'Blacklist Domain',
+          });
+        }
+      },
+      [addDomain, addToast, openBlacklistModal],
     );
 
     const itemIdToDayKeyMap = useMemo(() => {
@@ -279,8 +259,8 @@ export const HistoryView = memo(
         if (activeIndex !== -1) {
           activeDayKey = currentPositions[activeIndex].dayKey;
           activeHourText = currentPositions[activeIndex].hourText;
-        } else if (processedDailyGroups.length > 0) {
-          activeDayKey = processedDailyGroups[0].date.toISOString();
+        } else if (dailyGroups.length > 0) {
+          activeDayKey = dailyGroups[0].date.toISOString();
         }
 
         setStickyState((prev) => {
@@ -297,7 +277,7 @@ export const HistoryView = memo(
       return () => {
         container.removeEventListener('scroll', handleScroll);
       };
-    }, [processedDailyGroups, scrollContainerRef]);
+    }, [dailyGroups, scrollContainerRef]);
 
     const stickyDayGroup = useMemo(() => {
       if (!stickyState.dayKey) return null;
@@ -368,7 +348,7 @@ export const HistoryView = memo(
       <div className="relative">
         {stickyDayGroup && (
           <div className="sticky top-0 z-10 bg-slate-50/95 px-3 pt-3 backdrop-blur-sm">
-            <HistoryGroupHeader
+            <HistoryItemHeader
               dayHeaderText={`${formatDayHeader(stickyDayGroup.date)}${stickyState.hourText ? ` ${stickyState.hourText}` : ''}`}
               dayItems={stickyHeaderData.items}
               isHourHeader={!!stickyState.hourText}
@@ -396,7 +376,7 @@ export const HistoryView = memo(
                     height: isDayHeaderCovered ? 0 : 'auto',
                   }}
                 >
-                  <HistoryGroupHeader
+                  <HistoryItemHeader
                     dayHeaderText={dayHeaderText}
                     dayItems={dayGroup.items}
                     isHourHeader={false}
@@ -406,7 +386,7 @@ export const HistoryView = memo(
                     selectedItemsCount={dayGroup.selectedInDayCount}
                     totalSelectedCount={selectedItems.size}
                   />
-                  <hr className="mb-3 border-slate-200" />
+                  <hr className="mt-3 mb-3 border-slate-200" />
                 </div>
                 <div className="space-y-2">
                   {dayGroup.hourlyGroups.map((group) => {
@@ -414,11 +394,12 @@ export const HistoryView = memo(
 
                     return (
                       <div key={group.time} data-day-key={dayKey} data-hour-key={group.time}>
-                        <HistoryItemGroupComponent
-                          deleteHistoryItems={deleteHistoryItems}
+                        <HistoryItemGroup
                           group={group}
                           isSticky={isHourHeaderCovered}
-                          onDelete={onDelete}
+                          onBlacklistRequest={handleBlacklistRequest}
+                          onDeleteHourRequest={(items) => handleOpenDeleteAllModal(items, 'hour')}
+                          onDeleteRequest={handleDeleteItemRequest}
                           onToggleSelection={handleToggleSelection}
                           selectedItems={selectedItems}
                         />
@@ -439,6 +420,7 @@ export const HistoryView = memo(
           </div>
         )}
         <DeleteModal />
+        <BlacklistModal />
       </div>
     );
   },

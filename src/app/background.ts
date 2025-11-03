@@ -24,21 +24,17 @@ function updateBlacklistCache(items: BlacklistItem[], json: string | null) {
   blacklistMatchers = createBlacklistMatchers(items);
 }
 
-function getBlacklistFromStorage(): Promise<string | null> {
-  return new Promise((resolve) => {
-    if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-      chrome.storage.local.get([BLACKLIST_STORAGE_KEY], (result: { [key: string]: string | undefined }) => {
-        resolve(result[BLACKLIST_STORAGE_KEY] ?? null);
-      });
-    } else {
-      try {
-        resolve(localStorage.getItem(BLACKLIST_STORAGE_KEY));
-      } catch (e: unknown) {
-        console.error('Could not access localStorage', e);
-        resolve(null);
-      }
-    }
-  });
+async function getBlacklistFromStorage(): Promise<string | null> {
+  if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+    const result = await chrome.storage.local.get([BLACKLIST_STORAGE_KEY]);
+    return result[BLACKLIST_STORAGE_KEY] ?? null;
+  }
+  try {
+    return localStorage.getItem(BLACKLIST_STORAGE_KEY);
+  } catch (error: unknown) {
+    console.error('Could not access localStorage', error);
+    return null;
+  }
 }
 
 async function initializeBlacklist(): Promise<void> {
@@ -50,8 +46,8 @@ async function initializeBlacklist(): Promise<void> {
         updateBlacklistCache(parsed.state.blacklistedItems, storageValue);
         return;
       }
-    } catch (e: unknown) {
-      console.error('Failed to parse blacklist from storage', e);
+    } catch (error: unknown) {
+      console.error('Failed to parse blacklist from storage', error);
     }
   }
   updateBlacklistCache([], storageValue);
@@ -69,8 +65,8 @@ if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
           } else {
             updateBlacklistCache([], newStorageValue);
           }
-        } catch (e: unknown) {
-          console.error('Failed to parse updated blacklist from storage', e);
+        } catch (error: unknown) {
+          console.error('Failed to parse updated blacklist from storage', error);
           updateBlacklistCache([], newStorageValue);
         }
       } else {
@@ -95,17 +91,12 @@ async function runBlacklistCleanup() {
     return;
   }
 
-  const result = await new Promise<{ [key: string]: number }>((resolve) =>
-    chrome.storage.local.get(CLEANUP_STORAGE_KEY, (res) => resolve(res as { [key: string]: number })),
-  );
-  const lastCleanupTime = result[CLEANUP_STORAGE_KEY] || 0;
-  const now = Date.now();
+  try {
+    const result = await chrome.storage.local.get(CLEANUP_STORAGE_KEY);
+    const lastCleanupTime = (result[CLEANUP_STORAGE_KEY] as number) || 0;
+    const now = Date.now();
 
-  chrome.history.search({ text: '', maxResults: 0, startTime: lastCleanupTime }, (historyItems) => {
-    if (chrome.runtime.lastError) {
-      console.error('Error searching history for cleanup:', chrome.runtime.lastError.message);
-      return;
-    }
+    const historyItems = await chrome.history.search({ text: '', maxResults: 0, startTime: lastCleanupTime });
 
     const deletions = historyItems
       .filter((item) => {
@@ -115,26 +106,18 @@ async function runBlacklistCleanup() {
         const domain = getHostnameFromUrl(item.url);
         return domain && isBlacklisted(domain);
       })
-      .map(
-        (item) =>
-          new Promise<void>((resolve) => {
-            chrome.history.deleteUrl({ url: item.url! }, () => {
-              if (chrome.runtime.lastError) {
-                console.error(`Error deleting blacklisted URL during cleanup (${item.url!}):`, chrome.runtime.lastError.message);
-              }
-              resolve();
-            });
-          }),
+      .map((item) =>
+        chrome.history.deleteUrl({ url: item.url! }).catch((error) => {
+          console.error(`Error deleting blacklisted URL during cleanup (${item.url!}):`, error.message);
+        }),
       );
 
-    Promise.all(deletions).then(() => {
-      chrome.storage.local.set({ [CLEANUP_STORAGE_KEY]: now }, () => {
-        if (chrome.runtime.lastError) {
-          console.error('Failed to set last cleanup time:', chrome.runtime.lastError.message);
-        }
-      });
-    });
-  });
+    await Promise.all(deletions);
+    await chrome.storage.local.set({ [CLEANUP_STORAGE_KEY]: now });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error in blacklist cleanup:', message);
+  }
 }
 
 type StoredSettings = {
@@ -144,30 +127,26 @@ type StoredSettings = {
   };
 };
 
-function getSettingsFromStorage(): Promise<{ dataRetention: string; syncEnabled: boolean }> {
-  const defaults = { dataRetention: 'disabled', syncEnabled: true };
-  return new Promise((resolve) => {
-    if (typeof chrome !== 'undefined' && chrome.storage?.sync) {
-      chrome.storage.sync.get([SETTINGS_STORAGE_KEY], (result) => {
-        const storageValue = result[SETTINGS_STORAGE_KEY];
-        if (typeof storageValue === 'string') {
-          try {
-            const parsed: StoredSettings = JSON.parse(storageValue);
-            resolve({
-              dataRetention: parsed.state?.dataRetention ?? defaults.dataRetention,
-              syncEnabled: parsed.state?.syncEnabled ?? defaults.syncEnabled,
-            });
-            return;
-          } catch (e) {
-            console.error('Failed to parse settings from storage', e);
-          }
-        }
-        resolve(defaults);
-      });
-    } else {
-      resolve(defaults);
+type Settings = { dataRetention: string; syncEnabled: boolean };
+
+async function getSettingsFromStorage(): Promise<Settings> {
+  const defaults: Settings = { dataRetention: 'disabled', syncEnabled: true };
+  if (typeof chrome !== 'undefined' && chrome.storage?.sync) {
+    try {
+      const result = await chrome.storage.sync.get([SETTINGS_STORAGE_KEY]);
+      const storageValue = result[SETTINGS_STORAGE_KEY];
+      if (typeof storageValue === 'string') {
+        const parsed: StoredSettings = JSON.parse(storageValue);
+        return {
+          dataRetention: parsed.state?.dataRetention ?? defaults.dataRetention,
+          syncEnabled: parsed.state?.syncEnabled ?? defaults.syncEnabled,
+        };
+      }
+    } catch (error: unknown) {
+      console.error('Failed to parse settings from storage', error);
     }
-  });
+  }
+  return defaults;
 }
 
 async function runRetentionCleanup() {
@@ -175,46 +154,39 @@ async function runRetentionCleanup() {
     return;
   }
 
-  const result = await new Promise<{ [key: string]: number | undefined }>((resolve) =>
-    chrome.storage.local.get(RETENTION_STORAGE_KEY, (res) => resolve(res as { [key: string]: number | undefined })),
-  );
-
-  const lastCleanupTime = result[RETENTION_STORAGE_KEY] || 0;
-  const now = Date.now();
-  if (now - lastCleanupTime < 24 * 60 * 60 * 1000) {
-    return;
-  }
-
-  const settings = await getSettingsFromStorage();
-  const { dataRetention } = settings;
-
-  if (dataRetention === 'disabled') {
-    return;
-  }
-
-  const retentionDays = parseInt(dataRetention, 10);
-  if (isNaN(retentionDays)) {
-    return;
-  }
-
-  const endDate = new Date();
-  endDate.setDate(endDate.getDate() - retentionDays);
-  endDate.setHours(0, 0, 0, 0);
-
-  chrome.history.deleteRange({ startTime: 0, endTime: endDate.getTime() }, () => {
-    if (chrome.runtime.lastError) {
-      console.error('Error cleaning up old history:', chrome.runtime.lastError.message);
-    } else {
-      chrome.storage.local.set({ [RETENTION_STORAGE_KEY]: now }, () => {
-        if (chrome.runtime.lastError) {
-          console.error('Failed to set last history cleanup time:', chrome.runtime.lastError.message);
-        }
-      });
+  try {
+    const result = await chrome.storage.local.get(RETENTION_STORAGE_KEY);
+    const lastCleanupTime = (result[RETENTION_STORAGE_KEY] as number) || 0;
+    const now = Date.now();
+    if (now - lastCleanupTime < 24 * 60 * 60 * 1000) {
+      return;
     }
-  });
+
+    const settings = await getSettingsFromStorage();
+    const { dataRetention } = settings;
+
+    if (dataRetention === 'disabled') {
+      return;
+    }
+
+    const retentionDays = parseInt(dataRetention, 10);
+    if (isNaN(retentionDays)) {
+      return;
+    }
+
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() - retentionDays);
+    endDate.setHours(0, 0, 0, 0);
+
+    await chrome.history.deleteRange({ startTime: 0, endTime: endDate.getTime() });
+    await chrome.storage.local.set({ [RETENTION_STORAGE_KEY]: now });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error cleaning up old history:', message);
+  }
 }
 
-function handleVisited(historyItem: chrome.history.HistoryItem): void {
+async function handleVisited(historyItem: chrome.history.HistoryItem): Promise<void> {
   if (!historyItem.url) {
     return;
   }
@@ -223,20 +195,22 @@ function handleVisited(historyItem: chrome.history.HistoryItem): void {
 
   if (isBlacklisted(domain)) {
     if (typeof chrome !== 'undefined' && chrome.history?.deleteUrl) {
-      chrome.history.deleteUrl({ url: historyItem.url }, () => {
-        if (chrome.runtime.lastError) {
-          console.error(`Error deleting blacklisted URL (${historyItem.url}):`, chrome.runtime.lastError.message);
-        }
-      });
+      try {
+        await chrome.history.deleteUrl({ url: historyItem.url });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`Error deleting blacklisted URL (${historyItem.url}):`, message);
+      }
     }
   } else if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
-    const { id, url, title, lastVisitTime, visitCount } = historyItem;
+    const { id, url, title, lastVisitTime, visitCount, typedCount } = historyItem;
     const payload: ChromeHistoryItem = {
-      id,
+      id: `${id}-${lastVisitTime}`,
       url: url ?? '',
       title: title ?? url ?? '',
       lastVisitTime: lastVisitTime ?? Date.now(),
       visitCount: visitCount ?? 0,
+      typedCount: typedCount ?? 0,
     };
 
     chrome.runtime.sendMessage({

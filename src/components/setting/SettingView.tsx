@@ -52,9 +52,9 @@ export const SettingView = memo((): JSX.Element => {
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-    } catch (e: unknown) {
+    } catch (error: unknown) {
       addToast('Failed to clear history. Please try again.', 'error');
-      console.error(e);
+      console.error(error);
     }
   }, [addToast]);
 

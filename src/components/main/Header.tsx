@@ -9,15 +9,13 @@ import type { ModalViewType } from '../../app/types';
 interface NavButtonProps {
   icon: ReactNode;
   onClick: () => void;
-  title: string;
 }
 
-export const NavButton = memo(({ icon, onClick, title }: NavButtonProps): JSX.Element => {
+export const NavButton = memo(({ icon, onClick }: NavButtonProps): JSX.Element => {
   return (
     <button
       className="cursor-pointer rounded-lg p-2 text-slate-500 transition-all duration-200 ease-in-out hover:scale-110 hover:bg-slate-100 hover:text-slate-800 active:scale-95"
       onClick={onClick}
-      title={title}
     >
       {icon}
     </button>
@@ -164,7 +162,6 @@ export const Header = memo(
                 <button
                   className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
                   onClick={handleClearSearch}
-                  title="Clear search"
                 >
                   <CloseIcon className="h-4 w-4" />
                 </button>
@@ -176,7 +173,6 @@ export const Header = memo(
               ref={calendarButtonRef}
               className="flex cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 px-2 py-2 transition-colors hover:bg-slate-100"
               onClick={handleToggleCalendar}
-              title="Select date"
             >
               <span className="text-sm text-slate-800">{formattedDate}</span>
               <CalendarIcon className="h-4 w-4 text-slate-400" />
@@ -185,10 +181,10 @@ export const Header = memo(
         </div>
 
         <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2">
-          <NavButton icon={<DevicesIcon className="h-5 w-5" />} onClick={handleOpenDevices} title="Synced Devices" />
-          <NavButton icon={<BlacklistDomainIcon className="h-5 w-5" />} onClick={handleOpenBlacklist} title="Manage Blacklist" />
-          <NavButton icon={<ExportIcon className="h-5 w-5" />} onClick={handleOpenExport} title="Export History" />
-          <NavButton icon={<SettingsIcon className="h-5 w-5" />} onClick={handleOpenSettings} title="Settings" />
+          <NavButton icon={<DevicesIcon className="h-5 w-5" />} onClick={handleOpenDevices} />
+          <NavButton icon={<BlacklistDomainIcon className="h-5 w-5" />} onClick={handleOpenBlacklist} />
+          <NavButton icon={<ExportIcon className="h-5 w-5" />} onClick={handleOpenExport} />
+          <NavButton icon={<SettingsIcon className="h-5 w-5" />} onClick={handleOpenSettings} />
         </div>
 
         <CalendarPopover

@@ -16,7 +16,6 @@ export const ScrollToTop = memo(({ isVisible, onClick }: ScrollToTopProps): JSX.
         isVisible ? 'scale-100' : 'scale-0'
       }`}
       onClick={onClick}
-      title="Scroll to top"
       type="button"
     >
       <ArrowUpIcon className="h-6 w-6" />

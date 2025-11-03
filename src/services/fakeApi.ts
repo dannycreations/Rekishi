@@ -1,4 +1,4 @@
-import type { ChromeHistoryItem, Device } from '../app/types';
+import type { ChromeDevice, ChromeHistoryItem } from '../app/types';
 
 interface SearchParams {
   readonly text: string;
@@ -7,10 +7,10 @@ interface SearchParams {
   readonly maxResults?: number;
 }
 
-const FAKE_DATA_STORE: Record<string, ChromeHistoryItem> = {};
+const FAKE_DATA_STORE: Record<string, chrome.history.HistoryItem> = {};
 let FAKE_DATA_INITIALIZED = false;
 
-const generateFakeHistoryItem = (timestamp: number, index: number): ChromeHistoryItem => {
+const generateFakeHistoryItem = (timestamp: number): chrome.history.HistoryItem => {
   const domains = [
     'google.com',
     'bing.com',
@@ -70,14 +70,15 @@ const generateFakeHistoryItem = (timestamp: number, index: number): ChromeHistor
     url += `?q=${encodeURIComponent(query)}`;
   }
 
-  const id = `${timestamp}-${index}`;
+  const id = url;
 
   return {
     id,
     url,
-    title: `${title}`,
+    title,
     lastVisitTime: timestamp,
     visitCount: Math.floor(Math.random() * 10) + 1,
+    typedCount: Math.random() > 0.8 ? 1 : 0,
   };
 };
 
@@ -94,24 +95,24 @@ const initializeFakeData = (): void => {
     const decrement = (1 + Math.random() * 29) * 60 * 1000;
     currentTimestamp -= decrement;
 
-    const item = generateFakeHistoryItem(currentTimestamp, i);
-    FAKE_DATA_STORE[item.id] = item;
+    const item = generateFakeHistoryItem(currentTimestamp);
+    FAKE_DATA_STORE[`${item.id}-${item.lastVisitTime}`] = item;
   }
   FAKE_DATA_INITIALIZED = true;
 };
 
-const getFakeHistory = (params: SearchParams): ChromeHistoryItem[] => {
+const getFakeHistory = (params: SearchParams): chrome.history.HistoryItem[] => {
   initializeFakeData();
   let items = Object.values(FAKE_DATA_STORE);
 
   if (params.startTime) {
     items = items.filter((item) => {
-      return item.lastVisitTime >= params.startTime!;
+      return item.lastVisitTime! >= params.startTime!;
     });
   }
   if (params.endTime) {
     items = items.filter((item) => {
-      return item.lastVisitTime < params.endTime!;
+      return item.lastVisitTime! < params.endTime!;
     });
   }
 
@@ -123,7 +124,7 @@ const getFakeHistory = (params: SearchParams): ChromeHistoryItem[] => {
   }
 
   items.sort((a, b) => {
-    return b.lastVisitTime - a.lastVisitTime;
+    return b.lastVisitTime! - a.lastVisitTime!;
   });
 
   if (params.maxResults && params.maxResults > 0) {
@@ -146,7 +147,18 @@ const deleteFakeHistoryUrl = (details: { url: string }): void => {
 export const search = (params: SearchParams): Promise<ChromeHistoryItem[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(getFakeHistory(params));
+      const historyItems = getFakeHistory(params);
+      const mappedResults = historyItems.map((item) => {
+        return {
+          id: `${item.id}-${item.lastVisitTime}`,
+          url: item.url ?? '',
+          title: item.title ?? item.url ?? '',
+          lastVisitTime: item.lastVisitTime ?? 0,
+          visitCount: item.visitCount ?? 0,
+          typedCount: item.typedCount ?? 0,
+        };
+      });
+      resolve(mappedResults);
     }, 150);
   });
 };
@@ -160,30 +172,15 @@ export const deleteUrl = (details: { url: string }): Promise<void> => {
   });
 };
 
-export const getDevices = (): Promise<Device[]> => {
+export const getDevices = (): Promise<ChromeDevice[]> => {
   return new Promise((resolve) => {
+    const now = Date.now();
     setTimeout(() => {
       resolve([
-        {
-          lastSync: '2 minutes ago',
-          name: 'My MacBook Pro',
-          type: 'laptop',
-        },
-        {
-          lastSync: '1 hour ago',
-          name: 'Pixel 8 Pro',
-          type: 'phone',
-        },
-        {
-          lastSync: 'Yesterday',
-          name: 'Windows Gaming PC',
-          type: 'desktop',
-        },
-        {
-          lastSync: '3 days ago',
-          name: 'Living Room iMac',
-          type: 'desktop',
-        },
+        { deviceName: 'My MacBook Pro', sessions: [{ lastModified: (now - 2 * 60 * 1000) / 1000 }] },
+        { deviceName: 'Pixel 8 Pro', sessions: [{ lastModified: (now - 60 * 60 * 1000) / 1000 }] },
+        { deviceName: 'Windows Gaming PC', sessions: [{ lastModified: (now - 24 * 60 * 60 * 1000) / 1000 }] },
+        { deviceName: 'Living Room iMac', sessions: [{ lastModified: (now - 3 * 24 * 60 * 60 * 1000) / 1000 }] },
       ]);
     }, 150);
   });

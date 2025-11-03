@@ -55,7 +55,6 @@ const Toast = memo(({ toast, onRemove }: { toast: ToastItem; onRemove: (id: numb
               className="inline-flex rounded-md bg-white text-slate-400 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
               onClick={handleRemove}
             >
-              <span className="sr-only">Close</span>
               <CloseIcon className="h-5 w-5" />
             </button>
           </div>
@@ -73,7 +72,7 @@ export const ToastContainer = memo(() => {
   }
 
   const portalContent = (
-    <div aria-live="assertive" className="pointer-events-none fixed inset-0 z-[100] flex items-end px-4 py-6 sm:items-start sm:p-6">
+    <div className="pointer-events-none fixed inset-0 z-[100] flex items-end px-4 py-6 sm:items-start sm:p-6">
       <div className="flex w-full flex-col items-center space-y-4 sm:items-end">
         {toasts.map((toast) => (
           <Toast key={toast.id} onRemove={removeToast} toast={toast} />

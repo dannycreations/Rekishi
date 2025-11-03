@@ -3,63 +3,13 @@ import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useHistoryDate } from '../../hooks/useHistoryDate';
 import { useToast } from '../../hooks/useToast';
 import { search } from '../../services/chromeApi';
+import { formatDateForInput } from '../../utilities/dateUtil';
+import { downloadFile, generateFileContent } from '../../utilities/exportUtil';
 import { CalendarPopover } from '../shared/CalendarPopover';
 import { CalendarIcon, LoadingSpinnerIcon } from '../shared/Icons';
 
 import type { JSX } from 'react';
-import type { ChromeHistoryItem } from '../../app/types';
-
-type ExportFormat = 'json' | 'csv';
-
-const formatDateForInput = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  return `${year}/${month}/${day}`;
-};
-
-function generateFileContent(items: ChromeHistoryItem[], format: ExportFormat): string {
-  if (format === 'json') {
-    return JSON.stringify(items, null, 2);
-  }
-
-  const header = ['id', 'url', 'title', 'lastVisitTime', 'visitCount'];
-  const escapeCsvField = (field: string | number | undefined): string => {
-    const str = String(field ?? '');
-    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-      return `"${str.replace(/"/g, '""')}"`;
-    }
-    return str;
-  };
-
-  const csvRows = [header.join(',')];
-  for (const item of items) {
-    const row = [
-      escapeCsvField(item.id),
-      escapeCsvField(item.url),
-      escapeCsvField(item.title),
-      escapeCsvField(item.lastVisitTime),
-      escapeCsvField(item.visitCount),
-    ];
-    csvRows.push(row.join(','));
-  }
-  return csvRows.join('\n');
-}
-
-function downloadFile(content: string, format: ExportFormat, startDate: string, endDate: string): void {
-  const mimeType = format === 'json' ? 'application/json' : 'text/csv';
-  const fileExtension = format;
-
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `rekishi_export_${startDate}_to_${endDate}.${fileExtension}`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+import type { ExportFormat } from '../../utilities/exportUtil';
 
 interface RadioCardProps {
   checked: boolean;
@@ -131,9 +81,9 @@ export const ExportView = memo((): JSX.Element => {
       const fileContent = generateFileContent(historyItems, format);
       downloadFile(fileContent, format, startDate.replace(/\//g, '-'), endDate.replace(/\//g, '-'));
       addToast('History export started.', 'success');
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       addToast('An error occurred during export. Please try again.', 'error');
-      console.error(err);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -193,7 +143,6 @@ export const ExportView = memo((): JSX.Element => {
                   id="start-date"
                   className="mt-1 flex w-full cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-white px-2 py-2 text-left transition-colors hover:bg-slate-100"
                   onClick={() => setActiveCalendar(activeCalendar === 'start' ? null : 'start')}
-                  title="Select start date"
                 >
                   <span className="text-sm text-slate-800">{startDate}</span>
                   <CalendarIcon className="h-4 w-4 text-slate-400" />
@@ -208,7 +157,6 @@ export const ExportView = memo((): JSX.Element => {
                   id="end-date"
                   className="mt-1 flex w-full cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-white px-2 py-2 text-left transition-colors hover:bg-slate-100"
                   onClick={() => setActiveCalendar(activeCalendar === 'end' ? null : 'end')}
-                  title="Select end date"
                 >
                   <span className="text-sm text-slate-800">{endDate}</span>
                   <CalendarIcon className="h-4 w-4 text-slate-400" />

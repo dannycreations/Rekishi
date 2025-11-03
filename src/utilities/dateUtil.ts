@@ -11,6 +11,13 @@ export function formatDayHeader(date: Date): string {
   return `${weekday}, ${year}/${month}/${day}`;
 }
 
+export const formatDateForInput = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}/${month}/${day}`;
+};
+
 export function formatTimeAgo(timestamp: number): string {
   const now = Date.now();
   const seconds = Math.round((now - timestamp) / 1000);

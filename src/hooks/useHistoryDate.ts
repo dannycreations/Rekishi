@@ -50,8 +50,8 @@ export const useHistoryDate = (): UseHistoryDateReturn => {
 
       setDatesWithHistory((prev) => new Set([...prev, ...datesInMonth]));
       fetchedMonthsRef.current.add(monthKey);
-    } catch (e: unknown) {
-      console.error('Failed to load history dates for month:', e);
+    } catch (error: unknown) {
+      console.error('Failed to load history dates for month:', error);
       setError('Failed to load history dates.');
     } finally {
       isFetchingRef.current = false;

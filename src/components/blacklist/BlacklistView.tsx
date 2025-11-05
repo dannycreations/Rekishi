@@ -163,8 +163,8 @@ export const BlacklistView = (): JSX.Element => {
 
       <div className="rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
         <div className="mb-2 flex items-center justify-between">
-          <h3 className="font-semibold text-slate-800">Blacklisted Items ({sortedItems.length})</h3>
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-slate-800">Blacklisted Items ({sortedItems.length})</h3>
             <button
               ref={tooltipAnchorRef}
               className="cursor-pointer text-slate-400 hover:text-slate-600"

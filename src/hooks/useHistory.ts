@@ -6,7 +6,6 @@ import { useBlacklistStore } from '../stores/useBlacklistStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
 import { isPotentialRegex } from '../utilities/blacklistUtil';
 import { isSameDay } from '../utilities/dateUtil';
-import { getHostnameFromUrl } from '../utilities/urlUtil';
 
 import type { ChromeHistoryItem } from '../app/types';
 
@@ -56,18 +55,7 @@ export const useHistory = (): UseHistoryReturn => {
   }));
   const isRegex = useMemo(() => isPotentialRegex(searchQuery), [searchQuery]);
 
-  const applyBlacklistFilter = useCallback(
-    (items: readonly ChromeHistoryItem[]) => {
-      if (blacklistedItems.length === 0) return items;
-      return items.filter((item) => {
-        const domain = getHostnameFromUrl(item.url);
-        return !domain || !isBlacklisted(domain);
-      });
-    },
-    [isBlacklisted, blacklistedItems],
-  );
-
-  const history = useMemo(() => applyBlacklistFilter(rawHistory), [rawHistory, applyBlacklistFilter]);
+  const history = rawHistory;
 
   useEffect(() => {
     historyItemMap.current.clear();
@@ -225,15 +213,14 @@ export const useHistory = (): UseHistoryReturn => {
     } else {
       fetchInitialDailyHistory();
     }
-  }, [searchQuery, selectedDate, isRegex, fetchInitialDailyHistory, fetchInitialSearchHistory]);
+  }, [searchQuery, selectedDate, isRegex, fetchInitialDailyHistory, fetchInitialSearchHistory, blacklistedItems]);
 
   const messageListener = useCallback(
     (message: unknown): void => {
       if (isNewHistoryItemMessage(message)) {
         const newItem = message.payload;
-        const domain = getHostnameFromUrl(newItem.url);
 
-        if (isBlacklisted(domain)) {
+        if (isBlacklisted(newItem.url)) {
           setRawHistory((prev) => prev.filter((item) => item.id !== newItem.id));
           return;
         }
@@ -267,15 +254,13 @@ export const useHistory = (): UseHistoryReturn => {
   );
 
   useEffect(() => {
-    if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) {
-      return undefined;
+    if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
+      chrome.runtime.onMessage.addListener(messageListener);
+
+      return () => {
+        chrome.runtime.onMessage.removeListener(messageListener);
+      };
     }
-
-    chrome.runtime.onMessage.addListener(messageListener);
-
-    return () => {
-      chrome.runtime.onMessage.removeListener(messageListener);
-    };
   }, [messageListener]);
 
   const loadMore = useCallback(async () => {

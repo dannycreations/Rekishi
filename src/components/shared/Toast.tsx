@@ -73,7 +73,7 @@ export const ToastContainer = memo(() => {
 
   const portalContent = (
     <div className="pointer-events-none fixed inset-0 z-[100] flex items-end px-4 py-6 sm:items-start sm:p-6">
-      <div className="flex w-full flex-col items-center space-y-4 sm:items-end">
+      <div className="flex w-full flex-col items-center space-y-3 sm:items-end">
         {toasts.map((toast) => (
           <Toast key={toast.id} onRemove={removeToast} toast={toast} />
         ))}

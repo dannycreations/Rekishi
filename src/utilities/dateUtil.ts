@@ -11,12 +11,12 @@ export function formatDayHeader(date: Date): string {
   return `${weekday}, ${year}/${month}/${day}`;
 }
 
-export const formatDateForInput = (date: Date): string => {
+export function formatDateForInput(date: Date): string {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
   return `${year}/${month}/${day}`;
-};
+}
 
 export function formatTimeAgo(timestamp: number): string {
   const now = Date.now();
@@ -28,12 +28,14 @@ export function formatTimeAgo(timestamp: number): string {
 
   const minutes = Math.round(seconds / 60);
   if (minutes < 60) {
-    return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    const plural = minutes > 1 ? 's' : '';
+    return `${minutes} minute${plural} ago`;
   }
 
   const hours = Math.round(minutes / 60);
   if (hours < 24) {
-    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const plural = hours > 1 ? 's' : '';
+    return `${hours} hour${plural} ago`;
   }
 
   const days = Math.round(hours / 24);
@@ -46,14 +48,17 @@ export function formatTimeAgo(timestamp: number): string {
 
   const weeks = Math.round(days / 7);
   if (weeks < 5) {
-    return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+    const plural = weeks > 1 ? 's' : '';
+    return `${weeks} week${plural} ago`;
   }
 
   const months = Math.round(days / 30);
   if (months < 12) {
-    return `${months} month${months > 1 ? 's' : ''} ago`;
+    const plural = months > 1 ? 's' : '';
+    return `${months} month${plural} ago`;
   }
 
   const years = Math.round(days / 365);
-  return `${years} year${years > 1 ? 's' : ''} ago`;
+  const plural = years > 1 ? 's' : '';
+  return `${years} year${plural} ago`;
 }

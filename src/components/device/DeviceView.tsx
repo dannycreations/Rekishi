@@ -10,7 +10,7 @@ const DEVICE_ICONS = {
   desktop: DesktopIcon,
 } as const;
 
-export const DeviceCardSkeleton = (): JSX.Element => {
+const DeviceCardSkeleton = (): JSX.Element => {
   return (
     <div className="flex items-center space-x-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
       <Skeleton className="h-14 w-14 rounded-full" />

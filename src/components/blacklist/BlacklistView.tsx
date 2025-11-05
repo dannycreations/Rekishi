@@ -1,12 +1,45 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
+import { usePopover } from '../../hooks/usePopover';
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
 import { useToastStore } from '../../stores/useToastStore';
 import { parseInput } from '../../utilities/blacklistUtil';
-import { CloseIcon } from '../shared/Icons';
+import { CloseIcon, QuestionMarkCircleIcon } from '../shared/Icons';
 import { BlacklistItem } from './BlacklistItem';
 
-import type { FormEvent, JSX } from 'react';
+import type { FormEvent, JSX, ReactNode } from 'react';
+
+const Tooltip = ({
+  anchorEl,
+  children,
+  onMouseEnter,
+  onMouseLeave,
+}: {
+  anchorEl: HTMLElement | null;
+  children: ReactNode;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+}) => {
+  const { popoverRef, style } = usePopover(anchorEl);
+
+  if (!anchorEl) {
+    return null;
+  }
+
+  return createPortal(
+    <div
+      ref={popoverRef}
+      style={style}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      className="fixed z-[101] w-72 rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600 shadow-lg popover-animate-enter"
+    >
+      {children}
+    </div>,
+    document.body,
+  );
+};
 
 export const BlacklistView = (): JSX.Element => {
   const { addDomain, blacklistedItems, removeDomain, editDomain } = useBlacklistStore((state) => ({
@@ -18,6 +51,10 @@ export const BlacklistView = (): JSX.Element => {
   const [newDomain, setNewDomain] = useState('');
   const [error, setError] = useState<string | null>(null);
   const addToast = useToastStore((state) => state.addToast);
+
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+  const tooltipAnchorRef = useRef<HTMLButtonElement>(null);
+  const hideTimeoutRef = useRef<number | null>(null);
 
   const sortedItems = useMemo(() => [...blacklistedItems].sort((a, b) => a.value.localeCompare(b.value)), [blacklistedItems]);
   const blacklistedValues = useMemo(() => new Set(blacklistedItems.map((item) => item.value)), [blacklistedItems]);
@@ -71,8 +108,22 @@ export const BlacklistView = (): JSX.Element => {
     [blacklistedValues, editDomain, addToast],
   );
 
+  const handleTooltipOpen = useCallback(() => {
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+    setIsTooltipOpen(true);
+  }, []);
+
+  const handleTooltipClose = useCallback(() => {
+    hideTimeoutRef.current = window.setTimeout(() => {
+      setIsTooltipOpen(false);
+    }, 200);
+  }, []);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div>
         <form className="flex items-center space-x-2" onSubmit={handleAddDomain}>
           <div className="relative grow">
@@ -83,7 +134,7 @@ export const BlacklistView = (): JSX.Element => {
                 setNewDomain(e.target.value);
                 setError(null);
               }}
-              placeholder="e.g., example.com or /.*\\.bad-site\\.com/"
+              placeholder="e.g., example.com or *.bad-site.com"
               type="text"
               value={newDomain}
             />
@@ -111,7 +162,19 @@ export const BlacklistView = (): JSX.Element => {
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-        <h3 className="mb-2 font-semibold text-slate-800">Blacklisted Items ({sortedItems.length})</h3>
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="font-semibold text-slate-800">Blacklisted Items ({sortedItems.length})</h3>
+          <div className="flex items-center">
+            <button
+              ref={tooltipAnchorRef}
+              className="cursor-pointer text-slate-400 hover:text-slate-600"
+              onMouseEnter={handleTooltipOpen}
+              onMouseLeave={handleTooltipClose}
+            >
+              <QuestionMarkCircleIcon className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
         {sortedItems.length > 0 ? (
           <ul className="space-y-1">
             {sortedItems.map((item) => (
@@ -122,6 +185,27 @@ export const BlacklistView = (): JSX.Element => {
           <p className="py-4 text-center text-sm text-slate-500">Your blacklist is empty. Add domains using the form above.</p>
         )}
       </div>
+
+      {isTooltipOpen && (
+        <Tooltip anchorEl={tooltipAnchorRef.current} onMouseEnter={handleTooltipOpen} onMouseLeave={handleTooltipClose}>
+          <h4 className="mb-2 font-semibold text-slate-800">Supported Patterns</h4>
+          <ul className="list-inside list-disc space-y-2 text-xs">
+            <li>
+              <strong>Exact domain:</strong> <code className="rounded bg-slate-100 p-1">example.com</code>
+            </li>
+            <li>
+              <strong>Subdomains:</strong> <code className="rounded bg-slate-100 p-1">*.example.com</code>
+            </li>
+            <li>
+              <strong>URL paths:</strong> <code className="rounded bg-slate-100 p-1">example.com/path/*</code>
+            </li>
+            <li>
+              <strong>Regular expression:</strong> <code className="rounded bg-slate-100 p-1">/google\.com/</code>
+            </li>
+          </ul>
+          <p className="mt-2 text-xs text-slate-500">Regex and path patterns match against the full URL (e.g., `domain.com/path`).</p>
+        </Tooltip>
+      )}
     </div>
   );
 };

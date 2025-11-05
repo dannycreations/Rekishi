@@ -3,10 +3,9 @@ import { shallow } from 'zustand/shallow';
 import { createWithEqualityFn } from 'zustand/traditional';
 
 import { BLACKLIST_STORAGE_KEY } from '../app/constants';
-import { createBlacklistMatchers, isDomainBlacklisted } from '../utilities/blacklistUtil';
-import { chromeLocalStorage } from '../utilities/storageUtil';
+import { createBlacklistMatchers, isUrlBlacklisted } from '../utilities/blacklistUtil';
+import { syncedStorage } from '../utilities/storageUtil';
 
-import type { StateStorage } from 'zustand/middleware';
 import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
 
 interface BlacklistState {
@@ -15,14 +14,14 @@ interface BlacklistState {
   readonly addDomain: (value: string, isRegex: boolean) => void;
   readonly editDomain: (oldValue: string, newValue: string, newIsRegex: boolean) => void;
   readonly removeDomain: (value: string) => void;
-  readonly isBlacklisted: (domain: string) => boolean;
+  readonly isBlacklisted: (url: string) => boolean;
 }
 
 export const useBlacklistStore = createWithEqualityFn(
   persist<BlacklistState>(
     (set, get) => ({
       blacklistedItems: [],
-      blacklistMatchers: { plain: new Set(), combinedRegex: null },
+      blacklistMatchers: { plain: new Set(), domainRegex: null, urlRegex: null },
       addDomain: (value, isRegex) => {
         set((state) => {
           if (state.blacklistedItems.some((item) => item.value === value)) {
@@ -58,13 +57,13 @@ export const useBlacklistStore = createWithEqualityFn(
           };
         });
       },
-      isBlacklisted: (domain: string): boolean => {
-        return isDomainBlacklisted(domain, get().blacklistMatchers);
+      isBlacklisted: (url: string): boolean => {
+        return isUrlBlacklisted(url, get().blacklistMatchers);
       },
     }),
     {
       name: BLACKLIST_STORAGE_KEY,
-      storage: createJSONStorage(() => chromeLocalStorage as StateStorage),
+      storage: createJSONStorage(() => syncedStorage),
       partialize: (state) => ({ blacklistedItems: state.blacklistedItems }) as BlacklistState,
       onRehydrateStorage: () => (state) => {
         if (state) {

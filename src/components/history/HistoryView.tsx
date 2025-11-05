@@ -257,7 +257,7 @@ export const HistoryView = memo(
           {dailyGroups.map((dayGroup) => {
             const dayKey = dayGroup.date.toISOString();
             const dayHeaderText = formatDayHeader(dayGroup.date);
-            const isDayHeaderCovered = stickyState.dayKey === dayKey && !stickyState.hourText;
+            const isDayHeaderCovered = stickyState.dayKey === dayKey;
 
             return (
               <section key={dayKey}>

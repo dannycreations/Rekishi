@@ -1,8 +1,9 @@
-import { createBlacklistMatchers, isDomainBlacklisted } from '../utilities/blacklistUtil';
-import { getHostnameFromUrl } from '../utilities/urlUtil';
+import { createBlacklistMatchers, isUrlBlacklisted } from '../utilities/blacklistUtil';
+import { defaultSettings, parseSettingsFromJSON } from '../utilities/settingUtil';
 import { BLACKLIST_STORAGE_KEY, CLEANER_ALARM_KEY, CLEANUP_STORAGE_KEY, RETENTION_STORAGE_KEY, SETTINGS_STORAGE_KEY } from './constants';
 
 import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
+import type { Settings } from '../utilities/settingUtil';
 import type { ChromeHistoryItem } from './types';
 
 interface StoredBlacklist {
@@ -11,20 +12,7 @@ interface StoredBlacklist {
   };
 }
 
-interface StoredSettings {
-  readonly state?: {
-    readonly dataRetention?: string;
-    readonly syncEnabled?: boolean;
-  };
-}
-interface Settings {
-  readonly dataRetention: string;
-  readonly syncEnabled: boolean;
-}
-
-const defaultSettings: Settings = { dataRetention: 'disabled', syncEnabled: true };
-
-let blacklistMatchers: BlacklistMatchers = { plain: new Set(), combinedRegex: null };
+let blacklistMatchers: BlacklistMatchers = { plain: new Set(), domainRegex: null, urlRegex: null };
 let blacklistedItems: readonly BlacklistItem[] = [];
 let currentSettings: Settings = { ...defaultSettings };
 
@@ -39,26 +27,12 @@ function parseBlacklistFromJSON(json: string | null): readonly BlacklistItem[] {
   }
 }
 
-function parseSettingsFromJSON(json: string | null): Settings {
-  if (!json) return { ...defaultSettings };
-  try {
-    const parsed: StoredSettings = JSON.parse(json);
-    return {
-      dataRetention: parsed.state?.dataRetention ?? defaultSettings.dataRetention,
-      syncEnabled: parsed.state?.syncEnabled ?? defaultSettings.syncEnabled,
-    };
-  } catch (error) {
-    console.error('Failed to parse settings from storage', error);
-    return { ...defaultSettings };
-  }
-}
-
-function updateBlacklistCache(items: readonly BlacklistItem[]) {
+function updateBlacklistCache(items: readonly BlacklistItem[]): void {
   blacklistedItems = items;
   blacklistMatchers = createBlacklistMatchers(items);
 }
 
-function updateSettingsCache(settings: Settings) {
+function updateSettingsCache(settings: Settings): void {
   currentSettings = settings;
 }
 
@@ -91,11 +65,11 @@ async function initializeCaches(): Promise<void> {
   updateSettingsCache(parseSettingsFromJSON(settingsJson));
 }
 
-function isBlacklisted(domain: string): boolean {
-  return isDomainBlacklisted(domain, blacklistMatchers);
+function isBlacklisted(url: string): boolean {
+  return isUrlBlacklisted(url, blacklistMatchers);
 }
 
-async function runBlacklistCleanup() {
+async function runBlacklistCleanup(): Promise<void> {
   if (typeof chrome === 'undefined' || !chrome.history?.search || !chrome.history?.deleteUrl || blacklistedItems.length === 0) {
     return;
   }
@@ -108,7 +82,7 @@ async function runBlacklistCleanup() {
     const historyItems = await chrome.history.search({ text: '', maxResults: 0, startTime: lastCleanupTime });
 
     const deletions = historyItems
-      .filter((item) => item.url && isBlacklisted(getHostnameFromUrl(item.url)))
+      .filter((item) => item.url && isBlacklisted(item.url))
       .map((item) =>
         chrome.history.deleteUrl({ url: item.url! }).catch((error) => {
           console.error(`Error deleting blacklisted URL during cleanup (${item.url!}):`, error.message);
@@ -125,7 +99,7 @@ async function runBlacklistCleanup() {
   }
 }
 
-async function runRetentionCleanup() {
+async function runRetentionCleanup(): Promise<void> {
   if (typeof chrome === 'undefined' || !chrome.history?.deleteRange) {
     return;
   }
@@ -166,9 +140,7 @@ async function handleVisited(historyItem: chrome.history.HistoryItem): Promise<v
     return;
   }
 
-  const domain = getHostnameFromUrl(historyItem.url);
-
-  if (isBlacklisted(domain)) {
+  if (isBlacklisted(historyItem.url)) {
     if (typeof chrome !== 'undefined' && chrome.history?.deleteUrl) {
       try {
         await chrome.history.deleteUrl({ url: historyItem.url });

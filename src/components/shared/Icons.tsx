@@ -1,6 +1,6 @@
 import type { JSX, SVGProps } from 'react';
 
-export type IconProps = SVGProps<SVGSVGElement>;
+type IconProps = SVGProps<SVGSVGElement>;
 
 export const ExportIcon = (props: IconProps): JSX.Element => {
   return (
@@ -197,6 +197,18 @@ export const PencilIcon = (props: IconProps): JSX.Element => {
         d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
         strokeLinecap="round"
         strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
+export const QuestionMarkCircleIcon = (props: IconProps): JSX.Element => {
+  return (
+    <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
       />
     </svg>
   );

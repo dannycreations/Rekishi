@@ -1,3 +1,5 @@
+import { getHostnameFromUrl } from './urlUtil';
+
 export interface BlacklistItem {
   isRegex: boolean;
   value: string;
@@ -5,7 +7,8 @@ export interface BlacklistItem {
 
 export interface BlacklistMatchers {
   plain: Set<string>;
-  combinedRegex: RegExp | null;
+  domainRegex: RegExp | null;
+  urlRegex: RegExp | null;
 }
 
 export function isPotentialRegex(input: string): boolean {
@@ -13,33 +16,78 @@ export function isPotentialRegex(input: string): boolean {
   return trimmed.length > 2 && trimmed.startsWith('/') && trimmed.endsWith('/');
 }
 
+function wildcardToRegex(pattern: string): string {
+  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+  return escaped.replace(/\\\*/g, '.*');
+}
+
 export function createBlacklistMatchers(items: readonly BlacklistItem[]): BlacklistMatchers {
   const plain = new Set<string>();
-  const regexSources: string[] = [];
+  const domainRegexSources: string[] = [];
+  const urlRegexSources: string[] = [];
 
   for (const item of items) {
     if (item.isRegex) {
       try {
         new RegExp(item.value);
-        regexSources.push(item.value);
+        urlRegexSources.push(`(${item.value})`);
       } catch (error: unknown) {
         console.error(`Invalid regex in blacklist, skipping: ${item.value}`, error);
+      }
+    } else if (item.value.includes('*')) {
+      const wildcardRegex = wildcardToRegex(item.value);
+      if (item.value.includes('/')) {
+        if (wildcardRegex.endsWith('/.*')) {
+          const base = wildcardRegex.slice(0, -3);
+          urlRegexSources.push(`(^${base}(\\/.*)?$)`);
+        } else {
+          urlRegexSources.push(`(^${wildcardRegex})`);
+        }
+      } else {
+        domainRegexSources.push(`(^${wildcardRegex}$)`);
       }
     } else {
       plain.add(item.value);
     }
   }
 
-  const combinedRegex = regexSources.length > 0 ? new RegExp(regexSources.map((source) => `(${source})`).join('|'), 'i') : null;
+  const domainRegex = domainRegexSources.length > 0 ? new RegExp(domainRegexSources.join('|'), 'i') : null;
+  const urlRegex = urlRegexSources.length > 0 ? new RegExp(urlRegexSources.join('|'), 'i') : null;
 
-  return { plain, combinedRegex };
+  return { plain, domainRegex, urlRegex };
 }
 
-export function isDomainBlacklisted(domain: string, matchers: BlacklistMatchers): boolean {
-  if (matchers.plain.has(domain)) {
+export function isUrlBlacklisted(url: string, matchers: BlacklistMatchers): boolean {
+  if (!url) return false;
+
+  const hostname = getHostnameFromUrl(url);
+
+  if (matchers.plain.has(hostname)) {
     return true;
   }
-  return !!matchers.combinedRegex?.test(domain);
+
+  if (matchers.domainRegex && matchers.domainRegex.test(hostname)) {
+    return true;
+  }
+
+  if (matchers.urlRegex) {
+    let path = '/';
+    try {
+      path = new URL(url).pathname;
+    } catch (e) {
+      const afterHost = url.split('://')[1]?.split('/');
+      if (afterHost && afterHost.length > 1) {
+        path = '/' + afterHost.slice(1).join('/');
+        path = path.split('?')[0].split('#')[0];
+      }
+    }
+    const urlToTest = hostname + path;
+    if (matchers.urlRegex.test(urlToTest)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export function parseInput(input: string): { value: string; isRegex: boolean } | { error: string } | null {

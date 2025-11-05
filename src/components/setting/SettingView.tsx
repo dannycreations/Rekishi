@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useState } from 'react';
 
 import { useConfirm } from '../../hooks/useConfirm';
 import { deleteAllHistory } from '../../services/chromeApi';
@@ -14,7 +14,7 @@ interface SettingRowProps {
   title: string;
 }
 
-export const SettingRow = memo(({ title, description, children }: SettingRowProps): JSX.Element => {
+const SettingRow = memo(({ title, description, children }: SettingRowProps): JSX.Element => {
   return (
     <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3">
       <div>
@@ -31,7 +31,7 @@ interface SettingSectionProps {
   title: string;
 }
 
-export const SettingSection = memo(({ title, children }: SettingSectionProps): JSX.Element => {
+const SettingSection = memo(({ title, children }: SettingSectionProps): JSX.Element => {
   return (
     <div>
       <h3 className="mb-2 text-lg font-bold text-slate-800">{title}</h3>
@@ -49,6 +49,27 @@ export const SettingView = (): JSX.Element => {
   }));
   const { Modal: ClearHistoryModal, openModal: openClearHistoryModal } = useConfirm();
   const addToast = useToastStore((state) => state.addToast);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSyncToggle = useCallback(
+    async (enabled: boolean) => {
+      if (isSyncing) return;
+
+      setIsSyncing(true);
+      addToast('Updating sync settings...', 'info');
+
+      try {
+        await setSyncEnabled(enabled);
+        addToast('Settings updated. Reloading...', 'success');
+        setTimeout(() => window.location.reload(), 1500);
+      } catch (error) {
+        console.error('Failed to update sync settings:', error);
+        addToast('Failed to update sync settings.', 'error');
+        setIsSyncing(false);
+      }
+    },
+    [isSyncing, setSyncEnabled, addToast],
+  );
 
   const handleConfirmClearHistory = useCallback(async (): Promise<void> => {
     try {
@@ -80,10 +101,10 @@ export const SettingView = (): JSX.Element => {
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="space-y-3">
         <SettingSection title="Data & Sync">
           <SettingRow description="Sync settings across your signed-in devices." title="Sync settings">
-            <ToggleSwitch enabled={syncEnabled} setEnabled={setSyncEnabled} />
+            <ToggleSwitch disabled={isSyncing} enabled={syncEnabled} setEnabled={handleSyncToggle} />
           </SettingRow>
           <SettingRow description="How long to keep your browsing history." title="History Retention">
             <select
@@ -91,7 +112,7 @@ export const SettingView = (): JSX.Element => {
               onChange={(e: ChangeEvent<HTMLSelectElement>) => setDataRetention(e.target.value)}
               value={dataRetention}
             >
-              <option value="disabled">Keep Forever</option>
+              <option value="disabled">Disabled</option>
               <option value="90">90 days</option>
               <option value="30">30 days</option>
               <option value="14">14 days</option>

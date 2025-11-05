@@ -1,12 +1,13 @@
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { DAYS_OF_WEEK } from '../../app/constants';
+import { usePopover } from '../../hooks/usePopover';
 import { isSameDay } from '../../utilities/dateUtil';
 import { CalendarSkeleton } from './CalendarSkeleton';
 import { ChevronLeftIcon, ChevronRightIcon } from './Icons';
 
-import type { CSSProperties, ReactPortal } from 'react';
+import type { ReactPortal } from 'react';
 
 interface CalendarPopoverProps {
   anchorEl: HTMLElement | null;
@@ -33,12 +34,7 @@ export const CalendarPopover = memo(
     maxDate,
   }: CalendarPopoverProps): ReactPortal | null => {
     const [displayDate, setDisplayDate] = useState(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
-    const popoverRef = useRef<HTMLDivElement>(null);
-    const [style, setStyle] = useState<CSSProperties>({
-      position: 'fixed',
-      top: '-9999px',
-      left: '-9999px',
-    });
+    const { popoverRef, style } = usePopover(anchorEl);
 
     useEffect(() => {
       if (anchorEl) {
@@ -50,52 +46,6 @@ export const CalendarPopover = memo(
         }
       }
     }, [displayDate, fetchDatesForMonth, anchorEl, selectedDate]);
-
-    const updatePosition = useCallback(() => {
-      if (anchorEl && popoverRef.current) {
-        const anchorRect = anchorEl.getBoundingClientRect();
-        const popoverEl = popoverRef.current;
-        const popoverWidth = popoverEl.offsetWidth;
-        const popoverHeight = popoverEl.offsetHeight;
-
-        let left = anchorRect.right - popoverWidth;
-        if (left < 8) left = 8;
-        if (left + popoverWidth > window.innerWidth - 8) {
-          left = window.innerWidth - popoverWidth - 8;
-        }
-
-        let top = anchorRect.bottom + 8;
-        if (top + popoverHeight > window.innerHeight && anchorRect.top - popoverHeight - 8 > 0) {
-          top = anchorRect.top - popoverHeight - 8;
-        }
-
-        if (top < 0) top = 8;
-
-        setStyle({
-          top: `${top}px`,
-          left: `${left}px`,
-        });
-      } else {
-        setStyle({
-          position: 'fixed',
-          top: '-9999px',
-          left: '-9999px',
-        });
-      }
-    }, [anchorEl]);
-
-    useLayoutEffect(() => {
-      updatePosition();
-    }, [updatePosition, isLoading]);
-
-    useEffect(() => {
-      if (!anchorEl) return;
-
-      window.addEventListener('resize', updatePosition);
-      return () => {
-        window.removeEventListener('resize', updatePosition);
-      };
-    }, [anchorEl, updatePosition]);
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
@@ -109,7 +59,7 @@ export const CalendarPopover = memo(
       return () => {
         document.removeEventListener('mousedown', handleClickOutside);
       };
-    }, [onClose, anchorEl]);
+    }, [onClose, anchorEl, popoverRef]);
 
     const today = useMemo(() => {
       const d = new Date();
@@ -117,7 +67,9 @@ export const CalendarPopover = memo(
       return d;
     }, []);
 
-    const monthName = useMemo(() => displayDate.toLocaleString('default', { month: 'long', year: 'numeric' }), [displayDate]);
+    const monthName = useMemo(() => {
+      return displayDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+    }, [displayDate]);
 
     const calendarGrid = useMemo(() => {
       const year = displayDate.getFullYear();

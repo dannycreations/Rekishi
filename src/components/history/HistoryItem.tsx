@@ -5,7 +5,7 @@ import { useToastStore } from '../../stores/useToastStore';
 import { isPotentialRegex } from '../../utilities/blacklistUtil';
 import { getHostnameFromUrl } from '../../utilities/urlUtil';
 import { CheckIcon, ExternalLinkIcon, GlobeIcon } from '../shared/Icons';
-import { HistoryItemActions } from './HistoryItemActions';
+import { HistoryItemAction } from './HistoryItemAction';
 
 import type { JSX, MouseEvent } from 'react';
 import type { ChromeHistoryItem } from '../../app/types';
@@ -174,7 +174,7 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
       </div>
       <div className="relative ml-2 flex h-6 w-32 shrink-0 items-center justify-end">
         <span className="text-right text-xs text-slate-500 group-hover:hidden">{visitTime}</span>
-        <HistoryItemActions
+        <HistoryItemAction
           isCopied={isCopied}
           onBlacklist={handleBlacklist}
           onCopy={handleCopyUrl}

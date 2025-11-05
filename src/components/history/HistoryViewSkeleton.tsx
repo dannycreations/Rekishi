@@ -19,7 +19,7 @@ const HistoryViewItemSkeleton = memo(() => {
 export const HistoryViewGroupSkeleton = memo(() => {
   return (
     <section>
-      <div className="mb-1 flex items-center justify-between px-2">
+      <div className="flex items-center justify-between">
         <Skeleton className="h-5 w-16 rounded" />
         <Skeleton className="h-6 w-20 rounded-md" />
       </div>
@@ -34,7 +34,7 @@ export const HistoryViewGroupSkeleton = memo(() => {
 
 const DailyGroupHeaderSkeleton = memo(() => {
   return (
-    <div className="mb-3 flex items-center justify-between px-2">
+    <div className="mb-3 flex items-center justify-between">
       <div className="flex items-center gap-2">
         <Skeleton className="h-4 w-4 rounded" />
         <Skeleton className="h-7 w-40 rounded" />

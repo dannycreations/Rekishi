@@ -129,7 +129,7 @@ export const BlacklistView = (): JSX.Element => {
           <div className="relative grow">
             <input
               autoFocus
-              className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-4 pr-10 text-sm text-slate-900 outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
+              className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-2 pr-7 text-sm text-slate-900 outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
               onChange={(e) => {
                 setNewDomain(e.target.value);
                 setError(null);
@@ -151,17 +151,17 @@ export const BlacklistView = (): JSX.Element => {
             </div>
           </div>
           <button
-            className="cursor-pointer rounded-lg bg-slate-800 px-2 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-500"
+            className="cursor-pointer rounded-lg bg-slate-800 p-2 text-sm font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-500"
             disabled={!newDomain.trim()}
             type="submit"
           >
             Add
           </button>
         </form>
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+      <div className="rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
         <div className="mb-2 flex items-center justify-between">
           <h3 className="font-semibold text-slate-800">Blacklisted Items ({sortedItems.length})</h3>
           <div className="flex items-center">
@@ -182,7 +182,7 @@ export const BlacklistView = (): JSX.Element => {
             ))}
           </ul>
         ) : (
-          <p className="py-4 text-center text-sm text-slate-500">Your blacklist is empty. Add domains using the form above.</p>
+          <p className="py-3 text-center text-sm text-slate-500">Your blacklist is empty. Add domains using the form above.</p>
         )}
       </div>
 

@@ -20,7 +20,7 @@ interface RadioCardProps {
 }
 
 const RadioCard = memo(({ checked, value, label, description, onChange }: RadioCardProps) => (
-  <label className="flex flex-1 cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 p-3 has-checked:border-slate-400 has-checked:bg-slate-50">
+  <label className="flex flex-1 cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 p-2 has-checked:border-slate-400 has-checked:bg-slate-50">
     <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
       <input checked={checked} className="peer sr-only" name="format" onChange={() => onChange(value)} type="radio" value={value} />
       <div className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-300 transition-colors peer-checked:border-slate-800">
@@ -133,7 +133,7 @@ export const ExportView = (): JSX.Element => {
         <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
           <div>
             <h3 className="text-lg font-semibold text-slate-800">Date Range</h3>
-            <div className="mt-1 grid grid-cols-2 gap-2">
+            <div className="mt-2 grid grid-cols-2 gap-2">
               <div>
                 <label className="text-sm font-medium text-slate-600" htmlFor="start-date">
                   Start Date
@@ -141,7 +141,7 @@ export const ExportView = (): JSX.Element => {
                 <button
                   ref={startDateTriggerRef}
                   id="start-date"
-                  className="mt-1 flex w-full cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-white px-2 py-2 text-left transition-colors hover:bg-slate-100"
+                  className="mt-1 flex w-full cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-white p-2 text-left transition-colors hover:bg-slate-100"
                   onClick={() => setActiveCalendar(activeCalendar === 'start' ? null : 'start')}
                 >
                   <span className="text-sm text-slate-800">{startDate}</span>
@@ -155,7 +155,7 @@ export const ExportView = (): JSX.Element => {
                 <button
                   ref={endDateTriggerRef}
                   id="end-date"
-                  className="mt-1 flex w-full cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-white px-2 py-2 text-left transition-colors hover:bg-slate-100"
+                  className="mt-1 flex w-full cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-white p-2 text-left transition-colors hover:bg-slate-100"
                   onClick={() => setActiveCalendar(activeCalendar === 'end' ? null : 'end')}
                 >
                   <span className="text-sm text-slate-800">{endDate}</span>
@@ -167,14 +167,14 @@ export const ExportView = (): JSX.Element => {
 
           <div>
             <h3 className="text-lg font-semibold text-slate-800">Format</h3>
-            <div className="mt-1 flex space-x-2">
+            <div className="mt-2 flex space-x-2">
               <RadioCard checked={format === 'json'} description="JavaScript Object Notation" label="JSON" onChange={setFormat} value="json" />
               <RadioCard checked={format === 'csv'} description="Comma-Separated Values" label="CSV" onChange={setFormat} value="csv" />
             </div>
           </div>
 
           <button
-            className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-slate-800 px-2 py-2 font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-wait disabled:bg-slate-500"
+            className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-slate-800 p-2 font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-wait disabled:bg-slate-500"
             disabled={isLoading}
             onClick={handleExport}
           >

@@ -65,7 +65,7 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
 
   if (isEditing) {
     return (
-      <li className="flex items-center justify-between rounded-md bg-slate-100 p-2">
+      <li className="flex items-center justify-between rounded-md bg-slate-100 px-2 py-1">
         <input
           autoFocus
           className="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
@@ -87,10 +87,10 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
   }
 
   return (
-    <li className="group flex items-center justify-between rounded-md p-2 transition-colors hover:bg-slate-50">
+    <li className="group flex items-center justify-between rounded-md px-2 py-1 transition-colors hover:bg-slate-50">
       <div className="flex items-center space-x-2">
         <span className="text-sm text-slate-600">{item.value}</span>
-        {item.isRegex && <span className="rounded-md bg-slate-200 px-2 py-1 font-mono text-xs font-semibold text-slate-600">REGEX</span>}
+        {item.isRegex && <span className="rounded-md bg-slate-200 p-1 font-mono text-xs font-semibold text-slate-600">REGEX</span>}
       </div>
       <div className="flex items-center space-x-1">
         <button className="cursor-pointer rounded-md p-1 text-slate-400 transition-all hover:bg-slate-100 hover:text-slate-800" onClick={handleEdit}>

@@ -39,7 +39,7 @@ const HistoryHighlight = ({ text, highlight }: HistoryHighlightProps): JSX.Eleme
     <>
       {parts.map((part, i) =>
         part.toLowerCase() === highlight.toLowerCase() ? (
-          <mark key={i} className="rounded-sm bg-yellow-200 px-0.5 py-px">
+          <mark key={i} className="rounded-sm bg-yellow-200 px-1">
             {part}
           </mark>
         ) : (
@@ -130,7 +130,7 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
 
   return (
     <div
-      className={`group flex cursor-pointer items-center rounded-md p-2 transition-colors duration-200 ${
+      className={`group flex cursor-pointer items-center rounded-md px-2 py-1 transition-colors duration-200 ${
         isChecked ? 'bg-slate-100' : 'hover:bg-white'
       }`}
       onClick={handleToggle}

@@ -151,7 +151,7 @@ export const Header = memo(
             </div>
             <input
               ref={searchInputRef}
-              className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-8 pr-10 text-sm text-slate-900 outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
+              className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-7 pr-7 text-sm text-slate-900 outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
               onChange={handleSearchChange}
               placeholder="Search title or URL"
               type="text"
@@ -171,7 +171,7 @@ export const Header = memo(
           <div>
             <button
               ref={calendarButtonRef}
-              className="flex cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 px-2 py-2 transition-colors hover:bg-slate-100"
+              className="flex cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 p-2 transition-colors hover:bg-slate-100"
               onClick={handleToggleCalendar}
             >
               <span className="text-sm text-slate-800">{formattedDate}</span>

@@ -82,7 +82,7 @@ export const Rekishi = (): JSX.Element => {
 
   return (
     <div className="h-screen bg-slate-100 font-sans text-slate-900">
-      <div className="absolute inset-0 mx-auto flex max-w-6xl flex-col overflow-hidden rounded-lg bg-slate-50 shadow-xl sm:inset-6">
+      <div className="absolute inset-0 mx-auto flex max-w-5xl flex-col overflow-hidden rounded-lg bg-slate-50 shadow-lg sm:inset-6">
         <Header
           datesWithHistory={datesWithHistory}
           fetchDatesForMonth={fetchDatesForMonth}
@@ -103,7 +103,7 @@ export const Rekishi = (): JSX.Element => {
             </div>
           ) : noHistoryEver ? (
             <div className="flex h-full flex-col items-center justify-center p-3 text-center text-slate-500">
-              <LogoIcon className="mb-4 h-16 w-16 text-slate-400" />
+              <LogoIcon className="mb-2 h-16 w-16 text-slate-400" />
               <h2 className="text-2xl font-bold text-slate-800">Welcome to Rekishi!</h2>
               <p className="mt-2">Start browsing the web to see your history here.</p>
             </div>

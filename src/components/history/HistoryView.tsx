@@ -225,8 +225,8 @@ export const HistoryView = memo(
 
     if (dailyGroups.length === 0 && !isLoadingMore) {
       return (
-        <div className="flex h-full flex-col items-center justify-center p-3 pt-12 text-center text-slate-500">
-          <SearchIcon className="mb-4 h-12 w-12 text-slate-400" />
+        <div className="flex h-full flex-col items-center justify-center p-3 text-center text-slate-500">
+          <SearchIcon className="mb-2 h-12 w-12 text-slate-400" />
           <h2 className="text-xl font-semibold">No History Found</h2>
           <p className="mt-2">Your browsing history for the selected period is empty.</p>
         </div>
@@ -310,7 +310,7 @@ export const HistoryView = memo(
         <div ref={lastElementRef} className="h-1" />
 
         {isLoadingMore && (
-          <div className="px-3 py-3">
+          <div className="p-3">
             <HistoryViewGroupSkeleton />
           </div>
         )}

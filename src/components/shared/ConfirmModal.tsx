@@ -68,13 +68,13 @@ export const ConfirmModal = memo(
           </div>
           <div className="mt-3 flex justify-end space-x-2">
             <button
-              className="cursor-pointer rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="cursor-pointer rounded-lg border border-slate-300 bg-white p-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
               onClick={onClose}
             >
               {cancelText}
             </button>
             <button
-              className={`cursor-pointer rounded-lg px-2 py-2 text-sm font-semibold text-white transition-colors ${confirmButtonClass}`}
+              className={`cursor-pointer rounded-lg p-2 text-sm font-semibold text-white transition-colors ${confirmButtonClass}`}
               onClick={onConfirm}
             >
               {confirmText}

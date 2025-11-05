@@ -33,7 +33,7 @@ export const HistoryItemGroup = memo(
     return (
       <section>
         <div
-          className="mb-1 flex items-center justify-between px-2"
+          className="mb-2 flex items-center justify-between px-2"
           style={{
             visibility: isSticky ? 'hidden' : 'visible',
             height: isSticky ? 0 : 'auto',
@@ -42,7 +42,7 @@ export const HistoryItemGroup = memo(
           <h2 className="text-sm font-semibold text-slate-800">{group.time}</h2>
           <DeleteButton onClick={handleOpenDeleteModal}>Delete</DeleteButton>
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col space-y-1">
           {group.items.map((item) => (
             <HistoryItem
               key={item.id}

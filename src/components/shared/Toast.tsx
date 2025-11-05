@@ -44,13 +44,13 @@ const Toast = memo(({ toast, onRemove }: { toast: ToastItem; onRemove: (id: numb
         isExiting ? 'toast-animate-exit' : 'toast-animate-enter'
       }`}
     >
-      <div className="p-4">
+      <div className="p-3">
         <div className="flex items-start">
           <div className="flex-shrink-0">{TOAST_ICONS[toast.type]}</div>
-          <div className="ml-3 w-0 flex-1 pt-0.5">
+          <div className="ml-3 w-0 flex-1 pt-1">
             <p className="text-sm font-medium text-slate-900">{toast.message}</p>
           </div>
-          <div className="ml-4 flex flex-shrink-0">
+          <div className="ml-3 flex flex-shrink-0">
             <button
               className="inline-flex rounded-md bg-white text-slate-400 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
               onClick={handleRemove}
@@ -72,7 +72,7 @@ export const ToastContainer = memo(() => {
   }
 
   const portalContent = (
-    <div className="pointer-events-none fixed inset-0 z-[100] flex items-end px-4 py-6 sm:items-start sm:p-6">
+    <div className="pointer-events-none fixed inset-0 z-[100] flex items-end p-3 sm:items-start">
       <div className="flex w-full flex-col items-center space-y-3 sm:items-end">
         {toasts.map((toast) => (
           <Toast key={toast.id} onRemove={removeToast} toast={toast} />

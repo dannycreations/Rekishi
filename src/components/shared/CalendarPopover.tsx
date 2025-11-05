@@ -116,7 +116,7 @@ export const CalendarPopover = memo(
       <div
         ref={popoverRef}
         style={style}
-        className="fixed z-[101] w-72 origin-top-right rounded-lg border border-slate-200 bg-white p-2 shadow-lg popover-animate-enter"
+        className="fixed z-[101] w-72 origin-top-right rounded-lg border border-slate-200 bg-white p-3 shadow-lg popover-animate-enter"
       >
         {isLoading && datesWithHistory.size === 0 ? (
           <CalendarSkeleton />
@@ -129,7 +129,7 @@ export const CalendarPopover = memo(
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-slate-700">{monthName}</span>
                 <button
-                  className="cursor-pointer rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+                  className="cursor-pointer rounded-md bg-slate-100 p-1 text-xs font-semibold text-slate-700 hover:bg-slate-200"
                   onClick={handleGoToToday}
                 >
                   Today

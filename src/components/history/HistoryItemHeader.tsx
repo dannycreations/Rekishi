@@ -47,7 +47,7 @@ export const HistoryItemHeader = memo(
     const handleButtonClick = totalSelectedCount > 0 ? onDeleteSelected : onDeleteAll;
 
     return (
-      <div className="mb-1 flex items-center justify-between px-2">
+      <div className="flex items-center justify-between px-2">
         <div className="flex items-center gap-2">
           <div className="flex cursor-pointer select-none items-center justify-center" onClick={() => onToggleDaySelection(dayItems)}>
             <div

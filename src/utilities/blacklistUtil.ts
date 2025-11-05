@@ -75,11 +75,8 @@ export function isUrlBlacklisted(url: string, matchers: BlacklistMatchers): bool
     try {
       path = new URL(url).pathname;
     } catch (e) {
-      const afterHost = url.split('://')[1]?.split('/');
-      if (afterHost && afterHost.length > 1) {
-        path = '/' + afterHost.slice(1).join('/');
-        path = path.split('?')[0].split('#')[0];
-      }
+      const match = url.match(/^[^/:]+([/][^?#]*)/);
+      path = match ? match[1] : '/';
     }
     const urlToTest = hostname + path;
     if (matchers.urlRegex.test(urlToTest)) {

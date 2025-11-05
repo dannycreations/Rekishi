@@ -101,7 +101,7 @@ export const useHistory = (): UseHistoryReturn => {
       });
 
       if (isSameDay(dateToFetch, useHistoryStore.getState().selectedDate)) {
-        setRawHistory(initialItems);
+        setRawHistory(initialItems.filter((item) => !isBlacklisted(item.url)));
       }
     } catch (error: unknown) {
       console.error('Failed to fetch initial daily history:', error);
@@ -128,13 +128,13 @@ export const useHistory = (): UseHistoryReturn => {
         });
 
         if (isSameDay(dateToFetch, useHistoryStore.getState().selectedDate)) {
-          setRawHistory(allItemsForDay);
+          setRawHistory(allItemsForDay.filter((item) => !isBlacklisted(item.url)));
         }
       } catch (error: unknown) {
         console.error('Failed to fetch rest of daily history in background:', error);
       }
     })();
-  }, [selectedDate]);
+  }, [selectedDate, isBlacklisted]);
 
   const fetchInitialSearchHistory = useCallback(async () => {
     setIsLoading(true);
@@ -151,14 +151,14 @@ export const useHistory = (): UseHistoryReturn => {
         text: textForSearch,
       });
 
-      let filteredInitialItems = initialItems;
+      let filteredInitialItems = initialItems.filter((item) => !isBlacklisted(item.url));
       if (isRegex) {
         if (compiledRegex.error) {
           setError(compiledRegex.error);
           filteredInitialItems = [];
         } else if (compiledRegex.regex) {
           const regex = compiledRegex.regex;
-          filteredInitialItems = initialItems.filter((item) => regex.test(item.title) || regex.test(item.url));
+          filteredInitialItems = filteredInitialItems.filter((item) => regex.test(item.title) || regex.test(item.url));
         } else {
           filteredInitialItems = [];
         }
@@ -183,13 +183,13 @@ export const useHistory = (): UseHistoryReturn => {
           text: textForSearch,
         });
 
-        let filteredMoreItems = moreItems;
+        let filteredMoreItems = moreItems.filter((item) => !isBlacklisted(item.url));
         if (isRegex) {
           if (compiledRegex.error) {
             filteredMoreItems = [];
           } else if (compiledRegex.regex) {
             const regex = compiledRegex.regex;
-            filteredMoreItems = moreItems.filter((item) => regex.test(item.title) || regex.test(item.url));
+            filteredMoreItems = filteredMoreItems.filter((item) => regex.test(item.title) || regex.test(item.url));
           } else {
             filteredMoreItems = [];
           }
@@ -205,7 +205,7 @@ export const useHistory = (): UseHistoryReturn => {
         console.error('Failed to fetch rest of search history in background:', error);
       }
     })();
-  }, [searchQuery, isRegex, compiledRegex]);
+  }, [searchQuery, isRegex, compiledRegex, isBlacklisted]);
 
   useEffect(() => {
     if (searchQuery) {
@@ -289,14 +289,14 @@ export const useHistory = (): UseHistoryReturn => {
         }
 
         const uniqueNewItems = newItems.filter((i) => !historyItemMap.current.has(i.id));
-        let itemsToAdd = uniqueNewItems;
+        let itemsToAdd = uniqueNewItems.filter((item) => !isBlacklisted(item.url));
         if (isRegex) {
           if (compiledRegex.error) {
             if (!error) setError(compiledRegex.error);
             itemsToAdd = [];
           } else if (compiledRegex.regex) {
             const regex = compiledRegex.regex;
-            itemsToAdd = uniqueNewItems.filter((item) => regex.test(item.title) || regex.test(item.url));
+            itemsToAdd = itemsToAdd.filter((item) => regex.test(item.title) || regex.test(item.url));
           } else {
             itemsToAdd = [];
           }
@@ -318,7 +318,7 @@ export const useHistory = (): UseHistoryReturn => {
           text: '',
         });
         const uniqueNewItems = newItems.filter((i) => !historyItemMap.current.has(i.id));
-        setRawHistory((prev) => [...prev, ...uniqueNewItems]);
+        setRawHistory((prev) => [...prev, ...uniqueNewItems.filter((item) => !isBlacklisted(item.url))]);
         setLastLoadedDate(nextDate);
       }
     } catch (error: unknown) {
@@ -327,7 +327,7 @@ export const useHistory = (): UseHistoryReturn => {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoading, isLoadingMore, searchQuery, lastLoadedDate, hasMoreSearchResults, isRegex, error, compiledRegex, rawHistory]);
+  }, [isLoading, isLoadingMore, searchQuery, lastLoadedDate, hasMoreSearchResults, isRegex, error, compiledRegex, rawHistory, isBlacklisted]);
 
   const deleteHistoryItem = useCallback(async (id: string): Promise<void> => {
     try {

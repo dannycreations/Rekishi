@@ -34,9 +34,7 @@ export const useDevice = (): UseDeviceReturn => {
       try {
         const rawDevices = await getDevices();
         const mappedDevices = rawDevices.map((d: ChromeDevice) => {
-          const mostRecent = d.sessions.reduce((latest, session) => {
-            return Math.max(latest, session.lastModified * 1000);
-          }, 0);
+          const mostRecent = Math.max(0, ...d.sessions.map((session) => session.lastModified * 1000));
 
           return {
             lastSync: mostRecent > 0 ? formatTimeAgo(mostRecent) : 'Unknown',

@@ -274,9 +274,7 @@ export const HistoryView = memo(
                     dayHeaderText={dayHeaderText}
                     dayItems={dayGroup.items}
                     isHourHeader={false}
-                    isSearchMode={!!searchQuery}
                     onDeleteAll={() => handleOpenDeleteAllModal(dayGroup.items, 'day')}
-                    onDeleteSearch={handleOpenDeleteSearchModal}
                     onDeleteSelected={handleOpenDeleteSelectedModal}
                     onToggleDaySelection={() => toggleDaySelection(dayGroup.items)}
                     selectedItemsCount={selectionCounts.byDay.get(dayKey) || 0}

@@ -4,7 +4,7 @@ import { CalendarPopover } from '../shared/CalendarPopover';
 import { BlacklistDomainIcon, CalendarIcon, CloseIcon, DevicesIcon, ExportIcon, LogoIcon, SearchIcon, SettingsIcon } from '../shared/Icons';
 
 import type { ChangeEvent, JSX, ReactNode } from 'react';
-import type { ModalViewType } from '../../app/types';
+import type { ViewType } from '../../app/types';
 
 interface NavButtonProps {
   icon: ReactNode;
@@ -26,7 +26,7 @@ interface HeaderProps {
   datesWithHistory: Set<string>;
   fetchDatesForMonth: (date: Date) => void;
   isLoadingDates: boolean;
-  onOpenModal: (view: ModalViewType) => void;
+  onOpenModal: (view: ViewType) => void;
   onSearch: (query: string) => void;
   searchQuery: string;
   selectedDate: Date;

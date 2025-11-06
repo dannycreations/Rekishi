@@ -46,8 +46,7 @@ export async function deleteUrl(details: { url: string }): Promise<void> {
 
 export async function getDevices(): Promise<ChromeDevice[]> {
   if (typeof chrome !== 'undefined' && chrome.sessions?.getDevices) {
-    const devices = await chrome.sessions.getDevices();
-    return devices || [];
+    return chrome.sessions.getDevices();
   }
   return fakeGetDevices();
 }

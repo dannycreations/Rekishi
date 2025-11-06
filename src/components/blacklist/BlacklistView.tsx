@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { usePopover } from '../../hooks/usePopover';
@@ -10,17 +10,14 @@ import { BlacklistItem } from './BlacklistItem';
 
 import type { FormEvent, JSX, ReactNode } from 'react';
 
-const Tooltip = ({
-  anchorEl,
-  children,
-  onMouseEnter,
-  onMouseLeave,
-}: {
+interface TooltipProps {
   anchorEl: HTMLElement | null;
   children: ReactNode;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
-}) => {
+}
+
+const Tooltip = memo(({ anchorEl, children, onMouseEnter, onMouseLeave }: TooltipProps) => {
   const { popoverRef, style } = usePopover(anchorEl);
 
   if (!anchorEl) {
@@ -39,7 +36,7 @@ const Tooltip = ({
     </div>,
     document.body,
   );
-};
+});
 
 export const BlacklistView = (): JSX.Element => {
   const { addDomain, blacklistedItems, removeDomain, editDomain } = useBlacklistStore((state) => ({

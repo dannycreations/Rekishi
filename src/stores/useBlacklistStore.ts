@@ -4,7 +4,7 @@ import { createWithEqualityFn } from 'zustand/traditional';
 
 import { BLACKLIST_STORAGE_KEY } from '../app/constants';
 import { createBlacklistMatchers, isUrlBlacklisted } from '../utilities/blacklistUtil';
-import { syncedStorage } from '../utilities/storageUtil';
+import { chromeSyncStorage } from '../utilities/storageUtil';
 
 import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
 
@@ -63,7 +63,7 @@ export const useBlacklistStore = createWithEqualityFn(
     }),
     {
       name: BLACKLIST_STORAGE_KEY,
-      storage: createJSONStorage(() => syncedStorage),
+      storage: createJSONStorage(() => chromeSyncStorage),
       partialize: (state) => ({ blacklistedItems: state.blacklistedItems }) as BlacklistState,
       onRehydrateStorage: () => (state) => {
         if (state) {

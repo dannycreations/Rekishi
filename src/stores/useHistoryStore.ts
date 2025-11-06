@@ -3,7 +3,7 @@ import { shallow } from 'zustand/shallow';
 import { createWithEqualityFn } from 'zustand/traditional';
 
 import { HISTORY_STORAGE_KEY } from '../app/constants';
-import { syncedStorage } from '../utilities/storageUtil';
+import { chromeLocalStorage } from '../utilities/storageUtil';
 
 interface HistoryState {
   readonly searchQuery: string;
@@ -28,7 +28,7 @@ export const useHistoryStore = createWithEqualityFn(
     }),
     {
       name: HISTORY_STORAGE_KEY,
-      storage: createJSONStorage(() => syncedStorage, {
+      storage: createJSONStorage(() => chromeLocalStorage, {
         reviver: (key: string, value: unknown) => {
           if (key === 'selectedDate' && typeof value === 'string') {
             return new Date(value);

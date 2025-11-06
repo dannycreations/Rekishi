@@ -25,5 +25,4 @@ export interface HistoryItemGroup {
   readonly items: readonly ChromeHistoryItem[];
 }
 
-export type ViewType = 'activity' | 'devices' | 'blacklist' | 'export' | 'settings';
-export type ModalViewType = Exclude<ViewType, 'activity'>;
+export type ViewType = 'devices' | 'blacklist' | 'export' | 'settings';

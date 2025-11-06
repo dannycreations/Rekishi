@@ -17,9 +17,9 @@ import { useHistoryStore } from '../stores/useHistoryStore';
 import { VIEW_MODAL_SIZES, VIEW_TITLES } from './constants';
 
 import type { JSX } from 'react';
-import type { ModalViewType } from './types';
+import type { ViewType } from './types';
 
-const MODAL_COMPONENTS: Record<ModalViewType, JSX.Element> = {
+const MODAL_COMPONENTS: Record<ViewType, JSX.Element> = {
   devices: <DeviceView />,
   blacklist: <BlacklistView />,
   export: <ExportView />,
@@ -27,7 +27,7 @@ const MODAL_COMPONENTS: Record<ModalViewType, JSX.Element> = {
 } as const;
 
 export const Rekishi = (): JSX.Element => {
-  const [activeModal, setActiveModal] = useState<ModalViewType | null>(null);
+  const [activeModal, setActiveModal] = useState<ViewType | null>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const mainContentRef = useRef<HTMLElement>(null);
 

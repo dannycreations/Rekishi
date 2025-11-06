@@ -58,7 +58,7 @@ async function getFromStorage(key: string, area: 'local' | 'sync'): Promise<stri
 }
 
 async function initializeCaches(): Promise<void> {
-  const blacklistJson = await getFromStorage(BLACKLIST_STORAGE_KEY, 'local');
+  const blacklistJson = await getFromStorage(BLACKLIST_STORAGE_KEY, 'sync');
   updateBlacklistCache(parseBlacklistFromJSON(blacklistJson));
 
   const settingsJson = await getFromStorage(SETTINGS_STORAGE_KEY, 'sync');
@@ -81,17 +81,18 @@ async function runBlacklistCleanup(): Promise<void> {
 
     const historyItems = await chrome.history.search({ text: '', maxResults: 0, startTime: lastCleanupTime });
 
-    const deletions = historyItems
-      .filter((item) => item.url && isBlacklisted(item.url))
-      .map((item) =>
-        chrome.history.deleteUrl({ url: item.url! }).catch((error) => {
-          console.error(`Error deleting blacklisted URL during cleanup (${item.url!}):`, error.message);
+    const blacklistedUrlsToDelete = new Set(historyItems.filter((item) => item.url && isBlacklisted(item.url)).map((item) => item.url!));
+
+    if (blacklistedUrlsToDelete.size > 0) {
+      const deletionPromises = Array.from(blacklistedUrlsToDelete).map((url) =>
+        chrome.history.deleteUrl({ url }).catch((error) => {
+          const message = error instanceof Error ? error.message : String(error);
+          console.error(`Error deleting blacklisted URL during cleanup (${url}):`, message);
         }),
       );
-
-    if (deletions.length > 0) {
-      await Promise.all(deletions);
+      await Promise.all(deletionPromises);
     }
+
     await chrome.storage.local.set({ [CLEANUP_STORAGE_KEY]: now });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -169,7 +170,7 @@ async function handleVisited(historyItem: chrome.history.HistoryItem): Promise<v
 
 if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === 'local' && changes[BLACKLIST_STORAGE_KEY]) {
+    if (areaName === 'sync' && changes[BLACKLIST_STORAGE_KEY]) {
       const json = (changes[BLACKLIST_STORAGE_KEY].newValue as string) ?? null;
       updateBlacklistCache(parseBlacklistFromJSON(json));
     }

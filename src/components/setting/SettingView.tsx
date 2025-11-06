@@ -1,10 +1,9 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback } from 'react';
 
 import { useConfirm } from '../../hooks/useConfirm';
 import { deleteAllHistory } from '../../services/chromeApi';
 import { useSettingStore } from '../../stores/useSettingStore';
 import { useToastStore } from '../../stores/useToastStore';
-import { ToggleSwitch } from '../shared/ToggleSwitch';
 
 import type { ChangeEvent, JSX, ReactNode } from 'react';
 
@@ -41,35 +40,12 @@ const SettingSection = memo(({ title, children }: SettingSectionProps): JSX.Elem
 });
 
 export const SettingView = (): JSX.Element => {
-  const { syncEnabled, dataRetention, setSyncEnabled, setDataRetention } = useSettingStore((state) => ({
-    syncEnabled: state.syncEnabled,
+  const { dataRetention, setDataRetention } = useSettingStore((state) => ({
     dataRetention: state.dataRetention,
-    setSyncEnabled: state.setSyncEnabled,
     setDataRetention: state.setDataRetention,
   }));
   const { Modal: ClearHistoryModal, openModal: openClearHistoryModal } = useConfirm();
   const addToast = useToastStore((state) => state.addToast);
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  const handleSyncToggle = useCallback(
-    async (enabled: boolean) => {
-      if (isSyncing) return;
-
-      setIsSyncing(true);
-      addToast('Updating sync settings...', 'info');
-
-      try {
-        await setSyncEnabled(enabled);
-        addToast('Settings updated. Reloading...', 'success');
-        setTimeout(() => window.location.reload(), 1500);
-      } catch (error) {
-        console.error('Failed to update sync settings:', error);
-        addToast('Failed to update sync settings.', 'error');
-        setIsSyncing(false);
-      }
-    },
-    [isSyncing, setSyncEnabled, addToast],
-  );
 
   const handleConfirmClearHistory = useCallback(async (): Promise<void> => {
     try {
@@ -102,10 +78,7 @@ export const SettingView = (): JSX.Element => {
   return (
     <>
       <div className="space-y-3">
-        <SettingSection title="Data & Sync">
-          <SettingRow description="Sync settings across your signed-in devices." title="Sync settings">
-            <ToggleSwitch disabled={isSyncing} enabled={syncEnabled} setEnabled={handleSyncToggle} />
-          </SettingRow>
+        <SettingSection title="Data">
           <SettingRow description="How long to keep your browsing history." title="History Retention">
             <select
               className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"

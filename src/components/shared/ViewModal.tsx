@@ -6,11 +6,11 @@ import { CloseIcon } from './Icons';
 import type { MouseEvent, ReactNode, ReactPortal } from 'react';
 
 interface ViewModalProps {
-  children: ReactNode;
-  isOpen: boolean;
-  onClose: () => void;
-  size?: 'md' | 'lg' | 'xl' | '2xl' | '3xl';
-  title: string;
+  readonly children: ReactNode;
+  readonly isOpen: boolean;
+  readonly onClose: () => void;
+  readonly size?: 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+  readonly title: string;
 }
 
 export const ViewModal = memo(({ isOpen, onClose, title, children, size = '3xl' }: ViewModalProps): ReactPortal | null => {

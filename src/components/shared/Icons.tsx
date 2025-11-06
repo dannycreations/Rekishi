@@ -27,7 +27,7 @@ export const BlacklistDomainIcon = (props: IconProps): JSX.Element => {
   );
 };
 
-export const CalendarIcon = (props: IconProps) => {
+export const CalendarIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
@@ -115,7 +115,7 @@ export const ErrorIcon = (props: IconProps): JSX.Element => {
   );
 };
 
-export const ExternalLinkIcon = (props: IconProps) => {
+export const ExternalLinkIcon = (props: IconProps): JSX.Element => {
   return (
     <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path

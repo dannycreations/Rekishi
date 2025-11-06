@@ -3,7 +3,7 @@ import { memo } from 'react';
 import type { HTMLAttributes, JSX } from 'react';
 
 interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
-  className?: string;
+  readonly className?: string;
 }
 
 export const Skeleton = memo(({ className, ...props }: SkeletonProps): JSX.Element => {

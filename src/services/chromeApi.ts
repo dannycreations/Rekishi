@@ -9,7 +9,7 @@ interface SearchParams {
   readonly maxResults?: number;
 }
 
-export async function search(params: SearchParams): Promise<ChromeHistoryItem[]> {
+export async function search(params: SearchParams): Promise<readonly ChromeHistoryItem[]> {
   if (typeof chrome !== 'undefined' && chrome.history?.search) {
     const results = await chrome.history.search({
       endTime: params.endTime,
@@ -19,19 +19,21 @@ export async function search(params: SearchParams): Promise<ChromeHistoryItem[]>
     });
     return results
       .filter((item): item is chrome.history.HistoryItem & { url: string } => !!item.url)
-      .map((item) => ({
-        id: `${item.id}-${item.lastVisitTime}`,
-        url: item.url,
-        title: item.title ?? item.url,
-        lastVisitTime: item.lastVisitTime ?? 0,
-        visitCount: item.visitCount ?? 0,
-        typedCount: item.typedCount ?? 0,
-      }));
+      .map(
+        (item): ChromeHistoryItem => ({
+          id: `${item.id}-${item.lastVisitTime}`,
+          url: item.url,
+          title: item.title ?? item.url,
+          lastVisitTime: item.lastVisitTime ?? 0,
+          visitCount: item.visitCount ?? 0,
+          typedCount: item.typedCount ?? 0,
+        }),
+      );
   }
   return fakeSearch(params);
 }
 
-export async function deleteUrl(details: { url: string }): Promise<void> {
+export async function deleteUrl(details: { readonly url: string }): Promise<void> {
   if (typeof chrome !== 'undefined' && chrome.history?.deleteUrl) {
     try {
       await chrome.history.deleteUrl(details);
@@ -44,7 +46,7 @@ export async function deleteUrl(details: { url: string }): Promise<void> {
   return fakeDeleteUrl(details);
 }
 
-export async function getDevices(): Promise<ChromeDevice[]> {
+export async function getDevices(): Promise<readonly ChromeDevice[]> {
   if (typeof chrome !== 'undefined' && chrome.sessions?.getDevices) {
     return chrome.sessions.getDevices();
   }

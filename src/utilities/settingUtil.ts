@@ -13,7 +13,9 @@ export const defaultSettings: Settings = {
 } as const;
 
 export function parseSettingsFromJSON(json: string | null): Settings {
-  if (!json) return { ...defaultSettings };
+  if (!json) {
+    return { ...defaultSettings };
+  }
   try {
     const parsed: StoredSettings = JSON.parse(json);
     return {

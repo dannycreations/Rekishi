@@ -18,13 +18,13 @@ import type { JSX, RefObject } from 'react';
 import type { ChromeHistoryItem } from '../../app/types';
 
 interface HistoryViewProps {
-  deleteHistoryItems: (ids: string[]) => Promise<void>;
-  hasMore: boolean;
-  historyItems: readonly ChromeHistoryItem[];
-  isLoadingMore: boolean;
-  loadMore: () => void;
-  onDelete: (id: string) => Promise<void>;
-  scrollContainerRef: RefObject<HTMLElement | null>;
+  readonly deleteHistoryItems: (ids: string[]) => Promise<void>;
+  readonly hasMore: boolean;
+  readonly historyItems: readonly ChromeHistoryItem[];
+  readonly isLoadingMore: boolean;
+  readonly loadMore: () => void;
+  readonly onDelete: (id: string) => Promise<void>;
+  readonly scrollContainerRef: RefObject<HTMLElement | null>;
 }
 
 export const HistoryView = memo(
@@ -53,7 +53,7 @@ export const HistoryView = memo(
       return counts;
     }, [selectedItems, itemLocator]);
 
-    const handleOpenDeleteSelectedModal = useCallback(() => {
+    const handleOpenDeleteSelectedModal = useCallback((): void => {
       if (selectedItems.size > 0) {
         openDeleteModal({
           confirmButtonClass: 'bg-red-600 hover:bg-red-700',
@@ -75,7 +75,7 @@ export const HistoryView = memo(
       }
     }, [selectedItems, deleteHistoryItems, addToast, openDeleteModal, clearSelection]);
 
-    const handleOpenDeleteSearchModal = useCallback(() => {
+    const handleOpenDeleteSearchModal = useCallback((): void => {
       if (historyItems.length > 0) {
         openDeleteModal({
           confirmButtonClass: 'bg-red-600 hover:bg-red-700',
@@ -98,7 +98,7 @@ export const HistoryView = memo(
     }, [historyItems, openDeleteModal, deleteHistoryItems, addToast, clearSelection]);
 
     const handleOpenDeleteAllModal = useCallback(
-      (items: readonly ChromeHistoryItem[], type: 'day' | 'hour') => {
+      (items: readonly ChromeHistoryItem[], type: 'day' | 'hour'): void => {
         if (items.length > 0) {
           openDeleteModal({
             confirmButtonClass: 'bg-red-600 hover:bg-red-700',
@@ -121,7 +121,7 @@ export const HistoryView = memo(
     );
 
     const handleDeleteItemRequest = useCallback(
-      (item: ChromeHistoryItem) => {
+      (item: ChromeHistoryItem): void => {
         openDeleteModal({
           confirmButtonClass: 'bg-red-600 hover:bg-red-700',
           confirmText: 'Delete',
@@ -141,7 +141,7 @@ export const HistoryView = memo(
     );
 
     const handleBlacklistRequest = useCallback(
-      (item: ChromeHistoryItem) => {
+      (item: ChromeHistoryItem): void => {
         const hostname = getHostnameFromUrl(item.url);
         if (hostname) {
           openBlacklistModal({
@@ -167,7 +167,9 @@ export const HistoryView = memo(
     const stickyState = useStickyHeader(scrollContainerRef, dailyGroups);
 
     const stickyDayGroup = useMemo(() => {
-      if (!stickyState.dayKey) return null;
+      if (!stickyState.dayKey) {
+        return null;
+      }
       return dailyGroupsMap.get(stickyState.dayKey) ?? null;
     }, [stickyState.dayKey, dailyGroupsMap]);
 
@@ -196,7 +198,7 @@ export const HistoryView = memo(
 
     const observer = useRef<IntersectionObserver | null>(null);
     const lastElementRef = useCallback(
-      (node: HTMLDivElement | null) => {
+      (node: HTMLDivElement | null): void => {
         if (isLoadingMore) {
           return;
         }

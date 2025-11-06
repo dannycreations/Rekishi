@@ -17,7 +17,9 @@ let blacklistedItems: readonly BlacklistItem[] = [];
 let currentSettings: Settings = { ...defaultSettings };
 
 function parseBlacklistFromJSON(json: string | null): readonly BlacklistItem[] {
-  if (!json) return [];
+  if (!json) {
+    return [];
+  }
   try {
     const parsed: StoredBlacklist = JSON.parse(json);
     return parsed.state?.blacklistedItems ?? [];

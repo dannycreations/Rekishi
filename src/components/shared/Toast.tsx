@@ -4,18 +4,19 @@ import { createPortal } from 'react-dom';
 import { useToastStore } from '../../stores/useToastStore';
 import { CloseIcon, ErrorIcon, InfoIcon, SuccessIcon } from './Icons';
 
+import type { JSX } from 'react';
 import type { Toast as ToastItem } from '../../stores/useToastStore';
 
-const TOAST_ICONS = {
+const TOAST_ICONS: Record<ToastItem['type'], JSX.Element> = {
   success: <SuccessIcon className="h-5 w-5 text-green-500" />,
   error: <ErrorIcon className="h-5 w-5 text-red-500" />,
   info: <InfoIcon className="h-5 w-5 text-slate-500" />,
 };
 
-const Toast = memo(({ toast, onRemove }: { toast: ToastItem; onRemove: (id: number) => void }) => {
+const Toast = memo(({ toast, onRemove }: { readonly toast: ToastItem; readonly onRemove: (id: number) => void }): JSX.Element => {
   const [isExiting, setIsExiting] = useState(false);
 
-  const handleRemove = useCallback(() => {
+  const handleRemove = useCallback((): void => {
     setIsExiting(true);
   }, []);
 
@@ -64,7 +65,7 @@ const Toast = memo(({ toast, onRemove }: { toast: ToastItem; onRemove: (id: numb
   );
 });
 
-export const ToastContainer = memo(() => {
+export const ToastContainer = memo((): JSX.Element | null => {
   const { toasts, removeToast } = useToastStore();
 
   if (toasts.length === 0) {

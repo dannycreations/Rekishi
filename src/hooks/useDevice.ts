@@ -6,9 +6,9 @@ import { formatTimeAgo } from '../utilities/dateUtil';
 import type { ChromeDevice, Device } from '../app/types';
 
 interface UseDeviceReturn {
-  devices: Device[];
-  isLoading: boolean;
-  error: string | null;
+  readonly devices: readonly Device[];
+  readonly isLoading: boolean;
+  readonly error: string | null;
 }
 
 function getDeviceTypeFromName(name: string): Device['type'] {
@@ -23,7 +23,7 @@ function getDeviceTypeFromName(name: string): Device['type'] {
 }
 
 export const useDevice = (): UseDeviceReturn => {
-  const [devices, setDevices] = useState<Device[]>([]);
+  const [devices, setDevices] = useState<readonly Device[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

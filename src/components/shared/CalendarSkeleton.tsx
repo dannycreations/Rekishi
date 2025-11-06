@@ -3,7 +3,9 @@ import { memo } from 'react';
 import { DAYS_OF_WEEK } from '../../app/constants';
 import { Skeleton } from './Skeleton';
 
-export const CalendarSkeleton = memo(() => {
+import type { JSX } from 'react';
+
+export const CalendarSkeleton = memo((): JSX.Element => {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">

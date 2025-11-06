@@ -12,37 +12,39 @@ import type { JSX } from 'react';
 import type { ExportFormat } from '../../utilities/exportUtil';
 
 interface RadioCardProps {
-  checked: boolean;
-  description: string;
-  label: string;
-  onChange: (value: ExportFormat) => void;
-  value: ExportFormat;
+  readonly checked: boolean;
+  readonly description: string;
+  readonly label: string;
+  readonly onChange: (value: ExportFormat) => void;
+  readonly value: ExportFormat;
 }
 
-const RadioCard = memo(({ checked, value, label, description, onChange }: RadioCardProps) => (
-  <label className="flex flex-1 cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 p-2 has-checked:border-slate-400 has-checked:bg-slate-50">
-    <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
-      <input checked={checked} className="peer sr-only" name="format" onChange={() => onChange(value)} type="radio" value={value} />
-      <div className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-300 transition-colors peer-checked:border-slate-800">
-        <div className="h-2 w-2 rounded-full transition-colors peer-checked:bg-slate-800" />
+const RadioCard = memo(({ checked, value, label, description, onChange }: RadioCardProps): JSX.Element => {
+  return (
+    <label className="flex flex-1 cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 p-2 has-checked:border-slate-400 has-checked:bg-slate-50">
+      <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
+        <input checked={checked} className="peer sr-only" name="format" onChange={() => onChange(value)} type="radio" value={value} />
+        <div className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-300 transition-colors peer-checked:border-slate-800">
+          <div className="h-2 w-2 rounded-full transition-colors peer-checked:bg-slate-800" />
+        </div>
       </div>
-    </div>
-    <div>
-      <span className="font-semibold text-slate-700">{label}</span>
-      <p className="text-xs text-slate-500">{description}</p>
-    </div>
-  </label>
-));
+      <div>
+        <span className="font-semibold text-slate-700">{label}</span>
+        <p className="text-xs text-slate-500">{description}</p>
+      </div>
+    </label>
+  );
+});
 
 export const ExportView = (): JSX.Element => {
   const [format, setFormat] = useState<ExportFormat>('json');
   const [isLoading, setIsLoading] = useState(false);
   const addToast = useToastStore((state) => state.addToast);
 
-  const [endDate, setEndDate] = useState(() => {
+  const [endDate, setEndDate] = useState<string>(() => {
     return formatDateForInput(new Date());
   });
-  const [startDate, setStartDate] = useState(() => {
+  const [startDate, setStartDate] = useState<string>(() => {
     const d = new Date();
     d.setDate(d.getDate() - 30);
     return formatDateForInput(d);
@@ -54,7 +56,7 @@ export const ExportView = (): JSX.Element => {
 
   const { datesWithHistory, fetchDatesForMonth, isLoading: isLoadingDates } = useHistoryDate();
 
-  const handleExport = useCallback(async () => {
+  const handleExport = useCallback(async (): Promise<void> => {
     setIsLoading(true);
 
     try {
@@ -89,19 +91,23 @@ export const ExportView = (): JSX.Element => {
     }
   }, [startDate, endDate, format, addToast]);
 
-  const activeAnchorEl = useMemo(() => {
-    if (activeCalendar === 'start') return startDateTriggerRef.current;
-    if (activeCalendar === 'end') return endDateTriggerRef.current;
+  const activeAnchorEl = useMemo((): HTMLButtonElement | null => {
+    if (activeCalendar === 'start') {
+      return startDateTriggerRef.current;
+    }
+    if (activeCalendar === 'end') {
+      return endDateTriggerRef.current;
+    }
     return null;
   }, [activeCalendar]);
 
-  const activeSelectedDate = useMemo(() => {
+  const activeSelectedDate = useMemo((): Date => {
     const dateStr = activeCalendar === 'start' ? startDate : endDate;
     return new Date(`${dateStr.replace(/\//g, '-')}T00:00:00`);
   }, [activeCalendar, startDate, endDate]);
 
   const handleDateSelect = useCallback(
-    (date: Date) => {
+    (date: Date): void => {
       const formatted = formatDateForInput(date);
       if (activeCalendar === 'start') {
         setStartDate(formatted);
@@ -113,14 +119,14 @@ export const ExportView = (): JSX.Element => {
     [activeCalendar],
   );
 
-  const minCalendarDate = useMemo(() => {
+  const minCalendarDate = useMemo((): Date | undefined => {
     if (activeCalendar === 'end') {
       return new Date(`${startDate.replace(/\//g, '-')}T00:00:00`);
     }
     return undefined;
   }, [activeCalendar, startDate]);
 
-  const maxCalendarDate = useMemo(() => {
+  const maxCalendarDate = useMemo((): Date => {
     if (activeCalendar === 'start') {
       return new Date(`${endDate.replace(/\//g, '-')}T00:00:00`);
     }

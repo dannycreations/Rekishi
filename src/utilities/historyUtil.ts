@@ -3,9 +3,9 @@ import { isSameDay } from './dateUtil';
 import type { ChromeHistoryItem, HistoryItemGroup } from '../app/types';
 
 interface GroupHistoryReturn {
-  date: Date;
-  items: readonly ChromeHistoryItem[];
-  hourlyGroups: readonly HistoryItemGroup[];
+  readonly date: Date;
+  readonly items: readonly ChromeHistoryItem[];
+  readonly hourlyGroups: readonly HistoryItemGroup[];
 }
 
 export function groupHistoryByDayAndHour(items: readonly ChromeHistoryItem[]): readonly GroupHistoryReturn[] {
@@ -43,7 +43,9 @@ export function groupHistoryByDayAndHour(items: readonly ChromeHistoryItem[]): r
       currentDayGroup.hourlyGroups.push(currentHourGroup);
     }
 
-    currentHourGroup!.items.push(item);
+    if (currentHourGroup) {
+      currentHourGroup.items.push(item);
+    }
   }
 
   return dayGroups;

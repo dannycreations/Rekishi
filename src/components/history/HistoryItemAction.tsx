@@ -5,11 +5,11 @@ import { BlacklistDomainIcon, CheckIcon, CopyIcon, SearchIcon, TrashIcon } from 
 import type { JSX, MouseEvent } from 'react';
 
 interface HistoryItemActionProps {
-  isCopied: boolean;
-  onBlacklist: (e: MouseEvent) => void;
-  onCopy: (e: MouseEvent) => void;
-  onDelete: (e: MouseEvent) => void;
-  onSearchSimilar: (e: MouseEvent) => void;
+  readonly isCopied: boolean;
+  readonly onBlacklist: (e: MouseEvent) => void;
+  readonly onCopy: (e: MouseEvent) => void;
+  readonly onDelete: (e: MouseEvent) => void;
+  readonly onSearchSimilar: (e: MouseEvent) => void;
 }
 
 export const HistoryItemAction = memo(({ isCopied, onCopy, onSearchSimilar, onBlacklist, onDelete }: HistoryItemActionProps): JSX.Element => {

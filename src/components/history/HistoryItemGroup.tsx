@@ -7,13 +7,13 @@ import type { JSX } from 'react';
 import type { ChromeHistoryItem, HistoryItemGroup as HistoryItemGroupType } from '../../app/types';
 
 interface HistoryItemGroupProps {
-  group: HistoryItemGroupType;
-  isSticky?: boolean;
-  onBlacklistRequest: (item: ChromeHistoryItem) => void;
-  onDeleteRequest: (item: ChromeHistoryItem) => void;
-  onDeleteHourRequest: (items: readonly ChromeHistoryItem[]) => void;
-  onToggleSelection: (id: string) => void;
-  selectedItems: Set<string>;
+  readonly group: HistoryItemGroupType;
+  readonly isSticky?: boolean;
+  readonly onBlacklistRequest: (item: ChromeHistoryItem) => void;
+  readonly onDeleteRequest: (item: ChromeHistoryItem) => void;
+  readonly onDeleteHourRequest: (items: readonly ChromeHistoryItem[]) => void;
+  readonly onToggleSelection: (id: string) => void;
+  readonly selectedItems: ReadonlySet<string>;
 }
 
 export const HistoryItemGroup = memo(
@@ -26,7 +26,7 @@ export const HistoryItemGroup = memo(
     onToggleSelection,
     selectedItems,
   }: HistoryItemGroupProps): JSX.Element => {
-    const handleOpenDeleteModal = useCallback(() => {
+    const handleOpenDeleteModal = useCallback((): void => {
       onDeleteHourRequest(group.items);
     }, [group.items, onDeleteHourRequest]);
 

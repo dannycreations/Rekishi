@@ -4,15 +4,15 @@ import { createWithEqualityFn } from 'zustand/traditional';
 export type ToastType = 'success' | 'error' | 'info';
 
 export interface Toast {
-  id: number;
-  message: string;
-  type: ToastType;
+  readonly id: number;
+  readonly message: string;
+  readonly type: ToastType;
 }
 
 interface ToastState {
-  toasts: Toast[];
-  addToast: (message: string, type?: ToastType) => void;
-  removeToast: (id: number) => void;
+  readonly toasts: readonly Toast[];
+  readonly addToast: (message: string, type?: ToastType) => void;
+  readonly removeToast: (id: number) => void;
 }
 
 let nextId = 0;

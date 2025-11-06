@@ -5,8 +5,8 @@ import { ArrowUpIcon } from './Icons';
 import type { JSX } from 'react';
 
 interface ScrollToTopProps {
-  isVisible: boolean;
-  onClick: () => void;
+  readonly isVisible: boolean;
+  readonly onClick: () => void;
 }
 
 export const ScrollToTop = memo(({ isVisible, onClick }: ScrollToTopProps): JSX.Element => {

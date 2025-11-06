@@ -2,7 +2,7 @@ import type { ChromeHistoryItem } from '../app/types';
 
 export type ExportFormat = 'json' | 'csv';
 
-export function generateFileContent(items: ChromeHistoryItem[], format: ExportFormat): string {
+export function generateFileContent(items: readonly ChromeHistoryItem[], format: ExportFormat): string {
   if (format === 'json') {
     return JSON.stringify(items, null, 2);
   }

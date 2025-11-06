@@ -11,13 +11,13 @@ import { BlacklistItem } from './BlacklistItem';
 import type { FormEvent, JSX, ReactNode } from 'react';
 
 interface TooltipProps {
-  anchorEl: HTMLElement | null;
-  children: ReactNode;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
+  readonly anchorEl: HTMLElement | null;
+  readonly children: ReactNode;
+  readonly onMouseEnter: () => void;
+  readonly onMouseLeave: () => void;
 }
 
-const Tooltip = memo(({ anchorEl, children, onMouseEnter, onMouseLeave }: TooltipProps) => {
+const Tooltip = memo(({ anchorEl, children, onMouseEnter, onMouseLeave }: TooltipProps): JSX.Element | null => {
   const { popoverRef, style } = usePopover(anchorEl);
 
   if (!anchorEl) {
@@ -94,7 +94,7 @@ export const BlacklistView = (): JSX.Element => {
   );
 
   const handleEditDomain = useCallback(
-    (oldValue: string, newValue: string, newIsRegex: boolean) => {
+    (oldValue: string, newValue: string, newIsRegex: boolean): void => {
       if (oldValue !== newValue && blacklistedValues.has(newValue)) {
         addToast('This item already exists in the blacklist.', 'error');
         return;
@@ -105,7 +105,7 @@ export const BlacklistView = (): JSX.Element => {
     [blacklistedValues, editDomain, addToast],
   );
 
-  const handleTooltipOpen = useCallback(() => {
+  const handleTooltipOpen = useCallback((): void => {
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
@@ -113,7 +113,7 @@ export const BlacklistView = (): JSX.Element => {
     setIsTooltipOpen(true);
   }, []);
 
-  const handleTooltipClose = useCallback(() => {
+  const handleTooltipClose = useCallback((): void => {
     hideTimeoutRef.current = window.setTimeout(() => {
       setIsTooltipOpen(false);
     }, 200);

@@ -3,16 +3,16 @@ import { useCallback, useState } from 'react';
 import type { ChromeHistoryItem } from '../app/types';
 
 interface UseSelectionReturn {
-  selectedItems: Set<string>;
-  toggleSelection: (id: string) => void;
-  toggleDaySelection: (dayItems: readonly ChromeHistoryItem[]) => void;
-  clearSelection: () => void;
+  readonly selectedItems: ReadonlySet<string>;
+  readonly toggleSelection: (id: string) => void;
+  readonly toggleDaySelection: (dayItems: readonly ChromeHistoryItem[]) => void;
+  readonly clearSelection: () => void;
 }
 
 export const useSelection = (): UseSelectionReturn => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
-  const toggleSelection = useCallback((id: string) => {
+  const toggleSelection = useCallback((id: string): void => {
     setSelectedItems((prev) => {
       const newSelected = new Set(prev);
       if (newSelected.has(id)) {
@@ -25,8 +25,10 @@ export const useSelection = (): UseSelectionReturn => {
   }, []);
 
   const toggleDaySelection = useCallback(
-    (dayItems: readonly ChromeHistoryItem[]) => {
-      if (dayItems.length === 0) return;
+    (dayItems: readonly ChromeHistoryItem[]): void => {
+      if (dayItems.length === 0) {
+        return;
+      }
       const dayItemIds = dayItems.map((item) => item.id);
       const allSelected = dayItems.every((item) => selectedItems.has(item.id));
 
@@ -43,7 +45,7 @@ export const useSelection = (): UseSelectionReturn => {
     [selectedItems],
   );
 
-  const clearSelection = useCallback(() => {
+  const clearSelection = useCallback((): void => {
     setSelectedItems(new Set());
   }, []);
 

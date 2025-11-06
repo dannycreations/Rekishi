@@ -3,8 +3,8 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import type { CSSProperties, RefObject } from 'react';
 
 interface UsePopoverReturn {
-  popoverRef: RefObject<HTMLDivElement>;
-  style: CSSProperties;
+  readonly popoverRef: RefObject<HTMLDivElement | null>;
+  readonly style: CSSProperties;
 }
 
 export const usePopover = (anchorEl: HTMLElement | null): UsePopoverReturn => {

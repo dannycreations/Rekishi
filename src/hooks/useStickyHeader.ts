@@ -6,16 +6,26 @@ interface ProcessedDayGroupForHook {
   readonly date: Date;
 }
 
-export const useStickyHeader = (scrollContainerRef: RefObject<HTMLElement | null>, processedDailyGroups: readonly ProcessedDayGroupForHook[]) => {
-  const [stickyState, setStickyState] = useState<{ dayKey: string | null; hourText: string | null }>({
+interface StickyState {
+  readonly dayKey: string | null;
+  readonly hourText: string | null;
+}
+
+export const useStickyHeader = (
+  scrollContainerRef: RefObject<HTMLElement | null>,
+  processedDailyGroups: readonly ProcessedDayGroupForHook[],
+): StickyState => {
+  const [stickyState, setStickyState] = useState<StickyState>({
     dayKey: null,
     hourText: null,
   });
-  const headerPositions = useRef<{ top: number; dayKey: string; hourText: string | null }[]>([]);
+  const headerPositions = useRef<{ readonly top: number; readonly dayKey: string; readonly hourText: string | null }[]>([]);
 
   useLayoutEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (!container) {
+      return;
+    }
 
     const positions: { top: number; dayKey: string; hourText: string | null }[] = [];
     const headerElements = container.querySelectorAll<HTMLElement>('[data-day-key]');

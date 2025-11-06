@@ -7,17 +7,17 @@ import type { JSX } from 'react';
 import type { ChromeHistoryItem } from '../../app/types';
 
 interface HistoryItemHeaderProps {
-  dayHeaderText: string;
-  dayItems: readonly ChromeHistoryItem[];
-  isHourHeader: boolean;
-  isSearchMode?: boolean;
-  onDeleteAll: () => void;
-  onDeleteSearch?: () => void;
-  onDeleteSelected: () => void;
-  onToggleDaySelection: (items: readonly ChromeHistoryItem[]) => void;
-  selectedItemsCount: number;
-  totalSearchItemsCount?: number;
-  totalSelectedCount: number;
+  readonly dayHeaderText: string;
+  readonly dayItems: readonly ChromeHistoryItem[];
+  readonly isHourHeader: boolean;
+  readonly isSearchMode?: boolean;
+  readonly onDeleteAll: () => void;
+  readonly onDeleteSearch?: () => void;
+  readonly onDeleteSelected: () => void;
+  readonly onToggleDaySelection: (items: readonly ChromeHistoryItem[]) => void;
+  readonly selectedItemsCount: number;
+  readonly totalSearchItemsCount?: number;
+  readonly totalSelectedCount: number;
 }
 
 export const HistoryItemHeader = memo(

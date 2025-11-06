@@ -9,12 +9,12 @@ import { chromeSyncStorage } from '../utilities/storageUtil';
 import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
 
 interface BlacklistState {
-  blacklistedItems: readonly BlacklistItem[];
-  blacklistMatchers: BlacklistMatchers;
+  readonly blacklistedItems: readonly BlacklistItem[];
   readonly addDomain: (value: string, isRegex: boolean) => void;
   readonly editDomain: (oldValue: string, newValue: string, newIsRegex: boolean) => void;
   readonly removeDomain: (value: string) => void;
   readonly isBlacklisted: (url: string) => boolean;
+  blacklistMatchers: BlacklistMatchers;
 }
 
 export const useBlacklistStore = createWithEqualityFn(
@@ -27,7 +27,7 @@ export const useBlacklistStore = createWithEqualityFn(
           if (state.blacklistedItems.some((item) => item.value === value)) {
             return state;
           }
-          const newItems = [...state.blacklistedItems, { value, isRegex }];
+          const newItems: readonly BlacklistItem[] = [...state.blacklistedItems, { value, isRegex }];
           return {
             blacklistedItems: newItems,
             blacklistMatchers: createBlacklistMatchers(newItems),
@@ -36,7 +36,7 @@ export const useBlacklistStore = createWithEqualityFn(
       },
       editDomain: (oldValue, newValue, newIsRegex) => {
         set((state) => {
-          const newItems = state.blacklistedItems.map((item) => {
+          const newItems: readonly BlacklistItem[] = state.blacklistedItems.map((item) => {
             if (item.value === oldValue) {
               return { value: newValue, isRegex: newIsRegex };
             }
@@ -50,7 +50,7 @@ export const useBlacklistStore = createWithEqualityFn(
       },
       removeDomain: (value) => {
         set((state) => {
-          const newItems = state.blacklistedItems.filter((item) => item.value !== value);
+          const newItems: readonly BlacklistItem[] = state.blacklistedItems.filter((item) => item.value !== value);
           return {
             blacklistedItems: newItems,
             blacklistMatchers: createBlacklistMatchers(newItems),

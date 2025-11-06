@@ -3,9 +3,9 @@ import { memo } from 'react';
 import type { JSX } from 'react';
 
 interface ToggleSwitchProps {
-  disabled?: boolean;
-  enabled: boolean;
-  setEnabled: (enabled: boolean) => void;
+  readonly disabled?: boolean;
+  readonly enabled: boolean;
+  readonly setEnabled: (enabled: boolean) => void;
 }
 
 export const ToggleSwitch = memo(({ enabled, setEnabled, disabled = false }: ToggleSwitchProps): JSX.Element => {

@@ -10,15 +10,15 @@ import { ChevronLeftIcon, ChevronRightIcon } from './Icons';
 import type { ReactPortal } from 'react';
 
 interface CalendarPopoverProps {
-  anchorEl: HTMLElement | null;
-  datesWithHistory: Set<string>;
-  fetchDatesForMonth: (date: Date) => void;
-  isLoading: boolean;
-  maxDate?: Date;
-  minDate?: Date;
-  onClose: () => void;
-  onDateSelect: (date: Date) => void;
-  selectedDate: Date;
+  readonly anchorEl: HTMLElement | null;
+  readonly datesWithHistory: Set<string>;
+  readonly fetchDatesForMonth: (date: Date) => void;
+  readonly isLoading: boolean;
+  readonly maxDate?: Date;
+  readonly minDate?: Date;
+  readonly onClose: () => void;
+  readonly onDateSelect: (date: Date) => void;
+  readonly selectedDate: Date;
 }
 
 export const CalendarPopover = memo(
@@ -48,7 +48,7 @@ export const CalendarPopover = memo(
     }, [displayDate, fetchDatesForMonth, anchorEl, selectedDate]);
 
     useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
+      const handleClickOutside = (event: MouseEvent): void => {
         if (anchorEl && popoverRef.current && !popoverRef.current.contains(event.target as Node) && !anchorEl.contains(event.target as Node)) {
           onClose();
         }
@@ -61,17 +61,17 @@ export const CalendarPopover = memo(
       };
     }, [onClose, anchorEl, popoverRef]);
 
-    const today = useMemo(() => {
+    const today = useMemo((): Date => {
       const d = new Date();
       d.setHours(0, 0, 0, 0);
       return d;
     }, []);
 
-    const monthName = useMemo(() => {
+    const monthName = useMemo((): string => {
       return displayDate.toLocaleString('default', { month: 'long', year: 'numeric' });
     }, [displayDate]);
 
-    const calendarGrid = useMemo(() => {
+    const calendarGrid = useMemo((): readonly (Date | null)[] => {
       const year = displayDate.getFullYear();
       const month = displayDate.getMonth();
       const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -87,24 +87,24 @@ export const CalendarPopover = memo(
       return days;
     }, [displayDate]);
 
-    const handlePrevMonth = useCallback(() => {
+    const handlePrevMonth = useCallback((): void => {
       setDisplayDate((d) => {
         return new Date(d.getFullYear(), d.getMonth() - 1, 1);
       });
     }, []);
 
-    const handleNextMonth = useCallback(() => {
+    const handleNextMonth = useCallback((): void => {
       setDisplayDate((d) => {
         return new Date(d.getFullYear(), d.getMonth() + 1, 1);
       });
     }, []);
 
-    const handleGoToToday = useCallback(() => {
+    const handleGoToToday = useCallback((): void => {
       onDateSelect(new Date());
     }, [onDateSelect]);
 
     const isCurrentMonth = useMemo(
-      () => displayDate.getFullYear() === today.getFullYear() && displayDate.getMonth() === today.getMonth(),
+      (): boolean => displayDate.getFullYear() === today.getFullYear() && displayDate.getMonth() === today.getMonth(),
       [displayDate, today],
     );
 

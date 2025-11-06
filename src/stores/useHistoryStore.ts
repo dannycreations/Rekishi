@@ -29,7 +29,7 @@ export const useHistoryStore = createWithEqualityFn(
     {
       name: HISTORY_STORAGE_KEY,
       storage: createJSONStorage(() => chromeLocalStorage, {
-        reviver: (key: string, value: unknown) => {
+        reviver: (key: string, value: unknown): unknown => {
           if (key === 'selectedDate' && typeof value === 'string') {
             return new Date(value);
           }

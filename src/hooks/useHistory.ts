@@ -10,30 +10,53 @@ import { isSameDay } from '../utilities/dateUtil';
 import type { ChromeHistoryItem } from '../app/types';
 
 interface NewHistoryItemMessage {
-  type: 'NEW_HISTORY_ITEM';
-  payload: ChromeHistoryItem;
+  readonly type: 'NEW_HISTORY_ITEM';
+  readonly payload: ChromeHistoryItem;
 }
 
 function isNewHistoryItemMessage(message: unknown): message is NewHistoryItemMessage {
-  return (
-    !!message &&
-    typeof message === 'object' &&
-    'type' in message &&
-    (message as { type: unknown }).type === 'NEW_HISTORY_ITEM' &&
-    'payload' in message &&
-    !!(message as { payload: unknown }).payload
-  );
+  const msg = message as NewHistoryItemMessage;
+  return !!msg && msg.type === 'NEW_HISTORY_ITEM' && !!msg.payload;
 }
 
 interface UseHistoryReturn {
-  deleteHistoryItem: (id: string) => Promise<void>;
-  deleteHistoryItems: (ids: string[]) => Promise<void>;
-  error: string | null;
-  hasMore: boolean;
-  history: readonly ChromeHistoryItem[];
-  isLoading: boolean;
-  isLoadingMore: boolean;
-  loadMore: () => void;
+  readonly deleteHistoryItem: (id: string) => Promise<void>;
+  readonly deleteHistoryItems: (ids: readonly string[]) => Promise<void>;
+  readonly error: string | null;
+  readonly hasMore: boolean;
+  readonly history: readonly ChromeHistoryItem[];
+  readonly isLoading: boolean;
+  readonly isLoadingMore: boolean;
+  readonly loadMore: () => void;
+}
+
+function applyClientSideSearch(
+  items: readonly ChromeHistoryItem[],
+  searchQuery: string,
+  isRegex: boolean,
+  compiledRegex: {
+    readonly regex: RegExp | null;
+    readonly error: string | null;
+  },
+): {
+  readonly items: readonly ChromeHistoryItem[];
+  readonly error?: string;
+} {
+  if (isRegex) {
+    if (compiledRegex.error) {
+      return { items: [], error: compiledRegex.error };
+    }
+    if (compiledRegex.regex) {
+      const regex = compiledRegex.regex;
+      return { items: items.filter((item) => regex.test(item.title) || regex.test(item.url)) };
+    }
+    return { items: [] };
+  }
+
+  const query = searchQuery.toLowerCase();
+  return {
+    items: items.filter((item) => (item.title ?? '').toLowerCase().includes(query) || (item.url ?? '').toLowerCase().includes(query)),
+  };
 }
 
 export const useHistory = (): UseHistoryReturn => {
@@ -78,20 +101,19 @@ export const useHistory = (): UseHistoryReturn => {
     }
   }, [isRegex, searchQuery]);
 
-  const fetchInitialDailyHistory = useCallback(async () => {
+  const fetchInitialDailyHistory = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     setError(null);
     setRawHistory([]);
     setLastLoadedDate(selectedDate);
 
     const dateToFetch = selectedDate;
-
     const startTime = new Date(dateToFetch);
     startTime.setHours(0, 0, 0, 0);
     const endTime = new Date(dateToFetch);
     endTime.setHours(23, 59, 59, 999);
 
-    let initialItems: ChromeHistoryItem[] = [];
+    let initialItems: readonly ChromeHistoryItem[] = [];
     try {
       initialItems = await search({
         endTime: endTime.getTime(),
@@ -136,34 +158,34 @@ export const useHistory = (): UseHistoryReturn => {
     })();
   }, [selectedDate, isBlacklisted]);
 
-  const fetchInitialSearchHistory = useCallback(async () => {
+  const fetchInitialSearchHistory = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     setError(null);
     setRawHistory([]);
     setHasMoreSearchResults(true);
 
-    const textForSearch = isRegex ? '' : searchQuery;
-    let initialItems: ChromeHistoryItem[] = [];
+    const clientSideSearch = isRegex || searchQuery.length < 3;
+    const textForSearch = clientSideSearch ? '' : searchQuery;
+    let initialItems: readonly ChromeHistoryItem[] = [];
 
     try {
       initialItems = await search({
         maxResults: INIT_CHUNK_SIZE,
+        startTime: 0,
         text: textForSearch,
       });
 
-      let filteredInitialItems = initialItems.filter((item) => !isBlacklisted(item.url));
-      if (isRegex) {
-        if (compiledRegex.error) {
-          setError(compiledRegex.error);
-          filteredInitialItems = [];
-        } else if (compiledRegex.regex) {
-          const regex = compiledRegex.regex;
-          filteredInitialItems = filteredInitialItems.filter((item) => regex.test(item.title) || regex.test(item.url));
-        } else {
-          filteredInitialItems = [];
+      // FIX: Ensure filteredItems is a readonly array to match return type of applyClientSideSearch
+      let filteredItems: readonly ChromeHistoryItem[] = initialItems.filter((item) => !isBlacklisted(item.url));
+      if (clientSideSearch) {
+        const { items, error: filterError } = applyClientSideSearch(filteredItems, searchQuery, isRegex, compiledRegex);
+        if (filterError) {
+          setError(filterError);
         }
+        // FIX: Remove unsafe type assertion. `items` is already the correct readonly type.
+        filteredItems = items;
       }
-      setRawHistory(filteredInitialItems);
+      setRawHistory(filteredItems);
     } catch (error: unknown) {
       console.error('Failed to fetch initial search history:', error);
       setError('Failed to fetch history data.');
@@ -180,19 +202,19 @@ export const useHistory = (): UseHistoryReturn => {
       try {
         const moreItems = await search({
           maxResults: SEARCH_PAGE_SIZE,
+          startTime: 0,
           text: textForSearch,
         });
 
-        let filteredMoreItems = moreItems.filter((item) => !isBlacklisted(item.url));
-        if (isRegex) {
-          if (compiledRegex.error) {
-            filteredMoreItems = [];
-          } else if (compiledRegex.regex) {
-            const regex = compiledRegex.regex;
-            filteredMoreItems = filteredMoreItems.filter((item) => regex.test(item.title) || regex.test(item.url));
-          } else {
-            filteredMoreItems = [];
+        // FIX: Ensure filteredMoreItems is a readonly array to match return type of applyClientSideSearch
+        let filteredMoreItems: readonly ChromeHistoryItem[] = moreItems.filter((item) => !isBlacklisted(item.url));
+        if (clientSideSearch) {
+          const { items, error: filterError } = applyClientSideSearch(filteredMoreItems, searchQuery, isRegex, compiledRegex);
+          if (filterError && !error) {
+            setError(filterError);
           }
+          // FIX: Remove unsafe type assertion. `items` is already the correct readonly type.
+          filteredMoreItems = items;
         }
 
         if (searchQuery === useHistoryStore.getState().searchQuery) {
@@ -205,7 +227,7 @@ export const useHistory = (): UseHistoryReturn => {
         console.error('Failed to fetch rest of search history in background:', error);
       }
     })();
-  }, [searchQuery, isRegex, compiledRegex, isBlacklisted]);
+  }, [searchQuery, isRegex, compiledRegex, isBlacklisted, error]);
 
   useEffect(() => {
     if (searchQuery) {
@@ -227,16 +249,8 @@ export const useHistory = (): UseHistoryReturn => {
 
         let isMatch: boolean;
         if (searchQuery) {
-          if (isRegex) {
-            if (compiledRegex.error || !compiledRegex.regex) {
-              isMatch = false;
-            } else {
-              isMatch = compiledRegex.regex.test(newItem.title) || compiledRegex.regex.test(newItem.url);
-            }
-          } else {
-            const query = searchQuery.toLowerCase();
-            isMatch = (newItem.title ?? '').toLowerCase().includes(query) || (newItem.url ?? '').toLowerCase().includes(query);
-          }
+          const { items } = applyClientSideSearch([newItem], searchQuery, isRegex, compiledRegex);
+          isMatch = items.length > 0;
         } else {
           isMatch = isSameDay(selectedDate, new Date(newItem.lastVisitTime));
         }
@@ -263,7 +277,7 @@ export const useHistory = (): UseHistoryReturn => {
     }
   }, [messageListener]);
 
-  const loadMore = useCallback(async () => {
+  const loadMore = useCallback(async (): Promise<void> => {
     if (isLoading || isLoadingMore) {
       return;
     }
@@ -277,10 +291,13 @@ export const useHistory = (): UseHistoryReturn => {
           return;
         }
 
-        const textForSearch = isRegex ? '' : searchQuery;
+        const clientSideSearch = isRegex || searchQuery.length < 3;
+        const textForSearch = clientSideSearch ? '' : searchQuery;
+
         const newItems = await search({
           endTime: lastItem.lastVisitTime,
           maxResults: SEARCH_PAGE_SIZE,
+          startTime: 0,
           text: textForSearch,
         });
 
@@ -289,18 +306,16 @@ export const useHistory = (): UseHistoryReturn => {
         }
 
         const uniqueNewItems = newItems.filter((i) => !historyItemMap.current.has(i.id));
-        let itemsToAdd = uniqueNewItems.filter((item) => !isBlacklisted(item.url));
-        if (isRegex) {
-          if (compiledRegex.error) {
-            if (!error) setError(compiledRegex.error);
-            itemsToAdd = [];
-          } else if (compiledRegex.regex) {
-            const regex = compiledRegex.regex;
-            itemsToAdd = itemsToAdd.filter((item) => regex.test(item.title) || regex.test(item.url));
-          } else {
-            itemsToAdd = [];
+        let itemsToAdd: readonly ChromeHistoryItem[] = uniqueNewItems.filter((item) => !isBlacklisted(item.url));
+
+        if (clientSideSearch) {
+          const { items, error: filterError } = applyClientSideSearch(itemsToAdd, searchQuery, isRegex, compiledRegex);
+          if (filterError && !error) {
+            setError(filterError);
           }
+          itemsToAdd = items;
         }
+
         setRawHistory((prev) => [...prev, ...itemsToAdd]);
       } else {
         const nextDate = new Date(lastLoadedDate);
@@ -342,7 +357,7 @@ export const useHistory = (): UseHistoryReturn => {
     }
   }, []);
 
-  const deleteHistoryItems = useCallback(async (ids: string[]): Promise<void> => {
+  const deleteHistoryItems = useCallback(async (ids: readonly string[]): Promise<void> => {
     try {
       const urlsToDelete = new Set<string>();
       for (const id of ids) {
@@ -362,7 +377,7 @@ export const useHistory = (): UseHistoryReturn => {
     }
   }, []);
 
-  const hasMore = useMemo(() => {
+  const hasMore = useMemo((): boolean => {
     if (searchQuery) {
       return hasMoreSearchResults;
     }

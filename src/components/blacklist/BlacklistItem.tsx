@@ -4,34 +4,34 @@ import { useToastStore } from '../../stores/useToastStore';
 import { parseInput } from '../../utilities/blacklistUtil';
 import { CheckIcon, CloseIcon, PencilIcon, TrashIcon } from '../shared/Icons';
 
-import type { KeyboardEvent } from 'react';
+import type { JSX, KeyboardEvent } from 'react';
 import type { BlacklistItem as BlacklistItemType } from '../../utilities/blacklistUtil';
 
 interface BlacklistItemProps {
-  item: BlacklistItemType;
-  onEdit: (oldValue: string, newValue: string, newIsRegex: boolean) => void;
-  onRemove: (value: string) => void;
+  readonly item: BlacklistItemType;
+  readonly onEdit: (oldValue: string, newValue: string, newIsRegex: boolean) => void;
+  readonly onRemove: (value: string) => void;
 }
 
-export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProps) => {
+export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProps): JSX.Element => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.isRegex ? `/${item.value}/` : item.value);
   const addToast = useToastStore((state) => state.addToast);
 
-  const handleRemove = useCallback(() => {
+  const handleRemove = useCallback((): void => {
     onRemove(item.value);
   }, [item.value, onRemove]);
 
-  const handleEdit = useCallback(() => {
+  const handleEdit = useCallback((): void => {
     setIsEditing(true);
   }, []);
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = useCallback((): void => {
     setIsEditing(false);
     setEditValue(item.isRegex ? `/${item.value}/` : item.value);
   }, [item]);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback((): void => {
     const parsed = parseInput(editValue);
 
     if (!parsed) {
@@ -53,7 +53,7 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
   }, [editValue, item, onEdit, addToast]);
 
   const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLInputElement>) => {
+    (e: KeyboardEvent<HTMLInputElement>): void => {
       if (e.key === 'Enter') {
         handleSave();
       } else if (e.key === 'Escape') {

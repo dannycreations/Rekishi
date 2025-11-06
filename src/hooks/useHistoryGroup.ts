@@ -27,7 +27,7 @@ export const useHistoryGroup = (historyItems: readonly ChromeHistoryItem[]): Use
 
   return useMemo(() => {
     const itemLocator = new Map<string, ItemLocation>();
-    const dailyGroups: ProcessedDayGroup[] = dailyGroupsRaw.map((dayGroup) => {
+    const dailyGroups: readonly ProcessedDayGroup[] = dailyGroupsRaw.map((dayGroup) => {
       const dayKey = dayGroup.date.toISOString();
       const hourlyGroupsMap = new Map(
         dayGroup.hourlyGroups.map((hg) => {

@@ -11,11 +11,11 @@ import type { JSX, MouseEvent } from 'react';
 import type { ChromeHistoryItem } from '../../app/types';
 
 interface HistoryHighlightProps {
-  highlight: string;
-  text: string;
+  readonly highlight: string;
+  readonly text: string;
 }
 
-const HistoryHighlight = ({ text, highlight }: HistoryHighlightProps): JSX.Element => {
+const HistoryHighlight = memo(({ text, highlight }: HistoryHighlightProps): JSX.Element => {
   const highlightRegex = useMemo(() => {
     if (!highlight) {
       return null;
@@ -48,14 +48,14 @@ const HistoryHighlight = ({ text, highlight }: HistoryHighlightProps): JSX.Eleme
       )}
     </>
   );
-};
+});
 
 interface HistoryItemProps {
-  isChecked: boolean;
-  item: ChromeHistoryItem;
-  onBlacklistRequest: (item: ChromeHistoryItem) => void;
-  onDeleteRequest: (item: ChromeHistoryItem) => void;
-  onToggleSelection: (id: string) => void;
+  readonly isChecked: boolean;
+  readonly item: ChromeHistoryItem;
+  readonly onBlacklistRequest: (item: ChromeHistoryItem) => void;
+  readonly onDeleteRequest: (item: ChromeHistoryItem) => void;
+  readonly onToggleSelection: (id: string) => void;
 }
 
 export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, isChecked, onToggleSelection }: HistoryItemProps): JSX.Element => {
@@ -82,7 +82,7 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
     [lastVisitTime],
   );
 
-  const handleFaviconError = useCallback(() => {
+  const handleFaviconError = useCallback((): void => {
     setFaviconError(true);
   }, []);
 

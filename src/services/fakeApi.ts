@@ -3,7 +3,7 @@ import { createBlacklistMatchers, isUrlBlacklisted } from '../utilities/blacklis
 import { parseSettingsFromJSON } from '../utilities/settingUtil';
 
 import type { ChromeDevice, ChromeHistoryItem } from '../app/types';
-import type { BlacklistItem } from '../utilities/blacklistUtil';
+import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
 
 interface SearchParams {
   readonly text: string;
@@ -21,10 +21,12 @@ interface StoredBlacklist {
   };
 }
 
-let blacklistMatchers = createBlacklistMatchers([]);
+let blacklistMatchers: BlacklistMatchers = createBlacklistMatchers([]);
 
 function parseBlacklistFromJSON(json: string | null): readonly BlacklistItem[] {
-  if (!json) return [];
+  if (!json) {
+    return [];
+  }
   try {
     const parsed: StoredBlacklist = JSON.parse(json);
     return parsed.state?.blacklistedItems ?? [];
@@ -34,7 +36,7 @@ function parseBlacklistFromJSON(json: string | null): readonly BlacklistItem[] {
   }
 }
 
-function runFakeBlacklistCleanup() {
+function runFakeBlacklistCleanup(): void {
   const blacklistJson = localStorage.getItem(BLACKLIST_STORAGE_KEY);
   const blacklistedItems = parseBlacklistFromJSON(blacklistJson);
   blacklistMatchers = createBlacklistMatchers(blacklistedItems);
@@ -123,7 +125,7 @@ function generateFakeHistoryItem(timestamp: number): chrome.history.HistoryItem 
   };
 }
 
-function runFakeRetentionCleanup() {
+function runFakeRetentionCleanup(): void {
   if (!FAKE_DATA_INITIALIZED) {
     return;
   }
@@ -184,7 +186,7 @@ if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) {
   });
 }
 
-function getFakeHistory(params: SearchParams): chrome.history.HistoryItem[] {
+function getFakeHistory(params: SearchParams): readonly chrome.history.HistoryItem[] {
   initializeFakeData();
   runFakeRetentionCleanup();
   runFakeBlacklistCleanup();
@@ -219,7 +221,7 @@ function getFakeHistory(params: SearchParams): chrome.history.HistoryItem[] {
   return items;
 }
 
-function deleteFakeHistoryUrl(details: { url: string }): void {
+function deleteFakeHistoryUrl(details: { readonly url: string }): void {
   initializeFakeData();
   const idsToDelete = Object.keys(FAKE_DATA_STORE).filter((id) => {
     return FAKE_DATA_STORE[id].url === details.url;
@@ -229,11 +231,11 @@ function deleteFakeHistoryUrl(details: { url: string }): void {
   }
 }
 
-export function search(params: SearchParams): Promise<ChromeHistoryItem[]> {
+export function search(params: SearchParams): Promise<readonly ChromeHistoryItem[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
       const historyItems = getFakeHistory(params);
-      const mappedResults = historyItems.map((item) => {
+      const mappedResults: readonly ChromeHistoryItem[] = historyItems.map((item) => {
         return {
           id: `${item.id}-${item.lastVisitTime}`,
           url: item.url ?? '',
@@ -248,7 +250,7 @@ export function search(params: SearchParams): Promise<ChromeHistoryItem[]> {
   });
 }
 
-export function deleteUrl(details: { url: string }): Promise<void> {
+export function deleteUrl(details: { readonly url: string }): Promise<void> {
   return new Promise((resolve) => {
     deleteFakeHistoryUrl(details);
     setTimeout(() => {
@@ -257,7 +259,7 @@ export function deleteUrl(details: { url: string }): Promise<void> {
   });
 }
 
-export function getDevices(): Promise<ChromeDevice[]> {
+export function getDevices(): Promise<readonly ChromeDevice[]> {
   return new Promise((resolve) => {
     const now = Date.now();
     setTimeout(() => {

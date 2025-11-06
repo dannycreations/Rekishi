@@ -3,10 +3,10 @@ import { useCallback, useRef, useState } from 'react';
 import { search } from '../services/chromeApi';
 
 interface UseHistoryDateReturn {
-  datesWithHistory: Set<string>;
-  error: string | null;
-  fetchDatesForMonth: (date: Date) => void;
-  isLoading: boolean;
+  readonly datesWithHistory: Set<string>;
+  readonly error: string | null;
+  readonly fetchDatesForMonth: (date: Date) => void;
+  readonly isLoading: boolean;
 }
 
 export const useHistoryDate = (): UseHistoryDateReturn => {
@@ -16,7 +16,7 @@ export const useHistoryDate = (): UseHistoryDateReturn => {
   const fetchedMonthsRef = useRef<Set<string>>(new Set());
   const isFetchingRef = useRef(false);
 
-  const fetchDatesForMonth = useCallback(async (date: Date) => {
+  const fetchDatesForMonth = useCallback(async (date: Date): Promise<void> => {
     const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
     if (fetchedMonthsRef.current.has(monthKey) || isFetchingRef.current) {
       return;

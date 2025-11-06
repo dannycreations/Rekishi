@@ -6,14 +6,14 @@ import { CloseIcon } from './Icons';
 import type { MouseEvent, ReactNode, ReactPortal } from 'react';
 
 interface ConfirmModalProps {
-  cancelText?: string;
-  confirmButtonClass?: string;
-  confirmText?: string;
-  isOpen: boolean;
-  message: ReactNode;
-  onClose: () => void;
-  onConfirm: () => void;
-  title: string;
+  readonly cancelText?: string;
+  readonly confirmButtonClass?: string;
+  readonly confirmText?: string;
+  readonly isOpen: boolean;
+  readonly message: ReactNode;
+  readonly onClose: () => void;
+  readonly onConfirm: () => void;
+  readonly title: string;
 }
 
 export const ConfirmModal = memo(

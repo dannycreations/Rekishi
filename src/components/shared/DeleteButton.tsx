@@ -5,9 +5,9 @@ import { TrashIcon } from './Icons';
 import type { JSX, ReactNode } from 'react';
 
 interface DeleteButtonProps {
-  children?: ReactNode;
-  disabled?: boolean;
-  onClick: () => void;
+  readonly children?: ReactNode;
+  readonly disabled?: boolean;
+  readonly onClick: () => void;
 }
 
 export const DeleteButton = memo(({ onClick, children, disabled }: DeleteButtonProps): JSX.Element => {

@@ -7,8 +7,8 @@ import type { ChangeEvent, JSX, ReactNode } from 'react';
 import type { ViewType } from '../../app/types';
 
 interface NavButtonProps {
-  icon: ReactNode;
-  onClick: () => void;
+  readonly icon: ReactNode;
+  readonly onClick: () => void;
 }
 
 const NavButton = memo(({ icon, onClick }: NavButtonProps): JSX.Element => {
@@ -23,14 +23,14 @@ const NavButton = memo(({ icon, onClick }: NavButtonProps): JSX.Element => {
 });
 
 interface HeaderProps {
-  datesWithHistory: Set<string>;
-  fetchDatesForMonth: (date: Date) => void;
-  isLoadingDates: boolean;
-  onOpenModal: (view: ViewType) => void;
-  onSearch: (query: string) => void;
-  searchQuery: string;
-  selectedDate: Date;
-  setSelectedDate: (date: Date) => void;
+  readonly datesWithHistory: Set<string>;
+  readonly fetchDatesForMonth: (date: Date) => void;
+  readonly isLoadingDates: boolean;
+  readonly onOpenModal: (view: ViewType) => void;
+  readonly onSearch: (query: string) => void;
+  readonly searchQuery: string;
+  readonly selectedDate: Date;
+  readonly setSelectedDate: (date: Date) => void;
 }
 
 export const Header = memo(

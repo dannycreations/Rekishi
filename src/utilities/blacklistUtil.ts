@@ -1,14 +1,14 @@
 import { getHostnameFromUrl } from './urlUtil';
 
 export interface BlacklistItem {
-  isRegex: boolean;
-  value: string;
+  readonly isRegex: boolean;
+  readonly value: string;
 }
 
 export interface BlacklistMatchers {
-  plain: Set<string>;
-  domainRegex: RegExp | null;
-  urlRegex: RegExp | null;
+  readonly plain: ReadonlySet<string>;
+  readonly domainRegex: RegExp | null;
+  readonly urlRegex: RegExp | null;
 }
 
 export function isPotentialRegex(input: string): boolean {
@@ -58,7 +58,9 @@ export function createBlacklistMatchers(items: readonly BlacklistItem[]): Blackl
 }
 
 export function isUrlBlacklisted(url: string, matchers: BlacklistMatchers): boolean {
-  if (!url) return false;
+  if (!url) {
+    return false;
+  }
 
   const hostname = getHostnameFromUrl(url);
 
@@ -74,7 +76,7 @@ export function isUrlBlacklisted(url: string, matchers: BlacklistMatchers): bool
     let path = '/';
     try {
       path = new URL(url).pathname;
-    } catch (e) {
+    } catch {
       const match = url.match(/^[^/:]+([/][^?#]*)/);
       path = match ? match[1] : '/';
     }
@@ -87,7 +89,7 @@ export function isUrlBlacklisted(url: string, matchers: BlacklistMatchers): bool
   return false;
 }
 
-export function parseInput(input: string): { value: string; isRegex: boolean } | { error: string } | null {
+export function parseInput(input: string): { readonly value: string; readonly isRegex: boolean } | { readonly error: string } | null {
   const trimmedValue = input.trim();
   if (!trimmedValue) {
     return null;
@@ -103,7 +105,7 @@ export function parseInput(input: string): { value: string; isRegex: boolean } |
   if (isRegex) {
     try {
       new RegExp(value);
-    } catch (error: unknown) {
+    } catch {
       return { error: 'Invalid Regular Expression' };
     }
   }

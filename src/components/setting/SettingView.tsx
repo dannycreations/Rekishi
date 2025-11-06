@@ -8,9 +8,9 @@ import { useToastStore } from '../../stores/useToastStore';
 import type { ChangeEvent, JSX, ReactNode } from 'react';
 
 interface SettingRowProps {
-  children: ReactNode;
-  description: string;
-  title: string;
+  readonly children: ReactNode;
+  readonly description: string;
+  readonly title: string;
 }
 
 const SettingRow = memo(({ title, description, children }: SettingRowProps): JSX.Element => {
@@ -26,8 +26,8 @@ const SettingRow = memo(({ title, description, children }: SettingRowProps): JSX
 });
 
 interface SettingSectionProps {
-  children: ReactNode;
-  title: string;
+  readonly children: ReactNode;
+  readonly title: string;
 }
 
 const SettingSection = memo(({ title, children }: SettingSectionProps): JSX.Element => {
@@ -60,7 +60,7 @@ export const SettingView = (): JSX.Element => {
     }
   }, [addToast]);
 
-  const handleOpenClearHistoryModal = useCallback(() => {
+  const handleOpenClearHistoryModal = useCallback((): void => {
     openClearHistoryModal({
       confirmButtonClass: 'bg-red-600 hover:bg-red-700',
       confirmText: 'Yes, Clear All Data',

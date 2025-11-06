@@ -2,7 +2,9 @@ import { memo } from 'react';
 
 import { Skeleton } from '../shared/Skeleton';
 
-const HistoryViewItemSkeleton = memo(() => {
+import type { JSX } from 'react';
+
+const HistoryViewItemSkeleton = memo((): JSX.Element => {
   return (
     <div className="flex items-center p-2">
       <Skeleton className="mr-2 h-4 w-4 shrink-0 rounded" />
@@ -16,7 +18,7 @@ const HistoryViewItemSkeleton = memo(() => {
   );
 });
 
-export const HistoryViewGroupSkeleton = memo(() => {
+export const HistoryViewGroupSkeleton = memo((): JSX.Element => {
   return (
     <section>
       <div className="flex items-center justify-between">
@@ -32,7 +34,7 @@ export const HistoryViewGroupSkeleton = memo(() => {
   );
 });
 
-const DailyGroupHeaderSkeleton = memo(() => {
+const DailyGroupHeaderSkeleton = memo((): JSX.Element => {
   return (
     <div className="mb-3 flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -44,7 +46,7 @@ const DailyGroupHeaderSkeleton = memo(() => {
   );
 });
 
-export const HistoryViewSkeleton = memo(() => {
+export const HistoryViewSkeleton = memo((): JSX.Element => {
   return (
     <div className="space-y-3 p-3">
       <section>

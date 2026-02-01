@@ -19,8 +19,8 @@
   },
   "homepage": "https://github.com/dannycreations/Rekishi",
   "dependencies": {
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "use-sync-external-store": "^1.6.0",
     "zustand": "^5.0.10"
   },
@@ -30,11 +30,11 @@
     "@tailwindcss/vite": "^4.1.18",
     "@types/chrome": "^0.1.36",
     "@types/node": "^24.10.9",
-    "@types/react": "^19.2.9",
+    "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
     "husky": "^9.1.7",
-    "npm-check-updates": "^19.3.1",
+    "npm-check-updates": "^19.3.2",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
@@ -46,5 +46,5 @@
       "esbuild"
     ]
   },
-  "packageManager": "pnpm@10.28.1"
+  "packageManager": "pnpm@10.28.2"
 }

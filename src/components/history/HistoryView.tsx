@@ -55,6 +55,9 @@ export const HistoryView = memo(
 
     const openDeleteConfirm = useCallback(
       (config: { count: number; title: string; typeText: string; onConfirm: () => Promise<void> }): void => {
+        if (config.count === 0) {
+          return;
+        }
         openDeleteModal({
           confirmButtonClass: 'btn-danger-large',
           confirmText: `Delete ${config.count > 1 ? `${config.count} items` : 'Item'}`,
@@ -74,43 +77,37 @@ export const HistoryView = memo(
     );
 
     const handleOpenDeleteSelectedModal = useCallback((): void => {
-      if (selectedItems.size > 0) {
-        openDeleteConfirm({
-          count: selectedItems.size,
-          onConfirm: async () => {
-            await deleteHistoryItems(Array.from(selectedItems));
-            clearSelection();
-          },
-          title: 'Delete Selected Items',
-          typeText: `the ${selectedItems.size} selected history items`,
-        });
-      }
+      openDeleteConfirm({
+        count: selectedItems.size,
+        onConfirm: async () => {
+          await deleteHistoryItems(Array.from(selectedItems));
+          clearSelection();
+        },
+        title: 'Delete Selected Items',
+        typeText: `the ${selectedItems.size} selected history items`,
+      });
     }, [selectedItems, deleteHistoryItems, clearSelection, openDeleteConfirm]);
 
     const handleOpenDeleteSearchModal = useCallback((): void => {
-      if (historyItems.length > 0) {
-        openDeleteConfirm({
-          count: historyItems.length,
-          onConfirm: async () => {
-            await deleteHistoryItems(historyItems.map((item) => item.id));
-            clearSelection();
-          },
-          title: 'Delete Search Results',
-          typeText: `all ${historyItems.length} items from this search`,
-        });
-      }
+      openDeleteConfirm({
+        count: historyItems.length,
+        onConfirm: async () => {
+          await deleteHistoryItems(historyItems.map((item) => item.id));
+          clearSelection();
+        },
+        title: 'Delete Search Results',
+        typeText: `all ${historyItems.length} items from this search`,
+      });
     }, [historyItems, deleteHistoryItems, clearSelection, openDeleteConfirm]);
 
     const handleOpenDeleteAllModal = useCallback(
       (items: readonly ChromeHistoryItem[], type: 'day' | 'hour'): void => {
-        if (items.length > 0) {
-          openDeleteConfirm({
-            count: items.length,
-            onConfirm: () => deleteHistoryItems(items.map((i) => i.id)),
-            title: `Delete Entire ${type === 'day' ? 'Day' : 'Hour'}`,
-            typeText: `all ${items.length} history items for this ${type}`,
-          });
-        }
+        openDeleteConfirm({
+          count: items.length,
+          onConfirm: () => deleteHistoryItems(items.map((i) => i.id)),
+          title: `Delete Entire ${type === 'day' ? 'Day' : 'Hour'}`,
+          typeText: `all ${items.length} history items for this ${type}`,
+        });
       },
       [deleteHistoryItems, openDeleteConfirm],
     );

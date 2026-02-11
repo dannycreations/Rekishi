@@ -2,6 +2,27 @@ import { isSameDay } from '../utilities/dateUtil';
 
 import type { ChromeHistoryItem, HistoryItemGroup } from '../app/types';
 
+export interface CompiledRegex {
+  readonly regex: RegExp | null;
+  readonly error: string | null;
+}
+
+export const compileSearchRegex = (query: string): CompiledRegex => {
+  if (query.length <= 2) {
+    return { regex: null, error: null };
+  }
+  const pattern = query.slice(1, -1);
+  if (!pattern) {
+    return { regex: null, error: null };
+  }
+  try {
+    return { regex: new RegExp(pattern, 'i'), error: null };
+  } catch (error: unknown) {
+    console.error('Invalid regex provided:', error);
+    return { regex: null, error: 'Invalid regular expression.' };
+  }
+};
+
 export const mapToChromeHistoryItem = (item: chrome.history.HistoryItem): ChromeHistoryItem => {
   return {
     id: `${item.id}-${item.lastVisitTime}`,
@@ -17,10 +38,7 @@ export const applyClientSideSearch = (
   items: readonly ChromeHistoryItem[],
   searchQuery: string,
   isRegex: boolean,
-  compiledRegex: {
-    readonly regex: RegExp | null;
-    readonly error: string | null;
-  },
+  compiledRegex: CompiledRegex,
 ): {
   readonly items: readonly ChromeHistoryItem[];
   readonly error?: string;

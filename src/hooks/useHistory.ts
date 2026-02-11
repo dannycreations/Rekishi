@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { DAILY_PAGE_SIZE, INIT_CHUNK_SIZE, SEARCH_PAGE_SIZE } from '../app/constants';
-import { applyClientSideSearch } from '../helpers/historyHelper';
+import { applyClientSideSearch, compileSearchRegex } from '../helpers/historyHelper';
 import { deleteUrl, search } from '../services/chromeApi';
 import { useBlacklistStore } from '../stores/useBlacklistStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
@@ -58,143 +58,109 @@ export const useHistory = (): UseHistoryReturn => {
   }, [rawHistory]);
 
   const compiledRegex = useMemo(() => {
-    if (!isRegex || searchQuery.length <= 2) {
+    if (!isRegex) {
       return { regex: null, error: null };
     }
-    const pattern = searchQuery.slice(1, -1);
-    if (!pattern) {
-      return { regex: null, error: null };
-    }
-    try {
-      return { regex: new RegExp(pattern, 'i'), error: null };
-    } catch (error: unknown) {
-      console.error('Invalid regex provided:', error);
-      return { regex: null, error: 'Invalid regular expression.' };
-    }
+    return compileSearchRegex(searchQuery);
   }, [isRegex, searchQuery]);
 
-  const fetchInitialDailyHistory = useCallback(async (): Promise<void> => {
-    setIsLoading(true);
-    setError(null);
-    setRawHistory([]);
-    setLastLoadedDate(selectedDate);
-
-    const dateToFetch = selectedDate;
-    const startTime = new Date(dateToFetch);
-    startTime.setHours(0, 0, 0, 0);
-    const endTime = new Date(dateToFetch);
-    endTime.setHours(23, 59, 59, 999);
-
-    let initialItems: readonly ChromeHistoryItem[] = [];
-    try {
-      initialItems = await search({
-        endTime: endTime.getTime(),
-        maxResults: INIT_CHUNK_SIZE,
-        startTime: startTime.getTime(),
-        text: '',
-      });
-
-      if (isSameDay(dateToFetch, useHistoryStore.getState().selectedDate)) {
-        setRawHistory(initialItems.filter((item) => !isBlacklisted(item.url)));
+  const fetchHistoryData = useCallback(
+    async (params: {
+      readonly isSearch: boolean;
+      readonly startTime: number;
+      readonly endTime?: number;
+      readonly text: string;
+      readonly isClientSearch: boolean;
+    }): Promise<void> => {
+      setIsLoading(true);
+      setError(null);
+      setRawHistory([]);
+      if (!params.isSearch) {
+        setLastLoadedDate(new Date(params.startTime));
+      } else {
+        setHasMoreSearchResults(true);
       }
-    } catch (error: unknown) {
-      console.error('Failed to fetch initial daily history:', error);
-      if (isSameDay(dateToFetch, useHistoryStore.getState().selectedDate)) {
-        setError('Failed to fetch history data.');
-      }
-    } finally {
-      if (isSameDay(dateToFetch, useHistoryStore.getState().selectedDate)) {
-        setIsLoading(false);
-      }
-    }
 
-    if (initialItems.length >= INIT_CHUNK_SIZE) {
-      void (async () => {
-        try {
-          const allItemsForDay = await search({
-            endTime: endTime.getTime(),
-            maxResults: DAILY_PAGE_SIZE,
-            startTime: startTime.getTime(),
-            text: '',
-          });
+      const fetchItems = async (maxResults: number): Promise<readonly ChromeHistoryItem[]> => {
+        const results = await search({
+          endTime: params.endTime,
+          maxResults,
+          startTime: params.startTime,
+          text: params.isClientSearch ? '' : params.text,
+        });
 
-          if (isSameDay(dateToFetch, useHistoryStore.getState().selectedDate)) {
-            setRawHistory(allItemsForDay.filter((item) => !isBlacklisted(item.url)));
+        const filtered = results.filter((item) => !isBlacklisted(item.url));
+
+        if (params.isClientSearch) {
+          const { items, error: filterError } = applyClientSideSearch(filtered, params.text, isRegex, compiledRegex);
+          if (filterError) {
+            setError(filterError);
           }
-        } catch (error: unknown) {
-          console.error('Failed to fetch rest of daily history in background:', error);
+          return items;
         }
-      })();
-    }
-  }, [selectedDate, isBlacklisted]);
+        return filtered;
+      };
 
-  const fetchInitialSearchHistory = useCallback(async (): Promise<void> => {
-    setIsLoading(true);
-    setError(null);
-    setRawHistory([]);
-    setHasMoreSearchResults(true);
+      try {
+        const initialItems = await fetchItems(INIT_CHUNK_SIZE);
 
-    const clientSideSearch = isRegex || searchQuery.length < 3;
-    const textForSearch = clientSideSearch ? '' : searchQuery;
-    let initialItems: readonly ChromeHistoryItem[] = [];
+        const isStillRelevant = (): boolean => {
+          const currentState = useHistoryStore.getState();
+          return params.isSearch ? currentState.searchQuery === params.text : isSameDay(new Date(params.startTime), currentState.selectedDate);
+        };
 
-    try {
-      initialItems = await search({
-        maxResults: INIT_CHUNK_SIZE,
-        startTime: 0,
-        text: textForSearch,
-      });
+        if (isStillRelevant()) {
+          setRawHistory(initialItems);
+          setIsLoading(false);
 
-      // FIX: Ensure filteredItems is a readonly array to match return type of applyClientSideSearch
-      let filteredItems: readonly ChromeHistoryItem[] = initialItems.filter((item) => !isBlacklisted(item.url));
-      if (clientSideSearch) {
-        const { items, error: filterError } = applyClientSideSearch(filteredItems, searchQuery, isRegex, compiledRegex);
-        if (filterError) {
-          setError(filterError);
-        }
-        // FIX: Remove unsafe type assertion. `items` is already the correct readonly type.
-        filteredItems = items;
-      }
-      setRawHistory(filteredItems);
-    } catch (error: unknown) {
-      console.error('Failed to fetch initial search history:', error);
-      setError('Failed to fetch history data.');
-    } finally {
-      setIsLoading(false);
-    }
-
-    if (initialItems.length < INIT_CHUNK_SIZE) {
-      setHasMoreSearchResults(false);
-    } else {
-      void (async () => {
-        try {
-          const moreItems = await search({
-            maxResults: SEARCH_PAGE_SIZE,
-            startTime: 0,
-            text: textForSearch,
-          });
-
-          let filteredMoreItems: readonly ChromeHistoryItem[] = moreItems.filter((item) => !isBlacklisted(item.url));
-          if (clientSideSearch) {
-            const { items, error: filterError } = applyClientSideSearch(filteredMoreItems, searchQuery, isRegex, compiledRegex);
-            if (filterError && !error) {
-              setError(filterError);
-            }
-            filteredMoreItems = items;
+          if (params.isSearch && initialItems.length < INIT_CHUNK_SIZE) {
+            setHasMoreSearchResults(false);
           }
+        }
 
-          if (searchQuery === useHistoryStore.getState().searchQuery) {
-            setRawHistory(filteredMoreItems);
-            if (moreItems.length < SEARCH_PAGE_SIZE) {
+        if (initialItems.length >= INIT_CHUNK_SIZE) {
+          const pageSize = params.isSearch ? SEARCH_PAGE_SIZE : DAILY_PAGE_SIZE;
+          const moreItems = await fetchItems(pageSize);
+
+          if (isStillRelevant()) {
+            setRawHistory(moreItems);
+            if (params.isSearch && moreItems.length < pageSize) {
               setHasMoreSearchResults(false);
             }
           }
-        } catch (error: unknown) {
-          console.error('Failed to fetch rest of search history in background:', error);
         }
-      })();
-    }
-  }, [searchQuery, isRegex, compiledRegex, isBlacklisted, error]);
+      } catch (err: unknown) {
+        console.error('Failed to fetch history:', err);
+        setError('Failed to fetch history data.');
+        setIsLoading(false);
+      }
+    },
+    [isBlacklisted, isRegex, compiledRegex],
+  );
+
+  const fetchInitialDailyHistory = useCallback((): void => {
+    const startTime = new Date(selectedDate);
+    startTime.setHours(0, 0, 0, 0);
+    const endTime = new Date(selectedDate);
+    endTime.setHours(23, 59, 59, 999);
+
+    void fetchHistoryData({
+      endTime: endTime.getTime(),
+      isClientSearch: false,
+      isSearch: false,
+      startTime: startTime.getTime(),
+      text: '',
+    });
+  }, [selectedDate, fetchHistoryData]);
+
+  const fetchInitialSearchHistory = useCallback((): void => {
+    void fetchHistoryData({
+      isClientSearch: isRegex || searchQuery.length < 3,
+      isSearch: true,
+      startTime: 0,
+      text: searchQuery,
+    });
+  }, [searchQuery, isRegex, fetchHistoryData]);
 
   useEffect(() => {
     if (searchQuery) {

@@ -18,6 +18,14 @@ export const formatDateForInput = (date: Date): string => {
   return `${year}/${month}/${day}`;
 };
 
+export const formatTimeShort = (timestamp: number): string => {
+  return new Date(timestamp).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+};
+
 export const formatTimeAgo = (timestamp: number): string => {
   const now = Date.now();
   const seconds = Math.round((now - timestamp) / 1000);

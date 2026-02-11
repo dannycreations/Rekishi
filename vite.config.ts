@@ -38,6 +38,7 @@ export default defineConfig(({ mode }) => {
       crx({ manifest }),
     ],
     build: {
+      emptyOutDir: true,
       rollupOptions: {
         output: {
           entryFileNames: '[name].js',

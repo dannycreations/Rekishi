@@ -3,6 +3,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { useHistoryStore } from '../../stores/useHistoryStore';
 import { useToastStore } from '../../stores/useToastStore';
 import { escapeRegex, getHostnameFromUrl, isPotentialRegex } from '../../utilities/commonUtil';
+import { formatTimeShort } from '../../utilities/dateUtil';
 import { Icon } from '../shared/Icon';
 import { HistoryItemAction } from './HistoryItemAction';
 
@@ -71,15 +72,7 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
   const hostname = useMemo(() => getHostnameFromUrl(url), [url]);
   const shouldHighlight = searchQuery && !isRegex;
 
-  const visitTime = useMemo(
-    () =>
-      new Date(lastVisitTime).toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      }),
-    [lastVisitTime],
-  );
+  const visitTime = useMemo(() => formatTimeShort(lastVisitTime), [lastVisitTime]);
 
   const handleFaviconError = useCallback((): void => {
     setFaviconError(true);

@@ -1,4 +1,4 @@
-import { escapeRegex, getHostnameFromUrl, isPotentialRegex } from '../utilities/commonUtil';
+import { escapeRegex, getHostnameFromUrl, isPotentialRegex, parsePersistedState } from '../utilities/commonUtil';
 
 export interface BlacklistItem {
   readonly isRegex: boolean;
@@ -108,21 +108,10 @@ export const parseInput = (input: string): { readonly value: string; readonly is
   return { value, isRegex };
 };
 
-interface StoredBlacklist {
-  readonly state?: {
-    readonly blacklistedItems?: readonly BlacklistItem[];
-  };
+interface StoredState {
+  readonly blacklistedItems?: readonly BlacklistItem[];
 }
 
 export const parseBlacklistFromJSON = (json: string | null): readonly BlacklistItem[] => {
-  if (!json) {
-    return [];
-  }
-  try {
-    const parsed: StoredBlacklist = JSON.parse(json);
-    return parsed.state?.blacklistedItems ?? [];
-  } catch (error) {
-    console.error('Failed to parse blacklist from storage', error);
-    return [];
-  }
+  return parsePersistedState<readonly BlacklistItem[], StoredState>(json, (state) => state.blacklistedItems ?? [], []);
 };

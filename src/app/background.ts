@@ -1,11 +1,11 @@
 import { createBlacklistMatchers, isUrlBlacklisted, parseBlacklistFromJSON } from '../helpers/blacklistHelper';
+import { mapToChromeHistoryItem } from '../helpers/historyHelper';
 import { defaultSettings, parseSettingsFromJSON } from '../helpers/settingHelper';
 import { chromeSyncStorage } from '../helpers/storageHelper';
 import { BLACKLIST_STORAGE_KEY, CLEANER_ALARM_KEY, CLEANUP_STORAGE_KEY, RETENTION_STORAGE_KEY, SETTINGS_STORAGE_KEY } from './constants';
 
 import type { BlacklistItem, BlacklistMatchers } from '../helpers/blacklistHelper';
 import type { Settings } from '../helpers/settingHelper';
-import type { ChromeHistoryItem } from './types';
 
 let blacklistMatchers: BlacklistMatchers = { plain: new Set(), domainRegex: null, urlRegex: null };
 let blacklistedItems: readonly BlacklistItem[] = [];
@@ -114,18 +114,8 @@ const handleVisited = async (historyItem: chrome.history.HistoryItem): Promise<v
       }
     }
   } else if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
-    const { id, url, title, lastVisitTime, visitCount, typedCount } = historyItem;
-    const payload: ChromeHistoryItem = {
-      id: `${id}-${lastVisitTime}`,
-      url: url ?? '',
-      title: title ?? url ?? '',
-      lastVisitTime: lastVisitTime ?? Date.now(),
-      visitCount: visitCount ?? 0,
-      typedCount: typedCount ?? 0,
-    };
-
     chrome.runtime.sendMessage({
-      payload,
+      payload: mapToChromeHistoryItem(historyItem),
       type: 'NEW_HISTORY_ITEM',
     });
   }

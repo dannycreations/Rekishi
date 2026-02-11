@@ -1,7 +1,7 @@
-interface StoredSettings {
-  readonly state?: {
-    readonly dataRetention?: string;
-  };
+import { parsePersistedState } from '../utilities/commonUtil';
+
+interface StoredState {
+  readonly dataRetention?: string;
 }
 
 export interface Settings {
@@ -13,16 +13,11 @@ export const defaultSettings: Settings = {
 } as const;
 
 export const parseSettingsFromJSON = (json: string | null): Settings => {
-  if (!json) {
-    return { ...defaultSettings };
-  }
-  try {
-    const parsed: StoredSettings = JSON.parse(json);
-    return {
-      dataRetention: parsed.state?.dataRetention ?? defaultSettings.dataRetention,
-    };
-  } catch (error) {
-    console.error('Failed to parse settings from storage', error);
-    return { ...defaultSettings };
-  }
+  return parsePersistedState<Settings, StoredState>(
+    json,
+    (state) => ({
+      dataRetention: state.dataRetention ?? defaultSettings.dataRetention,
+    }),
+    { ...defaultSettings },
+  );
 };

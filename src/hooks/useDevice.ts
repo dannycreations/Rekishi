@@ -11,13 +11,17 @@ interface UseDeviceReturn {
   readonly error: string | null;
 }
 
+const DEVICE_KEYWORDS: Record<Exclude<Device['type'], 'desktop'>, readonly string[]> = {
+  phone: ['pixel', 'iphone', 'galaxy', 'android', 'phone'],
+  laptop: ['macbook', 'pixelbook', 'chromebook', 'laptop'],
+} as const;
+
 const getDeviceTypeFromName = (name: string): Device['type'] => {
   const lowerName = name.toLowerCase();
-  if (['pixel', 'iphone', 'galaxy', 'android', 'phone'].some((s) => lowerName.includes(s))) {
-    return 'phone';
-  }
-  if (['macbook', 'pixelbook', 'chromebook', 'laptop'].some((s) => lowerName.includes(s))) {
-    return 'laptop';
+  for (const [type, keywords] of Object.entries(DEVICE_KEYWORDS)) {
+    if (keywords.some((s) => lowerName.includes(s))) {
+      return type as Device['type'];
+    }
   }
   return 'desktop';
 };

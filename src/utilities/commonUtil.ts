@@ -23,3 +23,16 @@ export const getHostnameFromUrl = (url: string): string => {
     return '';
   }
 };
+
+export const parsePersistedState = <T, S>(json: string | null, selector: (state: S) => T, defaultValue: T): T => {
+  if (!json) {
+    return defaultValue;
+  }
+  try {
+    const parsed = JSON.parse(json) as { state?: S };
+    return parsed.state ? selector(parsed.state) : defaultValue;
+  } catch (error) {
+    console.error('Failed to parse state from storage', error);
+    return defaultValue;
+  }
+};

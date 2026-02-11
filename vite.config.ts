@@ -18,7 +18,7 @@ const manifest = defineManifest({
     type: 'module',
   },
   chrome_url_overrides: {
-    history: 'src/index.html',
+    history: 'index.html',
   },
   offline_enabled: true,
   permissions: ['favicon', 'tabs', 'storage', 'contextMenus', 'history', 'sessions', 'unlimitedStorage', 'alarms', 'activeTab'],

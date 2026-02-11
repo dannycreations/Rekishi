@@ -1,9 +1,8 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 
-import { isPotentialRegex } from '../../helpers/blacklistHelper';
 import { useHistoryStore } from '../../stores/useHistoryStore';
 import { useToastStore } from '../../stores/useToastStore';
-import { escapeRegex, getHostnameFromUrl } from '../../utilities/commonUtil';
+import { escapeRegex, getHostnameFromUrl, isPotentialRegex } from '../../utilities/commonUtil';
 import { Icon } from '../shared/Icon';
 import { HistoryItemAction } from './HistoryItemAction';
 

@@ -53,91 +53,78 @@ export const HistoryView = memo(
       return counts;
     }, [selectedItems, itemLocator]);
 
-    const handleOpenDeleteSelectedModal = useCallback((): void => {
-      if (selectedItems.size > 0) {
+    const openDeleteConfirm = useCallback(
+      (config: { count: number; title: string; typeText: string; onConfirm: () => Promise<void> }): void => {
         openDeleteModal({
           confirmButtonClass: 'btn-danger-large',
-          confirmText: `Delete ${selectedItems.size} items`,
+          confirmText: `Delete ${config.count > 1 ? `${config.count} items` : 'Item'}`,
           message: (
             <>
-              Are you sure you want to permanently delete the <strong>{selectedItems.size}</strong> selected history items? This action cannot be
-              undone.
+              Are you sure you want to permanently delete <strong>{config.typeText}</strong>? This action cannot be undone.
             </>
           ),
           onConfirm: async () => {
-            const count = selectedItems.size;
+            await config.onConfirm();
+            addToast(`${config.count} item${config.count > 1 ? 's' : ''} deleted.`, 'success');
+          },
+          title: config.title,
+        });
+      },
+      [openDeleteModal, addToast],
+    );
+
+    const handleOpenDeleteSelectedModal = useCallback((): void => {
+      if (selectedItems.size > 0) {
+        openDeleteConfirm({
+          count: selectedItems.size,
+          onConfirm: async () => {
             await deleteHistoryItems(Array.from(selectedItems));
             clearSelection();
-            addToast(`${count} item${count > 1 ? 's' : ''} deleted.`, 'success');
           },
           title: 'Delete Selected Items',
+          typeText: `the ${selectedItems.size} selected history items`,
         });
       }
-    }, [selectedItems, deleteHistoryItems, addToast, openDeleteModal, clearSelection]);
+    }, [selectedItems, deleteHistoryItems, clearSelection, openDeleteConfirm]);
 
     const handleOpenDeleteSearchModal = useCallback((): void => {
       if (historyItems.length > 0) {
-        openDeleteModal({
-          confirmButtonClass: 'btn-danger-large',
-          confirmText: `Delete ${historyItems.length} items`,
-          message: (
-            <>
-              Are you sure you want to permanently delete all <strong>{historyItems.length}</strong> items from this search? This action cannot be
-              undone.
-            </>
-          ),
+        openDeleteConfirm({
+          count: historyItems.length,
           onConfirm: async () => {
-            const count = historyItems.length;
             await deleteHistoryItems(historyItems.map((item) => item.id));
             clearSelection();
-            addToast(`${count} item${count > 1 ? 's' : ''} deleted.`, 'success');
           },
-          title: 'Delete Entire Search Results',
+          title: 'Delete Search Results',
+          typeText: `all ${historyItems.length} items from this search`,
         });
       }
-    }, [historyItems, openDeleteModal, deleteHistoryItems, addToast, clearSelection]);
+    }, [historyItems, deleteHistoryItems, clearSelection, openDeleteConfirm]);
 
     const handleOpenDeleteAllModal = useCallback(
       (items: readonly ChromeHistoryItem[], type: 'day' | 'hour'): void => {
         if (items.length > 0) {
-          openDeleteModal({
-            confirmButtonClass: 'btn-danger-large',
-            confirmText: `Delete ${items.length} items`,
-            message: (
-              <>
-                Are you sure you want to permanently delete all <strong>{items.length}</strong> history items for this {type}? This action cannot be
-                undone.
-              </>
-            ),
-            onConfirm: async () => {
-              await deleteHistoryItems(items.map((i) => i.id));
-              addToast(`${items.length} item${items.length > 1 ? 's' : ''} deleted from this ${type}.`, 'success');
-            },
+          openDeleteConfirm({
+            count: items.length,
+            onConfirm: () => deleteHistoryItems(items.map((i) => i.id)),
             title: `Delete Entire ${type === 'day' ? 'Day' : 'Hour'}`,
+            typeText: `all ${items.length} history items for this ${type}`,
           });
         }
       },
-      [openDeleteModal, deleteHistoryItems, addToast],
+      [deleteHistoryItems, openDeleteConfirm],
     );
 
     const handleDeleteItemRequest = useCallback(
       (item: ChromeHistoryItem): void => {
-        openDeleteModal({
-          confirmButtonClass: 'btn-danger-large',
-          confirmText: 'Delete',
-          message: (
-            <>
-              Are you sure you want to permanently delete <strong>{item.title || item.url}</strong> from your history? This action cannot be undone.
-            </>
-          ),
-          onConfirm: async () => {
-            await onDelete(item.id);
-            addToast('History item deleted.', 'success');
-          },
+        openDeleteConfirm({
+          count: 1,
+          onConfirm: () => onDelete(item.id),
           title: 'Delete History Item',
+          typeText: item.title || item.url,
         });
       },
-      [onDelete, openDeleteModal, addToast],
+      [onDelete, openDeleteConfirm],
     );
 
     const handleBlacklistRequest = useCallback(

@@ -1,3 +1,4 @@
+import { mapToChromeHistoryItem } from '../helpers/historyHelper';
 import { deleteAllHistory as fakeDeleteAllHistory, deleteUrl as fakeDeleteUrl, getDevices as fakeGetDevices, search as fakeSearch } from './fakeApi';
 
 import type { ChromeDevice, ChromeHistoryItem } from '../app/types';
@@ -17,18 +18,7 @@ export async function search(params: SearchParams): Promise<readonly ChromeHisto
       startTime: params.startTime,
       text: params.text,
     });
-    return results
-      .filter((item): item is chrome.history.HistoryItem & { url: string } => !!item.url)
-      .map(
-        (item): ChromeHistoryItem => ({
-          id: `${item.id}-${item.lastVisitTime}`,
-          url: item.url,
-          title: item.title ?? item.url,
-          lastVisitTime: item.lastVisitTime ?? 0,
-          visitCount: item.visitCount ?? 0,
-          typedCount: item.typedCount ?? 0,
-        }),
-      );
+    return results.filter((item): item is chrome.history.HistoryItem & { url: string } => !!item.url).map(mapToChromeHistoryItem);
   }
   return fakeSearch(params);
 }

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { DAILY_PAGE_SIZE, INIT_CHUNK_SIZE, SEARCH_PAGE_SIZE } from '../app/constants';
-import { isPotentialRegex } from '../helpers/blacklistHelper';
+import { applyClientSideSearch } from '../helpers/historyHelper';
 import { deleteUrl, search } from '../services/chromeApi';
 import { useBlacklistStore } from '../stores/useBlacklistStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
+import { isPotentialRegex } from '../utilities/commonUtil';
 import { isSameDay } from '../utilities/dateUtil';
 
 import type { ChromeHistoryItem } from '../app/types';
@@ -28,35 +29,6 @@ interface UseHistoryReturn {
   readonly isLoading: boolean;
   readonly isLoadingMore: boolean;
   readonly loadMore: () => void;
-}
-
-function applyClientSideSearch(
-  items: readonly ChromeHistoryItem[],
-  searchQuery: string,
-  isRegex: boolean,
-  compiledRegex: {
-    readonly regex: RegExp | null;
-    readonly error: string | null;
-  },
-): {
-  readonly items: readonly ChromeHistoryItem[];
-  readonly error?: string;
-} {
-  if (isRegex) {
-    if (compiledRegex.error) {
-      return { items: [], error: compiledRegex.error };
-    }
-    if (compiledRegex.regex) {
-      const regex = compiledRegex.regex;
-      return { items: items.filter((item) => regex.test(item.title) || regex.test(item.url)) };
-    }
-    return { items: [] };
-  }
-
-  const query = searchQuery.toLowerCase();
-  return {
-    items: items.filter((item) => (item.title ?? '').toLowerCase().includes(query) || (item.url ?? '').toLowerCase().includes(query)),
-  };
 }
 
 export const useHistory = (): UseHistoryReturn => {
@@ -136,26 +108,24 @@ export const useHistory = (): UseHistoryReturn => {
       }
     }
 
-    if (initialItems.length < INIT_CHUNK_SIZE) {
-      return;
-    }
+    if (initialItems.length >= INIT_CHUNK_SIZE) {
+      void (async () => {
+        try {
+          const allItemsForDay = await search({
+            endTime: endTime.getTime(),
+            maxResults: DAILY_PAGE_SIZE,
+            startTime: startTime.getTime(),
+            text: '',
+          });
 
-    (async () => {
-      try {
-        const allItemsForDay = await search({
-          endTime: endTime.getTime(),
-          maxResults: DAILY_PAGE_SIZE,
-          startTime: startTime.getTime(),
-          text: '',
-        });
-
-        if (isSameDay(dateToFetch, useHistoryStore.getState().selectedDate)) {
-          setRawHistory(allItemsForDay.filter((item) => !isBlacklisted(item.url)));
+          if (isSameDay(dateToFetch, useHistoryStore.getState().selectedDate)) {
+            setRawHistory(allItemsForDay.filter((item) => !isBlacklisted(item.url)));
+          }
+        } catch (error: unknown) {
+          console.error('Failed to fetch rest of daily history in background:', error);
         }
-      } catch (error: unknown) {
-        console.error('Failed to fetch rest of daily history in background:', error);
-      }
-    })();
+      })();
+    }
   }, [selectedDate, isBlacklisted]);
 
   const fetchInitialSearchHistory = useCallback(async (): Promise<void> => {
@@ -195,38 +165,35 @@ export const useHistory = (): UseHistoryReturn => {
 
     if (initialItems.length < INIT_CHUNK_SIZE) {
       setHasMoreSearchResults(false);
-      return;
+    } else {
+      void (async () => {
+        try {
+          const moreItems = await search({
+            maxResults: SEARCH_PAGE_SIZE,
+            startTime: 0,
+            text: textForSearch,
+          });
+
+          let filteredMoreItems: readonly ChromeHistoryItem[] = moreItems.filter((item) => !isBlacklisted(item.url));
+          if (clientSideSearch) {
+            const { items, error: filterError } = applyClientSideSearch(filteredMoreItems, searchQuery, isRegex, compiledRegex);
+            if (filterError && !error) {
+              setError(filterError);
+            }
+            filteredMoreItems = items;
+          }
+
+          if (searchQuery === useHistoryStore.getState().searchQuery) {
+            setRawHistory(filteredMoreItems);
+            if (moreItems.length < SEARCH_PAGE_SIZE) {
+              setHasMoreSearchResults(false);
+            }
+          }
+        } catch (error: unknown) {
+          console.error('Failed to fetch rest of search history in background:', error);
+        }
+      })();
     }
-
-    (async () => {
-      try {
-        const moreItems = await search({
-          maxResults: SEARCH_PAGE_SIZE,
-          startTime: 0,
-          text: textForSearch,
-        });
-
-        // FIX: Ensure filteredMoreItems is a readonly array to match return type of applyClientSideSearch
-        let filteredMoreItems: readonly ChromeHistoryItem[] = moreItems.filter((item) => !isBlacklisted(item.url));
-        if (clientSideSearch) {
-          const { items, error: filterError } = applyClientSideSearch(filteredMoreItems, searchQuery, isRegex, compiledRegex);
-          if (filterError && !error) {
-            setError(filterError);
-          }
-          // FIX: Remove unsafe type assertion. `items` is already the correct readonly type.
-          filteredMoreItems = items;
-        }
-
-        if (searchQuery === useHistoryStore.getState().searchQuery) {
-          setRawHistory(filteredMoreItems);
-          if (moreItems.length < SEARCH_PAGE_SIZE) {
-            setHasMoreSearchResults(false);
-          }
-        }
-      } catch (error: unknown) {
-        console.error('Failed to fetch rest of search history in background:', error);
-      }
-    })();
   }, [searchQuery, isRegex, compiledRegex, isBlacklisted, error]);
 
   useEffect(() => {

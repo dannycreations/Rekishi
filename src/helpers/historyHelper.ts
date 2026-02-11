@@ -2,6 +2,46 @@ import { isSameDay } from '../utilities/dateUtil';
 
 import type { ChromeHistoryItem, HistoryItemGroup } from '../app/types';
 
+export function mapToChromeHistoryItem(item: chrome.history.HistoryItem): ChromeHistoryItem {
+  return {
+    id: `${item.id}-${item.lastVisitTime}`,
+    url: item.url ?? '',
+    title: item.title ?? item.url ?? '',
+    lastVisitTime: item.lastVisitTime ?? 0,
+    visitCount: item.visitCount ?? 0,
+    typedCount: item.typedCount ?? 0,
+  };
+}
+
+export function applyClientSideSearch(
+  items: readonly ChromeHistoryItem[],
+  searchQuery: string,
+  isRegex: boolean,
+  compiledRegex: {
+    readonly regex: RegExp | null;
+    readonly error: string | null;
+  },
+): {
+  readonly items: readonly ChromeHistoryItem[];
+  readonly error?: string;
+} {
+  if (isRegex) {
+    if (compiledRegex.error) {
+      return { items: [], error: compiledRegex.error };
+    }
+    if (compiledRegex.regex) {
+      const regex = compiledRegex.regex;
+      return { items: items.filter((item) => regex.test(item.title) || regex.test(item.url)) };
+    }
+    return { items: [] };
+  }
+
+  const query = searchQuery.toLowerCase();
+  return {
+    items: items.filter((item) => (item.title ?? '').toLowerCase().includes(query) || (item.url ?? '').toLowerCase().includes(query)),
+  };
+}
+
 interface GroupHistoryReturn {
   readonly date: Date;
   readonly items: readonly ChromeHistoryItem[];

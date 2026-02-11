@@ -2,6 +2,11 @@ export function escapeRegex(text: string): string {
   return text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 
+export function isPotentialRegex(input: string): boolean {
+  const trimmed = input.trim();
+  return trimmed.length > 2 && trimmed.startsWith('/') && trimmed.endsWith('/');
+}
+
 export function getHostnameFromUrl(url: string): string {
   if (!url) {
     return '';

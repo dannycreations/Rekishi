@@ -1,4 +1,4 @@
-import { escapeRegex, getHostnameFromUrl } from '../utilities/commonUtil';
+import { escapeRegex, getHostnameFromUrl, isPotentialRegex } from '../utilities/commonUtil';
 
 export interface BlacklistItem {
   readonly isRegex: boolean;
@@ -9,11 +9,6 @@ export interface BlacklistMatchers {
   readonly plain: ReadonlySet<string>;
   readonly domainRegex: RegExp | null;
   readonly urlRegex: RegExp | null;
-}
-
-export function isPotentialRegex(input: string): boolean {
-  const trimmed = input.trim();
-  return trimmed.length > 2 && trimmed.startsWith('/') && trimmed.endsWith('/');
 }
 
 function wildcardToRegex(pattern: string): string {

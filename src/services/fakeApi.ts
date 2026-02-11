@@ -1,9 +1,10 @@
 import { BLACKLIST_STORAGE_KEY, SETTINGS_STORAGE_KEY } from '../app/constants';
-import { createBlacklistMatchers, isUrlBlacklisted } from '../helpers/blacklistHelper';
+import { createBlacklistMatchers, isUrlBlacklisted, parseBlacklistFromJSON } from '../helpers/blacklistHelper';
+import { mapToChromeHistoryItem } from '../helpers/historyHelper';
 import { parseSettingsFromJSON } from '../helpers/settingHelper';
 
 import type { ChromeDevice, ChromeHistoryItem } from '../app/types';
-import type { BlacklistItem, BlacklistMatchers } from '../helpers/blacklistHelper';
+import type { BlacklistMatchers } from '../helpers/blacklistHelper';
 
 interface SearchParams {
   readonly text: string;
@@ -15,26 +16,7 @@ interface SearchParams {
 const FAKE_DATA_STORE: Record<string, chrome.history.HistoryItem> = {};
 let FAKE_DATA_INITIALIZED = false;
 
-interface StoredBlacklist {
-  readonly state?: {
-    readonly blacklistedItems?: readonly BlacklistItem[];
-  };
-}
-
 let blacklistMatchers: BlacklistMatchers = createBlacklistMatchers([]);
-
-function parseBlacklistFromJSON(json: string | null): readonly BlacklistItem[] {
-  if (!json) {
-    return [];
-  }
-  try {
-    const parsed: StoredBlacklist = JSON.parse(json);
-    return parsed.state?.blacklistedItems ?? [];
-  } catch (error) {
-    console.error('Failed to parse blacklist from storage', error);
-    return [];
-  }
-}
 
 function runFakeBlacklistCleanup(): void {
   const blacklistJson = localStorage.getItem(BLACKLIST_STORAGE_KEY);
@@ -235,16 +217,7 @@ export function search(params: SearchParams): Promise<readonly ChromeHistoryItem
   return new Promise((resolve) => {
     setTimeout(() => {
       const historyItems = getFakeHistory(params);
-      const mappedResults: readonly ChromeHistoryItem[] = historyItems.map((item) => {
-        return {
-          id: `${item.id}-${item.lastVisitTime}`,
-          url: item.url ?? '',
-          title: item.title ?? item.url ?? '',
-          lastVisitTime: item.lastVisitTime ?? 0,
-          visitCount: item.visitCount ?? 0,
-          typedCount: item.typedCount ?? 0,
-        };
-      });
+      const mappedResults: readonly ChromeHistoryItem[] = historyItems.map(mapToChromeHistoryItem);
       resolve(mappedResults);
     }, 150);
   });

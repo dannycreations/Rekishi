@@ -11,12 +11,12 @@ export interface BlacklistMatchers {
   readonly urlRegex: RegExp | null;
 }
 
-function wildcardToRegex(pattern: string): string {
+const wildcardToRegex = (pattern: string): string => {
   const escaped = escapeRegex(pattern);
   return escaped.replace(/\\\*/g, '.*');
-}
+};
 
-export function createBlacklistMatchers(items: readonly BlacklistItem[]): BlacklistMatchers {
+export const createBlacklistMatchers = (items: readonly BlacklistItem[]): BlacklistMatchers => {
   const plain = new Set<string>();
   const domainRegexSources: string[] = [];
   const urlRegexSources: string[] = [];
@@ -50,9 +50,9 @@ export function createBlacklistMatchers(items: readonly BlacklistItem[]): Blackl
   const urlRegex = urlRegexSources.length > 0 ? new RegExp(urlRegexSources.join('|'), 'i') : null;
 
   return { plain, domainRegex, urlRegex };
-}
+};
 
-export function isUrlBlacklisted(url: string, matchers: BlacklistMatchers): boolean {
+export const isUrlBlacklisted = (url: string, matchers: BlacklistMatchers): boolean => {
   if (!url) {
     return false;
   }
@@ -82,9 +82,9 @@ export function isUrlBlacklisted(url: string, matchers: BlacklistMatchers): bool
   }
 
   return false;
-}
+};
 
-export function parseInput(input: string): { readonly value: string; readonly isRegex: boolean } | { readonly error: string } | null {
+export const parseInput = (input: string): { readonly value: string; readonly isRegex: boolean } | { readonly error: string } | null => {
   const trimmedValue = input.trim();
   if (!trimmedValue) {
     return null;
@@ -106,7 +106,7 @@ export function parseInput(input: string): { readonly value: string; readonly is
   }
 
   return { value, isRegex };
-}
+};
 
 interface StoredBlacklist {
   readonly state?: {
@@ -114,7 +114,7 @@ interface StoredBlacklist {
   };
 }
 
-export function parseBlacklistFromJSON(json: string | null): readonly BlacklistItem[] {
+export const parseBlacklistFromJSON = (json: string | null): readonly BlacklistItem[] => {
   if (!json) {
     return [];
   }
@@ -125,4 +125,4 @@ export function parseBlacklistFromJSON(json: string | null): readonly BlacklistI
     console.error('Failed to parse blacklist from storage', error);
     return [];
   }
-}
+};

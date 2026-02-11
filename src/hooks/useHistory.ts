@@ -15,10 +15,10 @@ interface NewHistoryItemMessage {
   readonly payload: ChromeHistoryItem;
 }
 
-function isNewHistoryItemMessage(message: unknown): message is NewHistoryItemMessage {
+const isNewHistoryItemMessage = (message: unknown): message is NewHistoryItemMessage => {
   const msg = message as NewHistoryItemMessage;
   return !!msg && msg.type === 'NEW_HISTORY_ITEM' && !!msg.payload;
-}
+};
 
 interface UseHistoryReturn {
   readonly deleteHistoryItem: (id: string) => Promise<void>;

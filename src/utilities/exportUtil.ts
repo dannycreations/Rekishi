@@ -2,7 +2,7 @@ import type { ChromeHistoryItem } from '../app/types';
 
 export type ExportFormat = 'json' | 'csv';
 
-export function generateFileContent(items: readonly ChromeHistoryItem[], format: ExportFormat): string {
+export const generateFileContent = (items: readonly ChromeHistoryItem[], format: ExportFormat): string => {
   if (format === 'json') {
     return JSON.stringify(items, null, 2);
   }
@@ -28,9 +28,9 @@ export function generateFileContent(items: readonly ChromeHistoryItem[], format:
     csvRows.push(row.join(','));
   }
   return csvRows.join('\n');
-}
+};
 
-export function downloadFile(content: string, format: ExportFormat, startDate: string, endDate: string): void {
+export const downloadFile = (content: string, format: ExportFormat, startDate: string, endDate: string): void => {
   const mimeType = format === 'json' ? 'application/json' : 'text/csv';
   const fileExtension = format;
 
@@ -43,4 +43,4 @@ export function downloadFile(content: string, format: ExportFormat, startDate: s
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-}
+};

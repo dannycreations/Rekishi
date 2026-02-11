@@ -2,7 +2,7 @@ import type { StateStorage } from 'zustand/middleware';
 
 type StorageAreaName = 'local' | 'sync';
 
-function createChromeStorage(area: StorageAreaName): StateStorage {
+const createChromeStorage = (area: StorageAreaName): StateStorage => {
   const chromeStorageArea = typeof chrome !== 'undefined' && chrome.storage ? chrome.storage[area] : undefined;
 
   return {
@@ -44,7 +44,7 @@ function createChromeStorage(area: StorageAreaName): StateStorage {
       }
     },
   };
-}
+};
 
 export const chromeLocalStorage: StateStorage = createChromeStorage('local');
 export const chromeSyncStorage: StateStorage = createChromeStorage('sync');

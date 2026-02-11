@@ -10,7 +10,7 @@ interface SearchParams {
   readonly maxResults?: number;
 }
 
-export async function search(params: SearchParams): Promise<readonly ChromeHistoryItem[]> {
+export const search = async (params: SearchParams): Promise<readonly ChromeHistoryItem[]> => {
   if (typeof chrome !== 'undefined' && chrome.history?.search) {
     const results = await chrome.history.search({
       endTime: params.endTime,
@@ -21,9 +21,9 @@ export async function search(params: SearchParams): Promise<readonly ChromeHisto
     return results.filter((item): item is chrome.history.HistoryItem & { url: string } => !!item.url).map(mapToChromeHistoryItem);
   }
   return fakeSearch(params);
-}
+};
 
-export async function deleteUrl(details: { readonly url: string }): Promise<void> {
+export const deleteUrl = async (details: { readonly url: string }): Promise<void> => {
   if (typeof chrome !== 'undefined' && chrome.history?.deleteUrl) {
     try {
       await chrome.history.deleteUrl(details);
@@ -34,16 +34,16 @@ export async function deleteUrl(details: { readonly url: string }): Promise<void
     }
   }
   return fakeDeleteUrl(details);
-}
+};
 
-export async function getDevices(): Promise<readonly ChromeDevice[]> {
+export const getDevices = async (): Promise<readonly ChromeDevice[]> => {
   if (typeof chrome !== 'undefined' && chrome.sessions?.getDevices) {
     return chrome.sessions.getDevices();
   }
   return fakeGetDevices();
-}
+};
 
-export async function deleteAllHistory(): Promise<void> {
+export const deleteAllHistory = async (): Promise<void> => {
   if (typeof chrome !== 'undefined' && chrome.history?.deleteAll) {
     try {
       await chrome.history.deleteAll();
@@ -54,4 +54,4 @@ export async function deleteAllHistory(): Promise<void> {
     }
   }
   return fakeDeleteAllHistory();
-}
+};

@@ -11,7 +11,7 @@ interface UseDeviceReturn {
   readonly error: string | null;
 }
 
-function getDeviceTypeFromName(name: string): Device['type'] {
+const getDeviceTypeFromName = (name: string): Device['type'] => {
   const lowerName = name.toLowerCase();
   if (['pixel', 'iphone', 'galaxy', 'android', 'phone'].some((s) => lowerName.includes(s))) {
     return 'phone';
@@ -20,7 +20,7 @@ function getDeviceTypeFromName(name: string): Device['type'] {
     return 'laptop';
   }
   return 'desktop';
-}
+};
 
 export const useDevice = (): UseDeviceReturn => {
   const [devices, setDevices] = useState<readonly Device[]>([]);

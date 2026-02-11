@@ -12,7 +12,7 @@ export const defaultSettings: Settings = {
   dataRetention: 'disabled',
 } as const;
 
-export function parseSettingsFromJSON(json: string | null): Settings {
+export const parseSettingsFromJSON = (json: string | null): Settings => {
   if (!json) {
     return { ...defaultSettings };
   }
@@ -25,4 +25,4 @@ export function parseSettingsFromJSON(json: string | null): Settings {
     console.error('Failed to parse settings from storage', error);
     return { ...defaultSettings };
   }
-}
+};

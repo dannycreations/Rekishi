@@ -2,7 +2,7 @@ import { isSameDay } from '../utilities/dateUtil';
 
 import type { ChromeHistoryItem, HistoryItemGroup } from '../app/types';
 
-export function mapToChromeHistoryItem(item: chrome.history.HistoryItem): ChromeHistoryItem {
+export const mapToChromeHistoryItem = (item: chrome.history.HistoryItem): ChromeHistoryItem => {
   return {
     id: `${item.id}-${item.lastVisitTime}`,
     url: item.url ?? '',
@@ -11,9 +11,9 @@ export function mapToChromeHistoryItem(item: chrome.history.HistoryItem): Chrome
     visitCount: item.visitCount ?? 0,
     typedCount: item.typedCount ?? 0,
   };
-}
+};
 
-export function applyClientSideSearch(
+export const applyClientSideSearch = (
   items: readonly ChromeHistoryItem[],
   searchQuery: string,
   isRegex: boolean,
@@ -24,7 +24,7 @@ export function applyClientSideSearch(
 ): {
   readonly items: readonly ChromeHistoryItem[];
   readonly error?: string;
-} {
+} => {
   if (isRegex) {
     if (compiledRegex.error) {
       return { items: [], error: compiledRegex.error };
@@ -40,7 +40,7 @@ export function applyClientSideSearch(
   return {
     items: items.filter((item) => (item.title ?? '').toLowerCase().includes(query) || (item.url ?? '').toLowerCase().includes(query)),
   };
-}
+};
 
 interface GroupHistoryReturn {
   readonly date: Date;
@@ -48,7 +48,7 @@ interface GroupHistoryReturn {
   readonly hourlyGroups: readonly HistoryItemGroup[];
 }
 
-export function groupHistoryByDayAndHour(items: readonly ChromeHistoryItem[]): readonly GroupHistoryReturn[] {
+export const groupHistoryByDayAndHour = (items: readonly ChromeHistoryItem[]): readonly GroupHistoryReturn[] => {
   if (!items || items.length === 0) {
     return [];
   }
@@ -89,4 +89,4 @@ export function groupHistoryByDayAndHour(items: readonly ChromeHistoryItem[]): r
   }
 
   return dayGroups;
-}
+};

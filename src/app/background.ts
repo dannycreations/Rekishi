@@ -11,28 +11,28 @@ let blacklistMatchers: BlacklistMatchers = { plain: new Set(), domainRegex: null
 let blacklistedItems: readonly BlacklistItem[] = [];
 let currentSettings: Settings = { ...defaultSettings };
 
-function updateBlacklistCache(items: readonly BlacklistItem[]): void {
+const updateBlacklistCache = (items: readonly BlacklistItem[]): void => {
   blacklistedItems = items;
   blacklistMatchers = createBlacklistMatchers(items);
-}
+};
 
-function updateSettingsCache(settings: Settings): void {
+const updateSettingsCache = (settings: Settings): void => {
   currentSettings = settings;
-}
+};
 
-async function initializeCaches(): Promise<void> {
+const initializeCaches = async (): Promise<void> => {
   const blacklistJson = await chromeSyncStorage.getItem(BLACKLIST_STORAGE_KEY);
   updateBlacklistCache(parseBlacklistFromJSON(blacklistJson));
 
   const settingsJson = await chromeSyncStorage.getItem(SETTINGS_STORAGE_KEY);
   updateSettingsCache(parseSettingsFromJSON(settingsJson));
-}
+};
 
-function isBlacklisted(url: string): boolean {
+const isBlacklisted = (url: string): boolean => {
   return isUrlBlacklisted(url, blacklistMatchers);
-}
+};
 
-async function runBlacklistCleanup(): Promise<void> {
+const runBlacklistCleanup = async (): Promise<void> => {
   if (typeof chrome === 'undefined' || !chrome.history?.search || !chrome.history?.deleteUrl || blacklistedItems.length === 0) {
     return;
   }
@@ -61,9 +61,9 @@ async function runBlacklistCleanup(): Promise<void> {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error in blacklist cleanup:', message);
   }
-}
+};
 
-async function runRetentionCleanup(): Promise<void> {
+const runRetentionCleanup = async (): Promise<void> => {
   if (typeof chrome === 'undefined' || !chrome.history?.deleteRange) {
     return;
   }
@@ -97,9 +97,9 @@ async function runRetentionCleanup(): Promise<void> {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error cleaning up old history:', message);
   }
-}
+};
 
-async function handleVisited(historyItem: chrome.history.HistoryItem): Promise<void> {
+const handleVisited = async (historyItem: chrome.history.HistoryItem): Promise<void> => {
   if (!historyItem.url) {
     return;
   }
@@ -129,7 +129,7 @@ async function handleVisited(historyItem: chrome.history.HistoryItem): Promise<v
       type: 'NEW_HISTORY_ITEM',
     });
   }
-}
+};
 
 if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes, areaName) => {

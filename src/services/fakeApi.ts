@@ -18,7 +18,7 @@ let FAKE_DATA_INITIALIZED = false;
 
 let blacklistMatchers: BlacklistMatchers = createBlacklistMatchers([]);
 
-function runFakeBlacklistCleanup(): void {
+const runFakeBlacklistCleanup = (): void => {
   const blacklistJson = localStorage.getItem(BLACKLIST_STORAGE_KEY);
   const blacklistedItems = parseBlacklistFromJSON(blacklistJson);
   blacklistMatchers = createBlacklistMatchers(blacklistedItems);
@@ -33,9 +33,9 @@ function runFakeBlacklistCleanup(): void {
       delete FAKE_DATA_STORE[key];
     }
   });
-}
+};
 
-function generateFakeHistoryItem(timestamp: number): chrome.history.HistoryItem {
+const generateFakeHistoryItem = (timestamp: number): chrome.history.HistoryItem => {
   const domains = [
     'google.com',
     'bing.com',
@@ -105,9 +105,9 @@ function generateFakeHistoryItem(timestamp: number): chrome.history.HistoryItem 
     visitCount: Math.floor(Math.random() * 10) + 1,
     typedCount: Math.random() > 0.8 ? 1 : 0,
   };
-}
+};
 
-function runFakeRetentionCleanup(): void {
+const runFakeRetentionCleanup = (): void => {
   if (!FAKE_DATA_INITIALIZED) {
     return;
   }
@@ -130,9 +130,9 @@ function runFakeRetentionCleanup(): void {
       });
     }
   }
-}
+};
 
-function initializeFakeData(): void {
+const initializeFakeData = (): void => {
   if (FAKE_DATA_INITIALIZED) {
     return;
   }
@@ -150,7 +150,7 @@ function initializeFakeData(): void {
   }
   FAKE_DATA_INITIALIZED = true;
   runFakeBlacklistCleanup();
-}
+};
 
 if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) {
   setInterval(
@@ -168,7 +168,7 @@ if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) {
   });
 }
 
-function getFakeHistory(params: SearchParams): readonly chrome.history.HistoryItem[] {
+const getFakeHistory = (params: SearchParams): readonly chrome.history.HistoryItem[] => {
   initializeFakeData();
   runFakeRetentionCleanup();
   runFakeBlacklistCleanup();
@@ -201,9 +201,9 @@ function getFakeHistory(params: SearchParams): readonly chrome.history.HistoryIt
   }
 
   return items;
-}
+};
 
-function deleteFakeHistoryUrl(details: { readonly url: string }): void {
+const deleteFakeHistoryUrl = (details: { readonly url: string }): void => {
   initializeFakeData();
   const idsToDelete = Object.keys(FAKE_DATA_STORE).filter((id) => {
     return FAKE_DATA_STORE[id].url === details.url;
@@ -211,9 +211,9 @@ function deleteFakeHistoryUrl(details: { readonly url: string }): void {
   for (const id of idsToDelete) {
     delete FAKE_DATA_STORE[id];
   }
-}
+};
 
-export function search(params: SearchParams): Promise<readonly ChromeHistoryItem[]> {
+export const search = (params: SearchParams): Promise<readonly ChromeHistoryItem[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       const historyItems = getFakeHistory(params);
@@ -221,18 +221,18 @@ export function search(params: SearchParams): Promise<readonly ChromeHistoryItem
       resolve(mappedResults);
     }, 150);
   });
-}
+};
 
-export function deleteUrl(details: { readonly url: string }): Promise<void> {
+export const deleteUrl = (details: { readonly url: string }): Promise<void> => {
   return new Promise((resolve) => {
     deleteFakeHistoryUrl(details);
     setTimeout(() => {
       resolve();
     }, 50);
   });
-}
+};
 
-export function getDevices(): Promise<readonly ChromeDevice[]> {
+export const getDevices = (): Promise<readonly ChromeDevice[]> => {
   return new Promise((resolve) => {
     const now = Date.now();
     setTimeout(() => {
@@ -244,9 +244,9 @@ export function getDevices(): Promise<readonly ChromeDevice[]> {
       ]);
     }, 150);
   });
-}
+};
 
-export function deleteAllHistory(): Promise<void> {
+export const deleteAllHistory = (): Promise<void> => {
   return new Promise((resolve) => {
     Object.keys(FAKE_DATA_STORE).forEach((key) => {
       delete FAKE_DATA_STORE[key];
@@ -256,4 +256,4 @@ export function deleteAllHistory(): Promise<void> {
       resolve();
     }, 50);
   });
-}
+};

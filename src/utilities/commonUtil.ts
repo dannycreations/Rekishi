@@ -1,13 +1,13 @@
-export function escapeRegex(text: string): string {
+export const escapeRegex = (text: string): string => {
   return text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-}
+};
 
-export function isPotentialRegex(input: string): boolean {
+export const isPotentialRegex = (input: string): boolean => {
   const trimmed = input.trim();
   return trimmed.length > 2 && trimmed.startsWith('/') && trimmed.endsWith('/');
-}
+};
 
-export function getHostnameFromUrl(url: string): string {
+export const getHostnameFromUrl = (url: string): string => {
   if (!url) {
     return '';
   }
@@ -22,4 +22,4 @@ export function getHostnameFromUrl(url: string): string {
     }
     return '';
   }
-}
+};

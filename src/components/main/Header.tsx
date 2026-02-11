@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { formatDateForInput } from '../../utilities/dateUtil';
 import { CalendarPopover } from '../shared/CalendarPopover';
 import { Icon } from '../shared/Icon';
 
@@ -106,12 +107,7 @@ export const Header = memo(
       searchInputRef.current?.focus();
     };
 
-    const formattedDate = useMemo(() => {
-      const year = selectedDate.getFullYear();
-      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-      const day = String(selectedDate.getDate()).padStart(2, '0');
-      return `${year}/${month}/${day}`;
-    }, [selectedDate]);
+    const formattedDate = useMemo(() => formatDateForInput(selectedDate), [selectedDate]);
 
     const handleToggleCalendar = useCallback(() => {
       setIsCalendarOpen((o) => !o);

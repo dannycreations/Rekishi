@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { groupHistoryByDayAndHour } from '../utilities/historyUtil';
+import { groupHistoryByDayAndHour } from '../helpers/historyHelper';
 
 import type { ChromeHistoryItem, HistoryItemGroup } from '../app/types';
 

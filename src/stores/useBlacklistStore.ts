@@ -3,10 +3,10 @@ import { shallow } from 'zustand/shallow';
 import { createWithEqualityFn } from 'zustand/traditional';
 
 import { BLACKLIST_STORAGE_KEY } from '../app/constants';
-import { createBlacklistMatchers, isUrlBlacklisted } from '../utilities/blacklistUtil';
-import { chromeSyncStorage } from '../utilities/storageUtil';
+import { createBlacklistMatchers, isUrlBlacklisted } from '../helpers/blacklistHelper';
+import { chromeSyncStorage } from '../helpers/storageHelper';
 
-import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
+import type { BlacklistItem, BlacklistMatchers } from '../helpers/blacklistHelper';
 
 interface BlacklistState {
   readonly blacklistedItems: readonly BlacklistItem[];

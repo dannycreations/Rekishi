@@ -1,4 +1,4 @@
-import { getHostnameFromUrl } from './urlUtil';
+import { escapeRegex, getHostnameFromUrl } from '../utilities/commonUtil';
 
 export interface BlacklistItem {
   readonly isRegex: boolean;
@@ -17,7 +17,7 @@ export function isPotentialRegex(input: string): boolean {
 }
 
 function wildcardToRegex(pattern: string): string {
-  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+  const escaped = escapeRegex(pattern);
   return escaped.replace(/\\\*/g, '.*');
 }
 
@@ -111,4 +111,23 @@ export function parseInput(input: string): { readonly value: string; readonly is
   }
 
   return { value, isRegex };
+}
+
+interface StoredBlacklist {
+  readonly state?: {
+    readonly blacklistedItems?: readonly BlacklistItem[];
+  };
+}
+
+export function parseBlacklistFromJSON(json: string | null): readonly BlacklistItem[] {
+  if (!json) {
+    return [];
+  }
+  try {
+    const parsed: StoredBlacklist = JSON.parse(json);
+    return parsed.state?.blacklistedItems ?? [];
+  } catch (error) {
+    console.error('Failed to parse blacklist from storage', error);
+    return [];
+  }
 }

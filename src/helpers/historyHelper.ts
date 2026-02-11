@@ -1,4 +1,4 @@
-import { isSameDay } from './dateUtil';
+import { isSameDay } from '../utilities/dateUtil';
 
 import type { ChromeHistoryItem, HistoryItemGroup } from '../app/types';
 

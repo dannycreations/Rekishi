@@ -1,3 +1,7 @@
+export function escapeRegex(text: string): string {
+  return text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
 export function getHostnameFromUrl(url: string): string {
   if (!url) {
     return '';

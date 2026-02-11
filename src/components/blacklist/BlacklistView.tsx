@@ -1,10 +1,10 @@
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { parseInput } from '../../helpers/blacklistHelper';
 import { usePopover } from '../../hooks/usePopover';
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
 import { useToastStore } from '../../stores/useToastStore';
-import { parseInput } from '../../utilities/blacklistUtil';
 import { Icon } from '../shared/Icon';
 import { BlacklistItem } from './BlacklistItem';
 

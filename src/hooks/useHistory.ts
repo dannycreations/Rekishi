@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { DAILY_PAGE_SIZE, INIT_CHUNK_SIZE, SEARCH_PAGE_SIZE } from '../app/constants';
+import { isPotentialRegex } from '../helpers/blacklistHelper';
 import { deleteUrl, search } from '../services/chromeApi';
 import { useBlacklistStore } from '../stores/useBlacklistStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
-import { isPotentialRegex } from '../utilities/blacklistUtil';
 import { isSameDay } from '../utilities/dateUtil';
 
 import type { ChromeHistoryItem } from '../app/types';

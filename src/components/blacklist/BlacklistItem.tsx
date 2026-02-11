@@ -1,11 +1,11 @@
 import { memo, useCallback, useState } from 'react';
 
+import { parseInput } from '../../helpers/blacklistHelper';
 import { useToastStore } from '../../stores/useToastStore';
-import { parseInput } from '../../utilities/blacklistUtil';
 import { Icon } from '../shared/Icon';
 
 import type { JSX, KeyboardEvent } from 'react';
-import type { BlacklistItem as BlacklistItemType } from '../../utilities/blacklistUtil';
+import type { BlacklistItem as BlacklistItemType } from '../../helpers/blacklistHelper';
 
 interface BlacklistItemProps {
   readonly item: BlacklistItemType;

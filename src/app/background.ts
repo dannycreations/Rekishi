@@ -1,33 +1,15 @@
-import { createBlacklistMatchers, isUrlBlacklisted } from '../utilities/blacklistUtil';
-import { defaultSettings, parseSettingsFromJSON } from '../utilities/settingUtil';
+import { createBlacklistMatchers, isUrlBlacklisted, parseBlacklistFromJSON } from '../helpers/blacklistHelper';
+import { defaultSettings, parseSettingsFromJSON } from '../helpers/settingHelper';
+import { chromeSyncStorage } from '../helpers/storageHelper';
 import { BLACKLIST_STORAGE_KEY, CLEANER_ALARM_KEY, CLEANUP_STORAGE_KEY, RETENTION_STORAGE_KEY, SETTINGS_STORAGE_KEY } from './constants';
 
-import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
-import type { Settings } from '../utilities/settingUtil';
+import type { BlacklistItem, BlacklistMatchers } from '../helpers/blacklistHelper';
+import type { Settings } from '../helpers/settingHelper';
 import type { ChromeHistoryItem } from './types';
-
-interface StoredBlacklist {
-  readonly state?: {
-    readonly blacklistedItems?: readonly BlacklistItem[];
-  };
-}
 
 let blacklistMatchers: BlacklistMatchers = { plain: new Set(), domainRegex: null, urlRegex: null };
 let blacklistedItems: readonly BlacklistItem[] = [];
 let currentSettings: Settings = { ...defaultSettings };
-
-function parseBlacklistFromJSON(json: string | null): readonly BlacklistItem[] {
-  if (!json) {
-    return [];
-  }
-  try {
-    const parsed: StoredBlacklist = JSON.parse(json);
-    return parsed.state?.blacklistedItems ?? [];
-  } catch (error) {
-    console.error('Failed to parse blacklist from storage', error);
-    return [];
-  }
-}
 
 function updateBlacklistCache(items: readonly BlacklistItem[]): void {
   blacklistedItems = items;
@@ -38,32 +20,11 @@ function updateSettingsCache(settings: Settings): void {
   currentSettings = settings;
 }
 
-async function getFromStorage(key: string, area: 'local' | 'sync'): Promise<string | null> {
-  if (typeof chrome !== 'undefined' && chrome.storage?.[area]) {
-    try {
-      const result = await chrome.storage[area].get([key]);
-      return (result[key] as string) ?? null;
-    } catch (error) {
-      console.error(`Failed to read from chrome.storage.${area}`, error);
-      return null;
-    }
-  }
-  try {
-    if (area === 'local') {
-      return localStorage.getItem(key);
-    }
-    return null;
-  } catch (error) {
-    console.error('Could not access localStorage', error);
-    return null;
-  }
-}
-
 async function initializeCaches(): Promise<void> {
-  const blacklistJson = await getFromStorage(BLACKLIST_STORAGE_KEY, 'sync');
+  const blacklistJson = await chromeSyncStorage.getItem(BLACKLIST_STORAGE_KEY);
   updateBlacklistCache(parseBlacklistFromJSON(blacklistJson));
 
-  const settingsJson = await getFromStorage(SETTINGS_STORAGE_KEY, 'sync');
+  const settingsJson = await chromeSyncStorage.getItem(SETTINGS_STORAGE_KEY);
   updateSettingsCache(parseSettingsFromJSON(settingsJson));
 }
 

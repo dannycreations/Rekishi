@@ -1,9 +1,9 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 
+import { isPotentialRegex } from '../../helpers/blacklistHelper';
 import { useHistoryStore } from '../../stores/useHistoryStore';
 import { useToastStore } from '../../stores/useToastStore';
-import { isPotentialRegex } from '../../utilities/blacklistUtil';
-import { getHostnameFromUrl } from '../../utilities/urlUtil';
+import { escapeRegex, getHostnameFromUrl } from '../../utilities/commonUtil';
 import { Icon } from '../shared/Icon';
 import { HistoryItemAction } from './HistoryItemAction';
 
@@ -20,7 +20,7 @@ const HistoryHighlight = memo(({ text, highlight }: HistoryHighlightProps): JSX.
     if (!highlight) {
       return null;
     }
-    const escapedHighlight = highlight.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const escapedHighlight = escapeRegex(highlight);
     return new RegExp(`(${escapedHighlight})`, 'gi');
   }, [highlight]);
 

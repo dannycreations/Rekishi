@@ -1,9 +1,9 @@
 import { BLACKLIST_STORAGE_KEY, SETTINGS_STORAGE_KEY } from '../app/constants';
-import { createBlacklistMatchers, isUrlBlacklisted } from '../utilities/blacklistUtil';
-import { parseSettingsFromJSON } from '../utilities/settingUtil';
+import { createBlacklistMatchers, isUrlBlacklisted } from '../helpers/blacklistHelper';
+import { parseSettingsFromJSON } from '../helpers/settingHelper';
 
 import type { ChromeDevice, ChromeHistoryItem } from '../app/types';
-import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklistUtil';
+import type { BlacklistItem, BlacklistMatchers } from '../helpers/blacklistHelper';
 
 interface SearchParams {
   readonly text: string;

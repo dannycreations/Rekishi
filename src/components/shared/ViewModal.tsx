@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { CloseIcon } from './Icons';
+import { Icon } from './Icon';
 
 import type { MouseEvent, ReactNode, ReactPortal } from 'react';
 
@@ -39,23 +39,16 @@ export const ViewModal = memo(({ isOpen, onClose, title, children, size = '3xl' 
   }[size];
 
   const modalContent = (
-    <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-opacity duration-200 ${
-        isOpen ? 'opacity-100' : 'opacity-0'
-      }`}
-      onClick={onClose}
-    >
+    <div className={`modal-backdrop ${isOpen ? 'opacity-100' : 'opacity-0'}`} onClick={onClose}>
       <div
         ref={modalRef}
-        className={`relative mx-3 flex w-full ${sizeClass} max-h-[90vh] flex-col rounded-lg bg-slate-50 shadow-xl outline-none transition-all duration-200 ${
-          isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
-        }`}
+        className={`modal-container ${sizeClass} max-h-[90vh] ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
         onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
       >
-        <header className="flex shrink-0 items-start justify-between rounded-t-lg border-b border-slate-200 bg-white p-3">
-          <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-          <button className="cursor-pointer rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-800" onClick={onClose}>
-            <CloseIcon className="h-5 w-5" />
+        <header className="modal-header">
+          <h3 className="modal-title">{title}</h3>
+          <button className="btn-ghost" onClick={onClose}>
+            <Icon name="X" className="icon-md" />
           </button>
         </header>
         <div className="flex-1 overflow-y-auto p-3">{children}</div>

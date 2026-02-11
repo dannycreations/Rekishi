@@ -33,13 +33,13 @@ export const HistoryItemGroup = memo(
     return (
       <section>
         <div
-          className="mb-2 flex items-center justify-between px-2"
+          className="section-header"
           style={{
             visibility: isSticky ? 'hidden' : 'visible',
             height: isSticky ? 0 : 'auto',
           }}
         >
-          <h2 className="text-sm font-semibold text-slate-800">{group.time}</h2>
+          <h2 className="section-title-sm">{group.time}</h2>
           <DeleteButton onClick={handleOpenDeleteModal}>Delete</DeleteButton>
         </div>
         <div className="flex flex-col space-y-1">

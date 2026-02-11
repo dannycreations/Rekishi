@@ -5,7 +5,7 @@ import { DAYS_OF_WEEK } from '../../app/constants';
 import { usePopover } from '../../hooks/usePopover';
 import { isSameDay } from '../../utilities/dateUtil';
 import { CalendarSkeleton } from './CalendarSkeleton';
-import { ChevronLeftIcon, ChevronRightIcon } from './Icons';
+import { Icon } from './Icon';
 
 import type { ReactPortal } from 'react';
 
@@ -113,39 +113,28 @@ export const CalendarPopover = memo(
     }
 
     const popoverElement = (
-      <div
-        ref={popoverRef}
-        style={style}
-        className="fixed z-[101] w-72 origin-top-right rounded-lg border border-slate-200 bg-white p-3 shadow-lg popover-animate-enter"
-      >
+      <div ref={popoverRef} style={style} className="popover-container popover-animate-enter">
         {isLoading && datesWithHistory.size === 0 ? (
           <CalendarSkeleton />
         ) : (
           <>
-            <div className="mb-2 flex items-center justify-between">
-              <button className="cursor-pointer rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100" onClick={handlePrevMonth}>
-                <ChevronLeftIcon className="h-5 w-5" />
+            <div className="mb-2 layout-flex-between">
+              <button className="btn-ghost rounded-full p-2" onClick={handlePrevMonth}>
+                <Icon name="ChevronLeft" className="icon-md" />
               </button>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-slate-700">{monthName}</span>
-                <button
-                  className="cursor-pointer rounded-md bg-slate-100 p-1 text-xs font-semibold text-slate-700 hover:bg-slate-200"
-                  onClick={handleGoToToday}
-                >
+                <span className="txt-title-sm">{monthName}</span>
+                <button className="btn-base rounded-md bg-slate-100 p-1 txt-label txt-highlight hover:bg-slate-200" onClick={handleGoToToday}>
                   Today
                 </button>
               </div>
-              <button
-                className="cursor-pointer rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-300"
-                disabled={isCurrentMonth}
-                onClick={handleNextMonth}
-              >
-                <ChevronRightIcon className="h-5 w-5" />
+              <button className="btn-ghost rounded-full p-2 disabled:text-slate-300" disabled={isCurrentMonth} onClick={handleNextMonth}>
+                <Icon name="ChevronRight" className="icon-md" />
               </button>
             </div>
             <div className="grid grid-cols-7 gap-y-1 text-center">
               {DAYS_OF_WEEK.map((day) => (
-                <div key={day} className="text-xs font-medium text-slate-500">
+                <div key={day} className="txt-label">
                   {day}
                 </div>
               ))}

@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-import { BlacklistDomainIcon, CheckIcon, CopyIcon, SearchIcon, TrashIcon } from '../shared/Icons';
+import { Icon } from '../shared/Icon';
 
 import type { JSX, MouseEvent } from 'react';
 
@@ -15,29 +15,17 @@ interface HistoryItemActionProps {
 export const HistoryItemAction = memo(({ isCopied, onCopy, onSearchSimilar, onBlacklist, onDelete }: HistoryItemActionProps): JSX.Element => {
   return (
     <div className="absolute inset-0 hidden items-center justify-end space-x-1 group-hover:flex">
-      <button
-        className="cursor-pointer rounded-md p-1 text-slate-400 transition-all duration-200 ease-in-out hover:scale-110 hover:bg-slate-100 hover:text-slate-800 active:scale-95"
-        onClick={onCopy}
-      >
-        {isCopied ? <CheckIcon className="h-4 w-4 text-green-500" /> : <CopyIcon className="h-4 w-4" />}
+      <button className="btn-ghost" onClick={onCopy}>
+        {isCopied ? <Icon name="Check" className="icon-sm text-green-500" /> : <Icon name="Copy" className="icon-sm" />}
       </button>
-      <button
-        className="cursor-pointer rounded-md p-1 text-slate-400 transition-all duration-200 ease-in-out hover:scale-110 hover:bg-slate-100 hover:text-slate-800 active:scale-95"
-        onClick={onSearchSimilar}
-      >
-        <SearchIcon className="h-4 w-4" />
+      <button className="btn-ghost" onClick={onSearchSimilar}>
+        <Icon name="Search" className="icon-sm" />
       </button>
-      <button
-        className="cursor-pointer rounded-md p-1 text-slate-400 transition-all duration-200 ease-in-out hover:scale-110 hover:bg-slate-100 hover:text-slate-800 active:scale-95"
-        onClick={onBlacklist}
-      >
-        <BlacklistDomainIcon className="h-4 w-4" />
+      <button className="btn-ghost" onClick={onBlacklist}>
+        <Icon name="Link2Off" className="icon-sm" />
       </button>
-      <button
-        className="cursor-pointer rounded-md p-1 text-slate-400 transition-all duration-200 ease-in-out hover:scale-110 hover:bg-red-100 hover:text-red-500 active:scale-95"
-        onClick={onDelete}
-      >
-        <TrashIcon className="h-4 w-4" />
+      <button className="btn-ghost hover:bg-red-100 hover:text-red-500" onClick={onDelete}>
+        <Icon name="Trash2" className="icon-sm" />
       </button>
     </div>
   );

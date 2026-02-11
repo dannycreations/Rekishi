@@ -6,7 +6,7 @@ import { useToastStore } from '../../stores/useToastStore';
 import { formatDateForInput } from '../../utilities/dateUtil';
 import { downloadFile, generateFileContent } from '../../utilities/exportUtil';
 import { CalendarPopover } from '../shared/CalendarPopover';
-import { CalendarIcon, LoadingSpinnerIcon } from '../shared/Icons';
+import { Icon } from '../shared/Icon';
 
 import type { JSX } from 'react';
 import type { ExportFormat } from '../../utilities/exportUtil';
@@ -29,8 +29,8 @@ const RadioCard = memo(({ checked, value, label, description, onChange }: RadioC
         </div>
       </div>
       <div>
-        <span className="font-semibold text-slate-700">{label}</span>
-        <p className="text-xs text-slate-500">{description}</p>
+        <span className="txt-highlight">{label}</span>
+        <p className="txt-muted">{description}</p>
       </div>
     </label>
   );
@@ -135,44 +135,44 @@ export const ExportView = (): JSX.Element => {
 
   return (
     <>
-      <div className="space-y-3">
-        <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+      <div className="layout-stack-md">
+        <div className="card layout-stack-md">
           <div>
-            <h3 className="text-lg font-semibold text-slate-800">Date Range</h3>
+            <h3 className="txt-title-lg">Date Range</h3>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium text-slate-600" htmlFor="start-date">
+                <label className="txt-label" htmlFor="start-date">
                   Start Date
                 </label>
                 <button
                   ref={startDateTriggerRef}
                   id="start-date"
-                  className="mt-1 flex w-full cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-white p-2 text-left transition-colors hover:bg-slate-100"
+                  className="btn-secondary mt-1 flex w-full items-center justify-between text-left"
                   onClick={() => setActiveCalendar(activeCalendar === 'start' ? null : 'start')}
                 >
-                  <span className="text-sm text-slate-800">{startDate}</span>
-                  <CalendarIcon className="h-4 w-4 text-slate-400" />
+                  <span className="txt-main">{startDate}</span>
+                  <Icon name="Calendar" className="icon-sm text-slate-400" />
                 </button>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-600" htmlFor="end-date">
+                <label className="txt-label" htmlFor="end-date">
                   End Date
                 </label>
                 <button
                   ref={endDateTriggerRef}
                   id="end-date"
-                  className="mt-1 flex w-full cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-white p-2 text-left transition-colors hover:bg-slate-100"
+                  className="btn-secondary mt-1 flex w-full items-center justify-between text-left"
                   onClick={() => setActiveCalendar(activeCalendar === 'end' ? null : 'end')}
                 >
-                  <span className="text-sm text-slate-800">{endDate}</span>
-                  <CalendarIcon className="h-4 w-4 text-slate-400" />
+                  <span className="txt-main">{endDate}</span>
+                  <Icon name="Calendar" className="icon-sm text-slate-400" />
                 </button>
               </div>
             </div>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-slate-800">Format</h3>
+            <h3 className="txt-title-lg">Format</h3>
             <div className="mt-2 flex space-x-2">
               <RadioCard checked={format === 'json'} description="JavaScript Object Notation" label="JSON" onChange={setFormat} value="json" />
               <RadioCard checked={format === 'csv'} description="Comma-Separated Values" label="CSV" onChange={setFormat} value="csv" />
@@ -180,13 +180,13 @@ export const ExportView = (): JSX.Element => {
           </div>
 
           <button
-            className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-slate-800 p-2 font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-wait disabled:bg-slate-500"
+            className="btn-primary layout-flex-center w-full disabled:cursor-wait disabled:bg-slate-500"
             disabled={isLoading}
             onClick={handleExport}
           >
             {isLoading ? (
               <>
-                <LoadingSpinnerIcon className="mr-2 h-5 w-5 animate-spin" />
+                <Icon name="Loader2" className="mr-2 icon-md animate-spin" />
                 Exporting...
               </>
             ) : (

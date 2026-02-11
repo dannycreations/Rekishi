@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 
 import { DeleteButton } from '../shared/DeleteButton';
-import { CheckIcon } from '../shared/Icons';
+import { Icon } from '../shared/Icon';
 
 import type { JSX } from 'react';
 import type { ChromeHistoryItem } from '../../app/types';
@@ -47,19 +47,19 @@ export const HistoryItemHeader = memo(
     const handleButtonClick = totalSelectedCount > 0 ? onDeleteSelected : onDeleteAll;
 
     return (
-      <div className="flex items-center justify-between px-2">
+      <div className="section-header">
         <div className="flex items-center gap-2">
           <div className="flex cursor-pointer select-none items-center justify-center" onClick={() => onToggleDaySelection(dayItems)}>
             <div
-              className={`flex h-4 w-4 items-center justify-center rounded border-2 transition-colors ${
+              className={`checkbox-custom ${
                 allForDaySelected || someForDaySelected ? 'border-slate-800 bg-slate-800' : 'border-slate-300 hover:border-slate-400'
               }`}
             >
-              {allForDaySelected && <CheckIcon className="h-2.5 w-2.5 text-white" />}
+              {allForDaySelected && <Icon name="Check" className="icon-xs text-white" />}
               {someForDaySelected && <div className="h-0.5 w-2 rounded-sm bg-white" />}
             </div>
           </div>
-          <h2 className="text-lg font-bold text-slate-800">{dayHeaderText}</h2>
+          <h2 className="section-title-lg">{dayHeaderText}</h2>
         </div>
         <div className="flex items-center space-x-2">
           {isSearchMode && onDeleteSearch && (

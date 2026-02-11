@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CalendarPopover } from '../shared/CalendarPopover';
-import { BlacklistDomainIcon, CalendarIcon, CloseIcon, DevicesIcon, ExportIcon, LogoIcon, SearchIcon, SettingsIcon } from '../shared/Icons';
+import { Icon } from '../shared/Icon';
 
 import type { ChangeEvent, JSX, ReactNode } from 'react';
 import type { ViewType } from '../../app/types';
@@ -13,10 +13,7 @@ interface NavButtonProps {
 
 const NavButton = memo(({ icon, onClick }: NavButtonProps): JSX.Element => {
   return (
-    <button
-      className="cursor-pointer rounded-lg p-2 text-slate-500 transition-all duration-200 ease-in-out hover:scale-110 hover:bg-slate-100 hover:text-slate-800 active:scale-95"
-      onClick={onClick}
-    >
+    <button className="btn-nav" onClick={onClick}>
       {icon}
     </button>
   );
@@ -139,19 +136,19 @@ export const Header = memo(
 
     return (
       <header className="relative z-20 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white p-3 md:flex-nowrap md:justify-center">
-        <div className="flex items-center space-x-2 md:absolute md:left-3 md:top-1/2 md:-translate-y-1/2">
-          <LogoIcon className="h-6 w-6 text-slate-800" />
-          <h1 className="text-xl font-bold text-slate-800">Rekishi</h1>
+        <div className="logo-group">
+          <Icon name="History" className="icon-lg text-slate-800" />
+          <h1 className="logo-text">Rekishi</h1>
         </div>
 
         <div className="order-last flex w-full grow items-center gap-2 md:order-0 md:w-auto md:grow-0">
-          <div className="relative max-w-lg grow">
+          <div className="search-container">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2">
-              <SearchIcon className="h-4 w-4 text-slate-400" />
+              <Icon name="Search" className="icon-sm text-slate-400" />
             </div>
             <input
               ref={searchInputRef}
-              className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-7 pr-7 text-sm text-slate-900 outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
+              className="input-search"
               onChange={handleSearchChange}
               placeholder="Search title or URL"
               type="text"
@@ -159,32 +156,25 @@ export const Header = memo(
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-2">
               {localSearchQuery && (
-                <button
-                  className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
-                  onClick={handleClearSearch}
-                >
-                  <CloseIcon className="h-4 w-4" />
+                <button className="btn-ghost" onClick={handleClearSearch}>
+                  <Icon name="X" className="icon-sm" />
                 </button>
               )}
             </div>
           </div>
           <div>
-            <button
-              ref={calendarButtonRef}
-              className="flex cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 p-2 transition-colors hover:bg-slate-100"
-              onClick={handleToggleCalendar}
-            >
-              <span className="text-sm text-slate-800">{formattedDate}</span>
-              <CalendarIcon className="h-4 w-4 text-slate-400" />
+            <button ref={calendarButtonRef} className="btn-secondary flex items-center space-x-2 p-2" onClick={handleToggleCalendar}>
+              <span className="txt-main text-slate-800">{formattedDate}</span>
+              <Icon name="Calendar" className="icon-sm text-slate-400" />
             </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2">
-          <NavButton icon={<DevicesIcon className="h-5 w-5" />} onClick={handleOpenDevices} />
-          <NavButton icon={<BlacklistDomainIcon className="h-5 w-5" />} onClick={handleOpenBlacklist} />
-          <NavButton icon={<ExportIcon className="h-5 w-5" />} onClick={handleOpenExport} />
-          <NavButton icon={<SettingsIcon className="h-5 w-5" />} onClick={handleOpenSettings} />
+        <div className="nav-group">
+          <NavButton icon={<Icon name="Smartphone" className="icon-md" />} onClick={handleOpenDevices} />
+          <NavButton icon={<Icon name="Link2Off" className="icon-md" />} onClick={handleOpenBlacklist} />
+          <NavButton icon={<Icon name="Download" className="icon-md" />} onClick={handleOpenExport} />
+          <NavButton icon={<Icon name="Settings" className="icon-md" />} onClick={handleOpenSettings} />
         </div>
 
         <CalendarPopover

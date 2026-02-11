@@ -9,7 +9,7 @@ import { useHistoryStore } from '../../stores/useHistoryStore';
 import { useToastStore } from '../../stores/useToastStore';
 import { formatDayHeader } from '../../utilities/dateUtil';
 import { getHostnameFromUrl } from '../../utilities/urlUtil';
-import { SearchIcon } from '../shared/Icons';
+import { Icon } from '../shared/Icon';
 import { HistoryItemGroup } from './HistoryItemGroup';
 import { HistoryItemHeader } from './HistoryItemHeader';
 import { HistoryViewGroupSkeleton } from './HistoryViewSkeleton';
@@ -56,7 +56,7 @@ export const HistoryView = memo(
     const handleOpenDeleteSelectedModal = useCallback((): void => {
       if (selectedItems.size > 0) {
         openDeleteModal({
-          confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+          confirmButtonClass: 'btn-danger-large',
           confirmText: `Delete ${selectedItems.size} items`,
           message: (
             <>
@@ -78,7 +78,7 @@ export const HistoryView = memo(
     const handleOpenDeleteSearchModal = useCallback((): void => {
       if (historyItems.length > 0) {
         openDeleteModal({
-          confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+          confirmButtonClass: 'btn-danger-large',
           confirmText: `Delete ${historyItems.length} items`,
           message: (
             <>
@@ -101,7 +101,7 @@ export const HistoryView = memo(
       (items: readonly ChromeHistoryItem[], type: 'day' | 'hour'): void => {
         if (items.length > 0) {
           openDeleteModal({
-            confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+            confirmButtonClass: 'btn-danger-large',
             confirmText: `Delete ${items.length} items`,
             message: (
               <>
@@ -123,7 +123,7 @@ export const HistoryView = memo(
     const handleDeleteItemRequest = useCallback(
       (item: ChromeHistoryItem): void => {
         openDeleteModal({
-          confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+          confirmButtonClass: 'btn-danger-large',
           confirmText: 'Delete',
           message: (
             <>
@@ -145,7 +145,7 @@ export const HistoryView = memo(
         const hostname = getHostnameFromUrl(item.url);
         if (hostname) {
           openBlacklistModal({
-            confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+            confirmButtonClass: 'btn-danger-large',
             confirmText: 'Blacklist',
             message: (
               <>
@@ -227,10 +227,10 @@ export const HistoryView = memo(
 
     if (dailyGroups.length === 0 && !isLoadingMore) {
       return (
-        <div className="flex h-full flex-col items-center justify-center p-3 text-center text-slate-500">
-          <SearchIcon className="mb-2 h-12 w-12 text-slate-400" />
-          <h2 className="text-xl font-semibold">No History Found</h2>
-          <p className="mt-2">Your browsing history for the selected period is empty.</p>
+        <div className="centered-view">
+          <Icon name="Search" className="mb-2 icon-xl text-slate-400" />
+          <h2 className="text-xl txt-highlight">No History Found</h2>
+          <p className="mt-2 txt-muted">Your browsing history for the selected period is empty.</p>
         </div>
       );
     }
@@ -238,7 +238,7 @@ export const HistoryView = memo(
     return (
       <div className="relative">
         {stickyDayGroup && (
-          <div className="sticky top-0 z-10 bg-slate-50/95 px-3 pt-3 backdrop-blur-sm">
+          <div className="sticky-header">
             <HistoryItemHeader
               dayHeaderText={`${formatDayHeader(stickyDayGroup.date)}${stickyState.hourText ? ` ${stickyState.hourText}` : ''}`}
               dayItems={stickyHeaderData.items}
@@ -255,7 +255,7 @@ export const HistoryView = memo(
             <hr className="mt-3 border-slate-200" />
           </div>
         )}
-        <div className="space-y-3 p-3">
+        <div className="layout-stack-md p-3">
           {dailyGroups.map((dayGroup) => {
             const dayKey = dayGroup.date.toISOString();
             const dayHeaderText = formatDayHeader(dayGroup.date);
@@ -283,7 +283,7 @@ export const HistoryView = memo(
                   />
                   <hr className="mt-3 mb-3 border-slate-200" />
                 </div>
-                <div className="space-y-2">
+                <div className="layout-stack-sm">
                   {dayGroup.hourlyGroups.map((group) => {
                     const isHourHeaderCovered = stickyState.dayKey === dayKey && stickyState.hourText === group.time;
 

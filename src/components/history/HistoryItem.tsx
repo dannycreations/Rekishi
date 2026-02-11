@@ -4,7 +4,7 @@ import { useHistoryStore } from '../../stores/useHistoryStore';
 import { useToastStore } from '../../stores/useToastStore';
 import { isPotentialRegex } from '../../utilities/blacklistUtil';
 import { getHostnameFromUrl } from '../../utilities/urlUtil';
-import { CheckIcon, ExternalLinkIcon, GlobeIcon } from '../shared/Icons';
+import { Icon } from '../shared/Icon';
 import { HistoryItemAction } from './HistoryItemAction';
 
 import type { JSX, MouseEvent } from 'react';
@@ -129,27 +129,18 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
   );
 
   return (
-    <div
-      className={`group flex cursor-pointer items-center rounded-md px-2 py-1 transition-colors duration-200 ${
-        isChecked ? 'bg-slate-100' : 'hover:bg-white'
-      }`}
-      onClick={handleToggle}
-    >
+    <div className={`group item-list ${isChecked ? 'item-list-selected' : 'item-list-hover'}`} onClick={handleToggle}>
       <div className="relative mr-2 flex h-4 w-4 shrink-0 select-none items-center justify-center">
-        <div
-          className={`flex h-4 w-4 items-center justify-center rounded border-2 transition-colors duration-200 ${
-            isChecked ? 'border-slate-800 bg-slate-800' : 'border-slate-300 group-hover:border-slate-400'
-          }`}
-        >
-          {isChecked && <CheckIcon className="h-2.5 w-2.5 text-white" />}
+        <div className={`checkbox-custom ${isChecked ? 'border-slate-800 bg-slate-800' : 'border-slate-300 group-hover:border-slate-400'}`}>
+          {isChecked && <Icon name="Check" className="icon-xs text-white" />}
         </div>
       </div>
       {faviconError ? (
-        <GlobeIcon className="mr-2 h-5 w-5 shrink-0 text-slate-400" />
+        <Icon name="Globe" className="mr-2 icon-md text-slate-400" />
       ) : (
         <img
           alt=""
-          className="mr-2 h-5 w-5 shrink-0"
+          className="mr-2 icon-md"
           loading="lazy"
           onError={handleFaviconError}
           src={`https://www.google.com/s2/favicons?sz=32&domain_url=${hostname}`}
@@ -157,23 +148,17 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
       )}
       <div className="min-w-0 flex-1 truncate" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center">
-          <a
-            className="truncate text-sm font-semibold text-slate-700 hover:underline"
-            href={url}
-            onClick={(e) => e.stopPropagation()}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+          <a className="link-standard" href={url} onClick={(e) => e.stopPropagation()} rel="noopener noreferrer" target="_blank">
             <HistoryHighlight text={title || url} highlight={shouldHighlight ? searchQuery : ''} />
           </a>
-          <ExternalLinkIcon className="ml-1 h-3.5 w-3.5 shrink-0 text-slate-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+          <Icon name="ExternalLink" className="ml-1 icon-xs text-slate-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
         </div>
-        <p className="truncate text-xs text-slate-500">
+        <p className="truncate txt-muted">
           <HistoryHighlight text={url} highlight={shouldHighlight ? searchQuery : ''} />
         </p>
       </div>
       <div className="relative ml-2 flex h-6 w-32 shrink-0 items-center justify-end">
-        <span className="text-right text-xs text-slate-500 group-hover:hidden">{visitTime}</span>
+        <span className="text-right txt-muted group-hover:hidden">{visitTime}</span>
         <HistoryItemAction
           isCopied={isCopied}
           onBlacklist={handleBlacklist}

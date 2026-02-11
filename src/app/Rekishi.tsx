@@ -9,7 +9,7 @@ import { HistoryView } from '../components/history/HistoryView';
 import { HistoryViewSkeleton } from '../components/history/HistoryViewSkeleton';
 import { Header } from '../components/main/Header';
 import { SettingView } from '../components/setting/SettingView';
-import { LogoIcon } from '../components/shared/Icons';
+import { Icon } from '../components/shared/Icon';
 import { ScrollToTop } from '../components/shared/ScrollToTop';
 import { ToastContainer } from '../components/shared/Toast';
 import { ViewModal } from '../components/shared/ViewModal';
@@ -83,8 +83,8 @@ export const Rekishi = (): JSX.Element => {
   );
 
   return (
-    <div className="h-screen bg-slate-100 font-sans text-slate-900">
-      <div className="absolute inset-0 mx-auto flex max-w-5xl flex-col overflow-hidden rounded-lg bg-slate-50 shadow-lg sm:inset-6">
+    <div className="app-container">
+      <div className="main-layout">
         <Header
           datesWithHistory={datesWithHistory}
           fetchDatesForMonth={fetchDatesForMonth}
@@ -100,13 +100,13 @@ export const Rekishi = (): JSX.Element => {
           {isLoading ? (
             <HistoryViewSkeleton />
           ) : error ? (
-            <div className="flex h-full items-center justify-center p-3 text-red-500">
+            <div className="layout-flex-center h-full p-3 txt-error">
               <p>Error loading history: {error}</p>
             </div>
           ) : noHistoryEver ? (
-            <div className="flex h-full flex-col items-center justify-center p-3 text-center text-slate-500">
-              <LogoIcon className="mb-2 h-16 w-16 text-slate-400" />
-              <h2 className="text-2xl font-bold text-slate-800">Welcome to Rekishi!</h2>
+            <div className="centered-view">
+              <Icon name="History" className="mb-2 icon-xxl text-slate-400" />
+              <h2 className="text-2xl txt-highlight">Welcome to Rekishi!</h2>
               <p className="mt-2">Start browsing the web to see your history here.</p>
             </div>
           ) : (

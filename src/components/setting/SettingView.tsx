@@ -15,10 +15,10 @@ interface SettingRowProps {
 
 const SettingRow = memo(({ title, description, children }: SettingRowProps): JSX.Element => {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-2 py-1">
+    <div className="layout-flex-between rounded-lg border border-slate-200 bg-white px-2 py-1">
       <div>
-        <h4 className="font-semibold text-slate-800">{title}</h4>
-        <p className="text-sm text-slate-500">{description}</p>
+        <h4 className="txt-highlight">{title}</h4>
+        <p className="txt-muted">{description}</p>
       </div>
       <div>{children}</div>
     </div>
@@ -33,8 +33,8 @@ interface SettingSectionProps {
 const SettingSection = memo(({ title, children }: SettingSectionProps): JSX.Element => {
   return (
     <div>
-      <h3 className="mb-2 text-lg font-bold text-slate-800">{title}</h3>
-      <div className="space-y-1">{children}</div>
+      <h3 className="mb-2 txt-title-lg">{title}</h3>
+      <div className="layout-stack-sm">{children}</div>
     </div>
   );
 });
@@ -62,7 +62,7 @@ export const SettingView = (): JSX.Element => {
 
   const handleOpenClearHistoryModal = useCallback((): void => {
     openClearHistoryModal({
-      confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+      confirmButtonClass: 'btn-danger-large',
       confirmText: 'Yes, Clear All Data',
       message: (
         <>
@@ -77,11 +77,11 @@ export const SettingView = (): JSX.Element => {
 
   return (
     <>
-      <div className="space-y-3">
+      <div className="layout-stack-md">
         <SettingSection title="Data">
           <SettingRow description="How long to keep your browsing history." title="History Retention">
             <select
-              className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
+              className="input-base px-2 py-1"
               onChange={(e: ChangeEvent<HTMLSelectElement>) => setDataRetention(e.target.value)}
               value={dataRetention}
             >
@@ -95,16 +95,13 @@ export const SettingView = (): JSX.Element => {
         </SettingSection>
 
         <SettingSection title="Actions">
-          <div className="flex items-center justify-between rounded-lg border border-red-200 bg-white p-2">
+          <div className="layout-flex-between rounded-lg border border-red-200 bg-white p-2">
             <div>
               <h4 className="font-semibold text-red-800">Clear All History</h4>
               <p className="text-sm text-red-600">Permanently delete all your browsing data.</p>
             </div>
             <div>
-              <button
-                className="cursor-pointer rounded-lg bg-red-600 p-2 text-sm font-semibold text-white transition-colors hover:bg-red-700"
-                onClick={handleOpenClearHistoryModal}
-              >
+              <button className="btn-primary bg-red-600 hover:bg-red-700" onClick={handleOpenClearHistoryModal}>
                 Clear Data
               </button>
             </div>

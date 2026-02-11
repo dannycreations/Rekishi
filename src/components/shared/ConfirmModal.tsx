@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { CloseIcon } from './Icons';
+import { Icon } from './Icon';
 
 import type { MouseEvent, ReactNode, ReactPortal } from 'react';
 
@@ -25,7 +25,7 @@ export const ConfirmModal = memo(
     message,
     confirmText = 'Confirm',
     cancelText = 'Cancel',
-    confirmButtonClass = 'bg-slate-800 hover:bg-slate-700',
+    confirmButtonClass = '',
   }: ConfirmModalProps): ReactPortal | null => {
     const modalRef = useRef<HTMLDivElement>(null);
     const [isMounted, setIsMounted] = useState(isOpen);
@@ -44,39 +44,26 @@ export const ConfirmModal = memo(
     }
 
     const modalContent = (
-      <div
-        className={`fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-opacity duration-200 ${
-          isOpen ? 'opacity-100' : 'opacity-0'
-        }`}
-        onClick={onClose}
-      >
+      <div className={`modal-backdrop ${isOpen ? 'opacity-100' : 'opacity-0'}`} onClick={onClose}>
         <div
           ref={modalRef}
-          className={`relative mx-3 w-full max-w-md rounded-lg bg-white p-3 shadow-xl outline-none transition-all duration-200 ${
-            isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
-          }`}
+          className={`modal-container max-w-md p-3 ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
           onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
         >
           <div className="flex items-start justify-between">
-            <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-            <button className="cursor-pointer rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-800" onClick={onClose}>
-              <CloseIcon className="h-5 w-5" />
+            <h3 className="modal-title">{title}</h3>
+            <button className="btn-ghost" onClick={onClose}>
+              <Icon name="X" className="icon-md" />
             </button>
           </div>
           <div className="mt-2">
-            <div className="text-sm text-slate-600">{message}</div>
+            <div className="txt-main text-slate-600">{message}</div>
           </div>
           <div className="mt-3 flex justify-end space-x-2">
-            <button
-              className="cursor-pointer rounded-lg border border-slate-300 bg-white p-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-              onClick={onClose}
-            >
+            <button className="btn-secondary" onClick={onClose}>
               {cancelText}
             </button>
-            <button
-              className={`cursor-pointer rounded-lg p-2 text-sm font-semibold text-white transition-colors ${confirmButtonClass}`}
-              onClick={onConfirm}
-            >
+            <button className={`btn-primary ${confirmButtonClass}`} onClick={onConfirm}>
               {confirmText}
             </button>
           </div>

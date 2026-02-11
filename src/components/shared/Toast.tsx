@@ -2,15 +2,15 @@ import { memo, useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useToastStore } from '../../stores/useToastStore';
-import { CloseIcon, ErrorIcon, InfoIcon, SuccessIcon } from './Icons';
+import { Icon } from './Icon';
 
 import type { JSX } from 'react';
 import type { Toast as ToastItem } from '../../stores/useToastStore';
 
 const TOAST_ICONS: Record<ToastItem['type'], JSX.Element> = {
-  success: <SuccessIcon className="h-5 w-5 text-green-500" />,
-  error: <ErrorIcon className="h-5 w-5 text-red-500" />,
-  info: <InfoIcon className="h-5 w-5 text-slate-500" />,
+  success: <Icon name="CheckCircle" className="icon-md text-green-500" />,
+  error: <Icon name="AlertCircle" className="icon-md text-red-500" />,
+  info: <Icon name="Info" className="icon-md text-slate-500" />,
 };
 
 const Toast = memo(({ toast, onRemove }: { readonly toast: ToastItem; readonly onRemove: (id: number) => void }): JSX.Element => {
@@ -40,11 +40,7 @@ const Toast = memo(({ toast, onRemove }: { readonly toast: ToastItem; readonly o
   }, [handleRemove]);
 
   return (
-    <div
-      className={`pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 ${
-        isExiting ? 'toast-animate-exit' : 'toast-animate-enter'
-      }`}
-    >
+    <div className={`toast-card ${isExiting ? 'toast-animate-exit' : 'toast-animate-enter'}`}>
       <div className="p-3">
         <div className="flex items-start">
           <div className="flex-shrink-0">{TOAST_ICONS[toast.type]}</div>
@@ -56,7 +52,7 @@ const Toast = memo(({ toast, onRemove }: { readonly toast: ToastItem; readonly o
               className="inline-flex rounded-md bg-white text-slate-400 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
               onClick={handleRemove}
             >
-              <CloseIcon className="h-5 w-5" />
+              <Icon name="X" className="icon-md" />
             </button>
           </div>
         </div>
@@ -73,8 +69,8 @@ export const ToastContainer = memo((): JSX.Element | null => {
   }
 
   const portalContent = (
-    <div className="pointer-events-none fixed inset-0 z-[100] flex items-end p-3 sm:items-start">
-      <div className="flex w-full flex-col items-center space-y-3 sm:items-end">
+    <div className="toast-container">
+      <div className="flex w-full flex-col items-center layout-stack-sm sm:items-end">
         {toasts.map((toast) => (
           <Toast key={toast.id} onRemove={removeToast} toast={toast} />
         ))}

@@ -5,7 +5,7 @@ import { usePopover } from '../../hooks/usePopover';
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
 import { useToastStore } from '../../stores/useToastStore';
 import { parseInput } from '../../utilities/blacklistUtil';
-import { CloseIcon, QuestionMarkCircleIcon } from '../shared/Icons';
+import { Icon } from '../shared/Icon';
 import { BlacklistItem } from './BlacklistItem';
 
 import type { FormEvent, JSX, ReactNode } from 'react';
@@ -30,7 +30,7 @@ const Tooltip = memo(({ anchorEl, children, onMouseEnter, onMouseLeave }: Toolti
       style={style}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      className="fixed z-[101] w-72 rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600 shadow-lg popover-animate-enter"
+      className="fixed z-[101] w-72 rounded-lg border border-slate-200 bg-white p-3 txt-main shadow-lg popover-animate-enter"
     >
       {children}
     </div>,
@@ -120,13 +120,13 @@ export const BlacklistView = (): JSX.Element => {
   }, []);
 
   return (
-    <div className="space-y-3">
+    <div className="layout-stack-md">
       <div>
         <form className="flex items-center space-x-2" onSubmit={handleAddDomain}>
           <div className="relative grow">
             <input
               autoFocus
-              className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-2 pr-7 text-sm text-slate-900 outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
+              className="input-base pl-2 pr-7"
               onChange={(e) => {
                 setNewDomain(e.target.value);
                 setError(null);
@@ -137,55 +137,47 @@ export const BlacklistView = (): JSX.Element => {
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-2">
               {newDomain && (
-                <button
-                  className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
-                  onClick={() => setNewDomain('')}
-                  type="button"
-                >
-                  <CloseIcon className="h-4 w-4" />
+                <button className="btn-ghost" onClick={() => setNewDomain('')} type="button">
+                  <Icon name="X" className="icon-sm" />
                 </button>
               )}
             </div>
           </div>
-          <button
-            className="cursor-pointer rounded-lg bg-slate-800 p-2 text-sm font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-500"
-            disabled={!newDomain.trim()}
-            type="submit"
-          >
+          <button className="btn-primary" disabled={!newDomain.trim()} type="submit">
             Add
           </button>
         </form>
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-2 txt-error">{error}</p>}
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
-        <div className="mb-2 flex items-center justify-between">
+      <div className="card p-2">
+        <div className="mb-2 layout-flex-between">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-slate-800">Blacklisted Items ({sortedItems.length})</h3>
+            <h3 className="txt-title-sm">Blacklisted Items ({sortedItems.length})</h3>
             <button
               ref={tooltipAnchorRef}
-              className="cursor-pointer text-slate-400 hover:text-slate-600"
+              className="btn-base text-slate-400 hover:text-slate-600"
               onMouseEnter={handleTooltipOpen}
               onMouseLeave={handleTooltipClose}
             >
-              <QuestionMarkCircleIcon className="h-5 w-5" />
+              <Icon name="HelpCircle" className="icon-md" />
             </button>
           </div>
         </div>
         {sortedItems.length > 0 ? (
-          <ul className="space-y-1">
+          <ul className="layout-stack-sm">
             {sortedItems.map((item) => (
               <BlacklistItem key={item.value} item={item} onEdit={handleEditDomain} onRemove={handleRemoveDomain} />
             ))}
           </ul>
         ) : (
-          <p className="py-3 text-center text-sm text-slate-500">Your blacklist is empty. Add domains using the form above.</p>
+          <p className="py-3 text-center txt-muted">Your blacklist is empty. Add domains using the form above.</p>
         )}
       </div>
 
       {isTooltipOpen && (
         <Tooltip anchorEl={tooltipAnchorRef.current} onMouseEnter={handleTooltipOpen} onMouseLeave={handleTooltipClose}>
-          <h4 className="mb-2 font-semibold text-slate-800">Supported Patterns</h4>
+          <h4 className="mb-2 txt-title-sm">Supported Patterns</h4>
           <ul className="list-inside list-disc space-y-2 text-xs">
             <li>
               <strong>Exact domain:</strong> <code className="rounded bg-slate-100 p-1">example.com</code>
@@ -200,7 +192,7 @@ export const BlacklistView = (): JSX.Element => {
               <strong>Regular expression:</strong> <code className="rounded bg-slate-100 p-1">/google\.com/</code>
             </li>
           </ul>
-          <p className="mt-2 text-xs text-slate-500">Regex and path patterns match against the full URL (e.g., `domain.com/path`).</p>
+          <p className="mt-2 txt-muted">Regex and path patterns match against the full URL (e.g., `domain.com/path`).</p>
         </Tooltip>
       )}
     </div>

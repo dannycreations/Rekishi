@@ -3,8 +3,6 @@ import { createRoot } from 'react-dom/client';
 
 import { Rekishi } from './app/Rekishi';
 
-import './index.css';
-
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {

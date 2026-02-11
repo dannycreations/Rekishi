@@ -1,3 +1,5 @@
+import './styles.css';
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BlacklistView } from '../components/blacklist/BlacklistView';

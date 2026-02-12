@@ -157,7 +157,6 @@
 
   .hidden-displaced {
     visibility: hidden;
-    height: 0;
   }
 }
 
@@ -355,7 +354,7 @@
   }
 
   .sticky-header {
-    @apply sticky top-0 z-10 bg-background-soft/95 px-3 pt-3 backdrop-blur-sm;
+    @apply sticky top-0 z-10 bg-background-soft/95 backdrop-blur-sm;
   }
 
   /* Items & Lists */

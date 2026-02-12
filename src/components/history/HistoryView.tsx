@@ -1,12 +1,9 @@
-import { clsx } from 'clsx';
 import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { useConfirm } from '../../hooks/useConfirm';
 import { useHistoryGroup } from '../../hooks/useHistoryGroup';
 import { useSelection } from '../../hooks/useSelection';
-import { useStickyHeader } from '../../hooks/useStickyHeader';
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
-import { useHistoryStore } from '../../stores/useHistoryStore';
 import { useToastStore } from '../../stores/useToastStore';
 import { getHostnameFromUrl } from '../../utilities/commonUtil';
 import { formatDayHeader } from '../../utilities/dateUtil';
@@ -35,9 +32,8 @@ export const HistoryView = memo(
     const { Modal: BlacklistModal, openModal: openBlacklistModal } = useConfirm();
     const addToast = useToastStore((state) => state.addToast);
     const { addDomain } = useBlacklistStore();
-    const { searchQuery } = useHistoryStore((state) => ({ searchQuery: state.searchQuery }));
 
-    const { dailyGroups, dailyGroupsMap, itemLocator } = useHistoryGroup(historyItems);
+    const { dailyGroups, itemLocator } = useHistoryGroup(historyItems);
 
     const selectionCounts = useMemo(() => {
       const counts = {
@@ -101,18 +97,6 @@ export const HistoryView = memo(
       });
     }, [selectedItems, deleteHistoryItems, clearSelection, openDeleteConfirm]);
 
-    const handleOpenDeleteSearchModal = useCallback((): void => {
-      openDeleteConfirm({
-        count: historyItems.length,
-        onConfirm: async () => {
-          await deleteHistoryItems(historyItems.map((item) => item.id));
-          clearSelection();
-        },
-        title: 'Delete Search Results',
-        typeText: `all ${historyItems.length} items from this search`,
-      });
-    }, [historyItems, deleteHistoryItems, clearSelection, openDeleteConfirm]);
-
     const handleDeleteItemRequest = useCallback(
       (item: ChromeHistoryItem): void => {
         openDeleteConfirm({
@@ -148,38 +132,6 @@ export const HistoryView = memo(
       },
       [addDomain, addToast, openBlacklistModal],
     );
-
-    const stickyState = useStickyHeader(scrollContainerRef, dailyGroups);
-
-    const stickyDayGroup = useMemo(() => {
-      if (!stickyState.dayKey) {
-        return null;
-      }
-      return dailyGroupsMap.get(stickyState.dayKey) ?? null;
-    }, [stickyState.dayKey, dailyGroupsMap]);
-
-    const stickyHeaderData = useMemo(() => {
-      if (!stickyDayGroup) {
-        return { items: [], selectedCount: 0 };
-      }
-      const dayKey = stickyDayGroup.date.toISOString();
-
-      if (stickyState.hourText) {
-        const hourlyGroup = stickyDayGroup.hourlyGroupsMap.get(stickyState.hourText);
-        if (hourlyGroup) {
-          const hourKey = `${dayKey}_${stickyState.hourText}`;
-          return {
-            items: hourlyGroup.items,
-            selectedCount: selectionCounts.byHour.get(hourKey) || 0,
-          };
-        }
-      }
-
-      return {
-        items: stickyDayGroup.items,
-        selectedCount: selectionCounts.byDay.get(dayKey) || 0,
-      };
-    }, [stickyDayGroup, stickyState.hourText, selectionCounts]);
 
     const observer = useRef<IntersectionObserver | null>(null);
     const lastElementRef = useCallback(
@@ -221,34 +173,15 @@ export const HistoryView = memo(
     }
 
     return (
-      <div className="relative">
-        {stickyDayGroup && (
-          <div className="sticky-header">
-            <HistoryItemHeader
-              dayHeaderText={`${formatDayHeader(stickyDayGroup.date)}${stickyState.hourText ? ` ${stickyState.hourText}` : ''}`}
-              dayItems={stickyHeaderData.items}
-              isHourHeader={!!stickyState.hourText}
-              isSearchMode={!!searchQuery}
-              onDeleteAll={() => handleOpenDeleteAllModal(stickyHeaderData.items, stickyState.hourText ? 'hour' : 'day')}
-              onDeleteSearch={handleOpenDeleteSearchModal}
-              onDeleteSelected={handleOpenDeleteSelectedModal}
-              onToggleDaySelection={() => toggleDaySelection(stickyHeaderData.items)}
-              selectedItemsCount={stickyHeaderData.selectedCount}
-              totalSearchItemsCount={historyItems.length}
-              totalSelectedCount={selectedItems.size}
-            />
-            <hr className="border-line" />
-          </div>
-        )}
-        <div className="layout-stack-md p-3">
+      <>
+        <div className="p-3 pt-0">
           {dailyGroups.map((dayGroup) => {
             const dayKey = dayGroup.date.toISOString();
             const dayHeaderText = formatDayHeader(dayGroup.date);
-            const isDayHeaderCovered = stickyState.dayKey === dayKey;
 
             return (
               <section key={dayKey}>
-                <div data-day-key={dayKey} className={clsx(isDayHeaderCovered && 'hidden-displaced')}>
+                <div data-day-key={dayKey} className="sticky-header pt-3">
                   <HistoryItemHeader
                     dayHeaderText={dayHeaderText}
                     dayItems={dayGroup.items}
@@ -260,42 +193,38 @@ export const HistoryView = memo(
                     totalSearchItemsCount={historyItems.length}
                     totalSelectedCount={selectedItems.size}
                   />
-                  <hr className="my-2 border-line" />
+                  <hr className="mx-2 mt-3 border-line" />
                 </div>
-                <div className="layout-stack-sm">
-                  {dayGroup.hourlyGroups.map((group) => {
-                    const isHourHeaderCovered = stickyState.dayKey === dayKey && stickyState.hourText === group.time;
-
-                    return (
-                      <div key={group.time} data-day-key={dayKey} data-hour-key={group.time}>
-                        <HistoryItemGroup
-                          group={{ ...group, items: group.items }}
-                          isSticky={isHourHeaderCovered}
-                          onBlacklistRequest={handleBlacklistRequest}
-                          onDeleteHourRequest={(items) => handleOpenDeleteAllModal(items, 'hour')}
-                          onDeleteRequest={handleDeleteItemRequest}
-                          onToggleSelection={toggleSelection}
-                          selectedItems={selectedItems}
-                        />
-                      </div>
-                    );
-                  })}
+                <div className="layout-stack-sm mt-3">
+                  {dayGroup.hourlyGroups.map((group) => (
+                    <div key={group.time} data-day-key={dayKey} data-hour-key={group.time}>
+                      <HistoryItemGroup
+                        group={{ ...group, items: group.items }}
+                        isSticky={false}
+                        onBlacklistRequest={handleBlacklistRequest}
+                        onDeleteHourRequest={(items) => handleOpenDeleteAllModal(items, 'hour')}
+                        onDeleteRequest={handleDeleteItemRequest}
+                        onToggleSelection={toggleSelection}
+                        selectedItems={selectedItems}
+                      />
+                    </div>
+                  ))}
                 </div>
               </section>
             );
           })}
+
+          <div ref={lastElementRef} className="h-1" />
+
+          {isLoadingMore && (
+            <div className="p-3">
+              <HistoryViewGroupSkeleton />
+            </div>
+          )}
         </div>
-
-        <div ref={lastElementRef} className="h-1" />
-
-        {isLoadingMore && (
-          <div className="p-3">
-            <HistoryViewGroupSkeleton />
-          </div>
-        )}
         <DeleteModal />
         <BlacklistModal />
-      </div>
+      </>
     );
   },
 );

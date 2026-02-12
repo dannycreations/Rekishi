@@ -1,4 +1,3 @@
-import { clsx } from 'clsx';
 import { memo, useCallback } from 'react';
 
 import { DeleteButton } from '../shared/DeleteButton';
@@ -18,22 +17,14 @@ interface HistoryItemGroupProps {
 }
 
 export const HistoryItemGroup = memo(
-  ({
-    group,
-    isSticky,
-    onBlacklistRequest,
-    onDeleteRequest,
-    onDeleteHourRequest,
-    onToggleSelection,
-    selectedItems,
-  }: HistoryItemGroupProps): JSX.Element => {
+  ({ group, onBlacklistRequest, onDeleteRequest, onDeleteHourRequest, onToggleSelection, selectedItems }: HistoryItemGroupProps): JSX.Element => {
     const handleOpenDeleteModal = useCallback((): void => {
       onDeleteHourRequest(group.items);
     }, [group.items, onDeleteHourRequest]);
 
     return (
       <section>
-        <div className={clsx('section-header', isSticky && 'hidden-displaced')}>
+        <div className="section-header">
           <h2 className="section-title-sm">{group.time}</h2>
           <DeleteButton onClick={handleOpenDeleteModal}>Delete</DeleteButton>
         </div>

@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { useConfirm } from '../../hooks/useConfirm';
@@ -247,7 +248,7 @@ export const HistoryView = memo(
 
             return (
               <section key={dayKey}>
-                <div data-day-key={dayKey} className={isDayHeaderCovered ? 'hidden-displaced' : ''}>
+                <div data-day-key={dayKey} className={clsx(isDayHeaderCovered && 'hidden-displaced')}>
                   <HistoryItemHeader
                     dayHeaderText={dayHeaderText}
                     dayItems={dayGroup.items}

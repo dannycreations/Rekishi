@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import { useHistoryDate } from '../../hooks/useHistoryDate';
@@ -21,10 +22,10 @@ interface RadioCardProps {
 
 const RadioCard = memo(({ checked, value, label, description, onChange }: RadioCardProps): JSX.Element => {
   return (
-    <label className={`radio-card ${checked ? 'radio-card-checked' : ''}`}>
-      <div className={`radio-dot-container ${checked ? 'radio-dot-container-checked' : ''}`}>
+    <label className={clsx('radio-card', checked && 'radio-card-checked')}>
+      <div className={clsx('radio-dot-container', checked && 'radio-dot-container-checked')}>
         <input checked={checked} className="peer sr-only" name="format" onChange={() => onChange(value)} type="radio" value={value} />
-        <div className={`radio-dot ${checked ? 'radio-dot-checked' : ''}`} />
+        <div className={clsx('radio-dot', checked && 'radio-dot-checked')} />
       </div>
       <div>
         <span className="txt-highlight">{label}</span>

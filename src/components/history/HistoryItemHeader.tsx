@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo, useMemo } from 'react';
 
 import { DeleteButton } from '../shared/DeleteButton';
@@ -50,7 +51,7 @@ export const HistoryItemHeader = memo(
       <div className="section-header">
         <div className="flex items-center gap-2">
           <div className="cursor-pointer group/header" onClick={() => onToggleDaySelection(dayItems)}>
-            <div className={`checkbox-custom ${allForDaySelected || someForDaySelected ? 'checkbox-checked' : ''}`}>
+            <div className={clsx('checkbox-custom', (allForDaySelected || someForDaySelected) && 'checkbox-checked')}>
               {allForDaySelected && <Icon name="Check" className="icon-xs text-background" />}
               {someForDaySelected && <div className="h-0.5 w-2 rounded-sm bg-background" />}
             </div>

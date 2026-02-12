@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -44,10 +45,10 @@ export const ConfirmModal = memo(
     }
 
     const modalContent = (
-      <div className={`modal-backdrop ${isOpen ? 'modal-backdrop-open' : 'modal-backdrop-closed'}`} onClick={onClose}>
+      <div className={clsx('modal-backdrop', isOpen ? 'modal-backdrop-open' : 'modal-backdrop-closed')} onClick={onClose}>
         <div
           ref={modalRef}
-          className={`modal-container max-w-md ${isOpen ? 'modal-container-open' : 'modal-container-closed'}`}
+          className={clsx('modal-container max-w-md', isOpen ? 'modal-container-open' : 'modal-container-closed')}
           onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
         >
           <header className="modal-header">
@@ -62,7 +63,7 @@ export const ConfirmModal = memo(
               <button className="btn-secondary" onClick={onClose}>
                 {cancelText}
               </button>
-              <button className={`btn-primary ${confirmButtonClass}`} onClick={onConfirm}>
+              <button className={clsx('btn-primary', confirmButtonClass)} onClick={onConfirm}>
                 {confirmText}
               </button>
             </div>

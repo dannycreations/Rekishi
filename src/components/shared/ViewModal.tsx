@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -39,10 +40,10 @@ export const ViewModal = memo(({ isOpen, onClose, title, children, size = '3xl' 
   }[size];
 
   const modalContent = (
-    <div className={`modal-backdrop ${isOpen ? 'modal-backdrop-open' : 'modal-backdrop-closed'}`} onClick={onClose}>
+    <div className={clsx('modal-backdrop', isOpen ? 'modal-backdrop-open' : 'modal-backdrop-closed')} onClick={onClose}>
       <div
         ref={modalRef}
-        className={`modal-container ${sizeClass} max-h-[90vh] ${isOpen ? 'modal-container-open' : 'modal-container-closed'}`}
+        className={clsx('modal-container', sizeClass, 'max-h-[90vh]', isOpen ? 'modal-container-open' : 'modal-container-closed')}
         onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
       >
         <header className="modal-header">

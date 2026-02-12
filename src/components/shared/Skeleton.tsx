@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo } from 'react';
 
 import type { HTMLAttributes, JSX } from 'react';
@@ -7,5 +8,5 @@ interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const Skeleton = memo(({ className, ...props }: SkeletonProps): JSX.Element => {
-  return <div className={`animate-pulse rounded-md bg-surface-hover ${className ?? ''}`} {...props} />;
+  return <div className={clsx('animate-pulse rounded-md bg-surface-hover', className)} {...props} />;
 });

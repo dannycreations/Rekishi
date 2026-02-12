@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo, useCallback } from 'react';
 
 import { DeleteButton } from '../shared/DeleteButton';
@@ -32,7 +33,7 @@ export const HistoryItemGroup = memo(
 
     return (
       <section>
-        <div className={`section-header ${isSticky ? 'hidden-displaced' : ''}`}>
+        <div className={clsx('section-header', isSticky && 'hidden-displaced')}>
           <h2 className="section-title-sm">{group.time}</h2>
           <DeleteButton onClick={handleOpenDeleteModal}>Delete</DeleteButton>
         </div>

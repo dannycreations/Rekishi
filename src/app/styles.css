@@ -206,7 +206,7 @@
 
   /* Buttons */
   .btn-primary {
-    @apply cursor-pointer transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 rounded-lg bg-primary p-2 text-sm font-semibold text-background hover:opacity-90 active:scale-95;
+    @apply cursor-pointer transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 rounded-lg border border-line bg-background-soft p-2 text-sm font-semibold text-primary hover:opacity-90 active:scale-95;
   }
 
   .btn-secondary {
@@ -298,7 +298,7 @@
 
   /* Utility Components */
   .scroll-to-top {
-    @apply fixed bottom-3 right-3 z-10 cursor-pointer transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 rounded-full bg-primary p-3 text-background shadow-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-text-tertiary/20;
+    @apply fixed bottom-3 right-3 z-10 cursor-pointer transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center rounded-full border border-line bg-background-soft p-3 text-primary shadow-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-text-tertiary/20;
   }
 
   .sticky-header {
@@ -365,7 +365,7 @@
   }
 
   .checkbox-custom.checkbox-checked {
-    @apply border-primary bg-primary;
+    @apply border-primary bg-background-soft;
   }
 
   .item-list:hover .checkbox-custom,

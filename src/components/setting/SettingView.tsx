@@ -105,7 +105,7 @@ export const SettingView = (): JSX.Element => {
         </SettingSection>
 
         <SettingSection title="Actions">
-          <div className="layout-flex-between card border-danger/20">
+          <div className="layout-flex-between card border-danger/10">
             <div>
               <h4 className="txt-highlight text-danger">Clear All History</h4>
               <p className="txt-main text-danger/80">Permanently delete all your browsing data.</p>

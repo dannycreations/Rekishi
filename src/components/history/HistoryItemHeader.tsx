@@ -52,8 +52,8 @@ export const HistoryItemHeader = memo(
         <div className="flex items-center gap-2">
           <div className="cursor-pointer group/header" onClick={() => onToggleDaySelection(dayItems)}>
             <div className={clsx('checkbox-custom', (allForDaySelected || someForDaySelected) && 'checkbox-checked')}>
-              {allForDaySelected && <Icon name="Check" className="icon-xs text-background" />}
-              {someForDaySelected && <div className="h-0.5 w-2 rounded-sm bg-background" />}
+              {allForDaySelected && <Icon name="Check" className="icon-xs text-primary" />}
+              {someForDaySelected && <div className="h-0.5 w-2 rounded-sm bg-primary" />}
             </div>
           </div>
           <h2 className="section-title-lg">{dayHeaderText}</h2>

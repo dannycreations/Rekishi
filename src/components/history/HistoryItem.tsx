@@ -125,7 +125,7 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
     <div className={clsx('group item-list', isChecked ? 'item-list-selected' : 'item-list-hover')} onClick={handleToggle}>
       <div className="layout-flex-center">
         <div className={clsx('checkbox-custom', isChecked ? 'checkbox-checked' : 'checkbox-unchecked')}>
-          {isChecked && <Icon name="Check" className="icon-xs text-background" />}
+          {isChecked && <Icon name="Check" className="icon-xs text-primary" />}
         </div>
       </div>
       {faviconError ? (

@@ -150,8 +150,11 @@ export const CalendarPopover = memo(
                 if (isFuture || isBeforeMin || isAfterMax) {
                   return (
                     <div key={date.toISOString()} className="flex items-center justify-center py-1">
-                      <button disabled className="h-8 w-8 cursor-not-allowed rounded-full text-sm text-text-tertiary/50">
-                        {date.getDate()}
+                      <button
+                        disabled
+                        className="flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-full text-sm leading-none text-text-tertiary/50"
+                      >
+                        <span className="translate-y-[0.5px]">{date.getDate()}</span>
                       </button>
                     </div>
                   );
@@ -166,16 +169,16 @@ export const CalendarPopover = memo(
                   <div key={date.toISOString()} className="flex items-center justify-center py-1">
                     <button
                       disabled={!hasHistory}
-                      className={`h-8 w-8 cursor-pointer rounded-full text-sm transition-colors ${
+                      className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-sm leading-none transition-colors ${
                         isSelected
-                          ? 'bg-primary font-semibold text-background hover:opacity-90'
+                          ? 'border border-line bg-background-soft font-semibold text-primary hover:opacity-90'
                           : hasHistory
                             ? 'text-text-secondary hover:bg-surface-hover'
                             : 'cursor-not-allowed text-text-tertiary/50'
-                      } ${!isSelected && isToday && hasHistory ? 'ring-1 ring-text-tertiary/50' : ''}`}
+                      } ${!isSelected && isToday && hasHistory ? 'border border-line' : ''}`}
                       onClick={() => onDateSelect(date)}
                     >
-                      {date.getDate()}
+                      <span className="translate-y-[0.5px]">{date.getDate()}</span>
                     </button>
                   </div>
                 );

@@ -8,9 +8,9 @@ import type { JSX } from 'react';
 import type { Toast as ToastItem } from '../../stores/useToastStore';
 
 const TOAST_ICONS: Record<ToastItem['type'], JSX.Element> = {
-  success: <Icon name="CheckCircle" className="icon-md text-green-500" />,
-  error: <Icon name="AlertCircle" className="icon-md text-red-500" />,
-  info: <Icon name="Info" className="icon-md text-slate-500" />,
+  success: <Icon name="CheckCircle" className="icon-md icon-success" />,
+  error: <Icon name="AlertCircle" className="icon-md icon-error" />,
+  info: <Icon name="Info" className="icon-md icon-info" />,
 };
 
 const Toast = memo(({ toast, onRemove }: { readonly toast: ToastItem; readonly onRemove: (id: number) => void }): JSX.Element => {

@@ -119,16 +119,16 @@ export const CalendarPopover = memo(
         ) : (
           <>
             <div className="mb-2 layout-flex-between">
-              <button className="btn-ghost rounded-full p-2" onClick={handlePrevMonth}>
+              <button className="btn-ghost p-2" onClick={handlePrevMonth}>
                 <Icon name="ChevronLeft" className="icon-md" />
               </button>
               <div className="flex items-center gap-2">
                 <span className="txt-title-sm">{monthName}</span>
-                <button className="btn-base rounded-md bg-slate-100 p-1 txt-label txt-highlight hover:bg-slate-200" onClick={handleGoToToday}>
+                <button className="btn-secondary p-1 txt-label" onClick={handleGoToToday}>
                   Today
                 </button>
               </div>
-              <button className="btn-ghost rounded-full p-2 disabled:text-slate-300" disabled={isCurrentMonth} onClick={handleNextMonth}>
+              <button className="btn-ghost p-2 disabled:text-slate-300" disabled={isCurrentMonth} onClick={handleNextMonth}>
                 <Icon name="ChevronRight" className="icon-md" />
               </button>
             </div>

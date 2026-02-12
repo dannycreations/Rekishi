@@ -212,7 +212,7 @@ export const HistoryView = memo(
     if (dailyGroups.length === 0 && !isLoadingMore) {
       return (
         <div className="centered-view">
-          <Icon name="Search" className="mb-2 icon-xl text-slate-400" />
+          <Icon name="Search" className="centered-view-icon icon-xl" />
           <h2 className="text-xl txt-highlight">No History Found</h2>
           <p className="mt-2 txt-muted">Your browsing history for the selected period is empty.</p>
         </div>

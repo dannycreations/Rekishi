@@ -51,7 +51,7 @@ export const ViewModal = memo(({ isOpen, onClose, title, children, size = '3xl' 
             <Icon name="X" className="icon-md" />
           </button>
         </header>
-        <div className="flex-1 overflow-y-auto p-3">{children}</div>
+        <div className="modal-body">{children}</div>
       </div>
     </div>
   );

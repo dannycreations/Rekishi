@@ -151,6 +151,18 @@
     @apply h-5 w-5 shrink-0;
   }
 
+  .icon-success {
+    @apply text-green-500;
+  }
+
+  .icon-error {
+    @apply text-red-500;
+  }
+
+  .icon-info {
+    @apply text-slate-500;
+  }
+
   .icon-lg {
     @apply h-6 w-6 shrink-0;
   }
@@ -192,6 +204,14 @@
     @apply cursor-pointer transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 rounded-lg p-2 text-slate-500 hover:scale-110 hover:bg-slate-100 hover:text-slate-800 active:scale-95;
   }
 
+  .btn-success-ghost {
+    @apply cursor-pointer transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 rounded-md p-1 text-slate-400 hover:bg-green-100 hover:text-green-600 active:scale-90;
+  }
+
+  .btn-danger-ghost {
+    @apply cursor-pointer transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 rounded-md p-1 text-slate-400 hover:bg-red-100 hover:text-red-500 active:scale-90;
+  }
+
   /* Inputs */
   .input-base {
     @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition-colors focus:border-slate-400 focus:ring-2 focus:ring-slate-400;
@@ -216,6 +236,10 @@
 
   .modal-title {
     @apply text-lg font-bold text-slate-800;
+  }
+
+  .modal-body {
+    @apply flex-1 overflow-y-auto p-3;
   }
 
   .popover-container {
@@ -287,6 +311,10 @@
 
   .centered-view {
     @apply flex h-full flex-col items-center justify-center p-3 text-center text-slate-500;
+  }
+
+  .centered-view-icon {
+    @apply mb-2 h-16 w-16 shrink-0 text-slate-400;
   }
 
   /* Custom UI Elements */

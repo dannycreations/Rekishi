@@ -75,10 +75,10 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
           value={editValue}
         />
         <div className="ml-2 flex items-center space-x-1">
-          <button className="btn-ghost hover:bg-green-100 hover:text-green-600" onClick={handleSave}>
+          <button className="btn-success-ghost" onClick={handleSave}>
             <Icon name="Check" className="icon-sm" />
           </button>
-          <button className="btn-ghost hover:bg-slate-200 hover:text-slate-800" onClick={handleCancel}>
+          <button className="btn-ghost" onClick={handleCancel}>
             <Icon name="X" className="icon-sm" />
           </button>
         </div>
@@ -96,7 +96,7 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
         <button className="btn-ghost" onClick={handleEdit}>
           <Icon name="Pencil" className="icon-sm" />
         </button>
-        <button className="btn-ghost hover:bg-red-100 hover:text-red-500" onClick={handleRemove}>
+        <button className="btn-danger-ghost" onClick={handleRemove}>
           <Icon name="Trash2" className="icon-sm" />
         </button>
       </div>

@@ -105,7 +105,7 @@ export const Rekishi = (): JSX.Element => {
             </div>
           ) : noHistoryEver ? (
             <div className="centered-view">
-              <Icon name="History" className="mb-2 icon-xxl text-slate-400" />
+              <Icon name="History" className="centered-view-icon" />
               <h2 className="text-2xl txt-highlight">Welcome to Rekishi!</h2>
               <p className="mt-2">Start browsing the web to see your history here.</p>
             </div>

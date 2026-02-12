@@ -100,7 +100,7 @@ export const Rekishi = (): JSX.Element => {
           {isLoading ? (
             <HistoryViewSkeleton />
           ) : error ? (
-            <div className="layout-flex-center h-full p-3 txt-error">
+            <div className="layout-flex-center h-full txt-error">
               <p>Error loading history: {error}</p>
             </div>
           ) : noHistoryEver ? (

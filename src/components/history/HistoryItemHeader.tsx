@@ -49,10 +49,10 @@ export const HistoryItemHeader = memo(
     return (
       <div className="section-header">
         <div className="flex items-center gap-2">
-          <div className="flex cursor-pointer select-none items-center justify-center" onClick={() => onToggleDaySelection(dayItems)}>
+          <div className="cursor-pointer" onClick={() => onToggleDaySelection(dayItems)}>
             <div
               className={`checkbox-custom ${
-                allForDaySelected || someForDaySelected ? 'border-slate-800 bg-slate-800' : 'border-slate-300 hover:border-slate-400'
+                allForDaySelected || someForDaySelected ? 'checkbox-checked' : 'checkbox-unchecked hover:border-slate-400'
               }`}
             >
               {allForDaySelected && <Icon name="Check" className="icon-xs text-white" />}

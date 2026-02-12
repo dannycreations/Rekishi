@@ -236,7 +236,7 @@ export const HistoryView = memo(
               totalSearchItemsCount={historyItems.length}
               totalSelectedCount={selectedItems.size}
             />
-            <hr className="mt-3 border-slate-200" />
+            <hr className="mt-2 border-slate-200" />
           </div>
         )}
         <div className="layout-stack-md p-3">
@@ -265,7 +265,7 @@ export const HistoryView = memo(
                     totalSearchItemsCount={historyItems.length}
                     totalSelectedCount={selectedItems.size}
                   />
-                  <hr className="mt-3 mb-3 border-slate-200" />
+                  <hr className="mt-2 mb-2 border-slate-200" />
                 </div>
                 <div className="layout-stack-sm">
                   {dayGroup.hourlyGroups.map((group) => {

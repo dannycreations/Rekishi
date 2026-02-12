@@ -319,7 +319,39 @@
 
   /* Custom UI Elements */
   .checkbox-custom {
-    @apply flex h-4 w-4 items-center justify-center rounded border-2 transition-colors duration-200;
+    @apply relative flex h-4 w-4 shrink-0 select-none items-center justify-center rounded border-2 transition-colors duration-200;
+  }
+
+  .checkbox-checked {
+    @apply border-slate-800 bg-slate-800;
+  }
+
+  .checkbox-unchecked {
+    @apply border-slate-300;
+  }
+
+  .radio-card {
+    @apply flex flex-1 cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 p-2 transition-colors;
+  }
+
+  .radio-card-checked {
+    @apply border-slate-400 bg-slate-50;
+  }
+
+  .radio-dot-container {
+    @apply relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-slate-300 transition-colors;
+  }
+
+  .radio-dot-container-checked {
+    @apply border-slate-800;
+  }
+
+  .radio-dot {
+    @apply h-2 w-2 rounded-full transition-colors;
+  }
+
+  .radio-dot-checked {
+    @apply bg-slate-800;
   }
 
   .toggle-switch {

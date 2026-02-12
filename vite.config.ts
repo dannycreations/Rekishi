@@ -38,6 +38,7 @@ export default defineConfig(({ mode }) => {
       crx({ manifest }),
     ],
     build: {
+      outDir: 'dist',
       emptyOutDir: true,
       rollupOptions: {
         output: {

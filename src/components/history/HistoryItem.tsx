@@ -122,8 +122,8 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
 
   return (
     <div className={`group item-list ${isChecked ? 'item-list-selected' : 'item-list-hover'}`} onClick={handleToggle}>
-      <div className="relative mr-2 flex h-4 w-4 shrink-0 select-none items-center justify-center">
-        <div className={`checkbox-custom ${isChecked ? 'border-slate-800 bg-slate-800' : 'border-slate-300 group-hover:border-slate-400'}`}>
+      <div className="mr-2">
+        <div className={`checkbox-custom ${isChecked ? 'checkbox-checked' : 'checkbox-unchecked group-hover:border-slate-400'}`}>
           {isChecked && <Icon name="Check" className="icon-xs text-white" />}
         </div>
       </div>

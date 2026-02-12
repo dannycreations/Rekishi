@@ -21,11 +21,11 @@ interface RadioCardProps {
 
 const RadioCard = memo(({ checked, value, label, description, onChange }: RadioCardProps): JSX.Element => {
   return (
-    <label className="flex flex-1 cursor-pointer items-center space-x-2 rounded-lg border border-slate-200 p-2 has-checked:border-slate-400 has-checked:bg-slate-50">
-      <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
+    <label className={`radio-card ${checked ? 'radio-card-checked' : ''}`}>
+      <div className="radio-dot-container">
         <input checked={checked} className="peer sr-only" name="format" onChange={() => onChange(value)} type="radio" value={value} />
-        <div className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-300 transition-colors peer-checked:border-slate-800">
-          <div className="h-2 w-2 rounded-full transition-colors peer-checked:bg-slate-800" />
+        <div className={`radio-dot-container ${checked ? 'radio-dot-container-checked' : ''}`}>
+          <div className={`radio-dot ${checked ? 'radio-dot-checked' : ''}`} />
         </div>
       </div>
       <div>
@@ -179,11 +179,7 @@ export const ExportView = (): JSX.Element => {
             </div>
           </div>
 
-          <button
-            className="btn-primary layout-flex-center w-full disabled:cursor-wait disabled:bg-slate-500"
-            disabled={isLoading}
-            onClick={handleExport}
-          >
+          <button className="btn-primary layout-flex-center w-full disabled:bg-slate-500" disabled={isLoading} onClick={handleExport}>
             {isLoading ? (
               <>
                 <Icon name="Loader2" className="mr-2 icon-md animate-spin" />

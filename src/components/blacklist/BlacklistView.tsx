@@ -150,28 +150,23 @@ export const BlacklistView = (): JSX.Element => {
         {error && <p className="mt-2 txt-error">{error}</p>}
       </div>
 
-      <div className="card p-2">
-        <div className="mb-2 layout-flex-between">
+      <div className="card">
+        <div className="section-header">
           <div className="flex items-center gap-2">
             <h3 className="txt-title-sm">Blacklisted Items ({sortedItems.length})</h3>
-            <button
-              ref={tooltipAnchorRef}
-              className="btn-base text-slate-400 hover:text-slate-600"
-              onMouseEnter={handleTooltipOpen}
-              onMouseLeave={handleTooltipClose}
-            >
+            <button ref={tooltipAnchorRef} className="btn-ghost" onMouseEnter={handleTooltipOpen} onMouseLeave={handleTooltipClose}>
               <Icon name="HelpCircle" className="icon-md" />
             </button>
           </div>
         </div>
         {sortedItems.length > 0 ? (
-          <ul className="layout-stack-sm">
+          <ul className="layout-stack-sm mt-2">
             {sortedItems.map((item) => (
               <BlacklistItem key={item.value} item={item} onEdit={handleEditDomain} onRemove={handleRemoveDomain} />
             ))}
           </ul>
         ) : (
-          <p className="py-3 text-center txt-muted">Your blacklist is empty. Add domains using the form above.</p>
+          <p className="centered-view py-6">Your blacklist is empty. Add domains using the form above.</p>
         )}
       </div>
 

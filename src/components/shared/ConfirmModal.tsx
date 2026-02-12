@@ -47,25 +47,25 @@ export const ConfirmModal = memo(
       <div className={`modal-backdrop ${isOpen ? 'opacity-100' : 'opacity-0'}`} onClick={onClose}>
         <div
           ref={modalRef}
-          className={`modal-container max-w-md p-3 ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
+          className={`modal-container max-w-md ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
           onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
         >
-          <div className="flex items-start justify-between">
+          <header className="modal-header">
             <h3 className="modal-title">{title}</h3>
             <button className="btn-ghost" onClick={onClose}>
               <Icon name="X" className="icon-md" />
             </button>
-          </div>
-          <div className="mt-2">
+          </header>
+          <div className="modal-body">
             <div className="txt-main text-slate-600">{message}</div>
-          </div>
-          <div className="mt-3 flex justify-end space-x-2">
-            <button className="btn-secondary" onClick={onClose}>
-              {cancelText}
-            </button>
-            <button className={`btn-primary ${confirmButtonClass}`} onClick={onConfirm}>
-              {confirmText}
-            </button>
+            <div className="mt-4 flex justify-end space-x-2">
+              <button className="btn-secondary" onClick={onClose}>
+                {cancelText}
+              </button>
+              <button className={`btn-primary ${confirmButtonClass}`} onClick={onConfirm}>
+                {confirmText}
+              </button>
+            </div>
           </div>
         </div>
       </div>

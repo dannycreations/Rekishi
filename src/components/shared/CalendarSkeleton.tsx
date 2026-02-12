@@ -8,7 +8,7 @@ import type { JSX } from 'react';
 export const CalendarSkeleton = memo((): JSX.Element => {
   return (
     <div>
-      <div className="mb-2 layout-flex-between">
+      <div className="section-header">
         <Skeleton className="icon-xl rounded-full" />
         <Skeleton className="h-5 w-32 rounded" />
         <Skeleton className="icon-xl rounded-full" />

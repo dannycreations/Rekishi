@@ -21,11 +21,11 @@ const HistoryViewItemSkeleton = memo((): JSX.Element => {
 export const HistoryViewGroupSkeleton = memo((): JSX.Element => {
   return (
     <section>
-      <div className="layout-flex-between">
+      <div className="section-header">
         <Skeleton className="h-5 w-16 rounded" />
         <Skeleton className="h-6 w-20 rounded-md" />
       </div>
-      <div className="flex flex-col">
+      <div className="flex flex-col space-y-1">
         <HistoryViewItemSkeleton />
         <HistoryViewItemSkeleton />
         <HistoryViewItemSkeleton />
@@ -36,7 +36,7 @@ export const HistoryViewGroupSkeleton = memo((): JSX.Element => {
 
 const DailyGroupHeaderSkeleton = memo((): JSX.Element => {
   return (
-    <div className="mb-3 layout-flex-between px-2">
+    <div className="section-header">
       <div className="flex items-center gap-2">
         <Skeleton className="icon-sm rounded" />
         <Skeleton className="h-7 w-40 rounded" />

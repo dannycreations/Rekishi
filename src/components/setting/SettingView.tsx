@@ -6,6 +6,7 @@ import { useSettingStore } from '../../stores/useSettingStore';
 import { useToastStore } from '../../stores/useToastStore';
 
 import type { ChangeEvent, JSX, ReactNode } from 'react';
+import type { Theme } from '../../app/types';
 
 interface SettingRowProps {
   readonly children: ReactNode;
@@ -40,9 +41,11 @@ const SettingSection = memo(({ title, children }: SettingSectionProps): JSX.Elem
 });
 
 export const SettingView = (): JSX.Element => {
-  const { dataRetention, setDataRetention } = useSettingStore((state) => ({
+  const { dataRetention, setDataRetention, theme, setTheme } = useSettingStore((state) => ({
     dataRetention: state.dataRetention,
     setDataRetention: state.setDataRetention,
+    theme: state.theme,
+    setTheme: state.setTheme,
   }));
   const { Modal: ClearHistoryModal, openModal: openClearHistoryModal } = useConfirm();
   const addToast = useToastStore((state) => state.addToast);
@@ -78,6 +81,26 @@ export const SettingView = (): JSX.Element => {
   return (
     <>
       <div className="layout-stack-md">
+        <SettingSection title="Appearance">
+          <SettingRow description="Choose how Rekishi looks to you." title="Theme">
+            <select
+              className="input-base w-32 px-2 py-1"
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => setTheme(e.target.value as Theme)}
+              value={theme}
+            >
+              <option className="bg-surface" value="system">
+                System
+              </option>
+              <option className="bg-surface" value="light">
+                Light
+              </option>
+              <option className="bg-surface" value="dark">
+                Dark
+              </option>
+            </select>
+          </SettingRow>
+        </SettingSection>
+
         <SettingSection title="Data">
           <SettingRow description="How long to keep your browsing history." title="History Retention">
             <select

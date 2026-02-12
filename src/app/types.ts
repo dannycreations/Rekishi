@@ -27,6 +27,8 @@ export interface HistoryItemGroup {
 
 export type ViewType = 'devices' | 'blacklist' | 'export' | 'settings';
 
+export type Theme = 'light' | 'dark' | 'system';
+
 export interface SearchParams {
   readonly text: string;
   readonly startTime?: number;

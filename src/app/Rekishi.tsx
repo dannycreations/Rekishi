@@ -16,6 +16,7 @@ import { ViewModal } from '../components/shared/ViewModal';
 import { useHistory } from '../hooks/useHistory';
 import { useHistoryDate } from '../hooks/useHistoryDate';
 import { useHistoryStore } from '../stores/useHistoryStore';
+import { useSettingStore } from '../stores/useSettingStore';
 import { VIEW_MODAL_SIZES, VIEW_TITLES } from './constants';
 
 import type { JSX } from 'react';
@@ -39,6 +40,7 @@ export const Rekishi = (): JSX.Element => {
     setSearchQuery: state.setSearchQuery,
     setSelectedDate: state.setSelectedDate,
   }));
+  const theme = useSettingStore((state) => state.theme);
   const { deleteHistoryItem, deleteHistoryItems, error, hasMore, history, isLoading, isLoadingMore, loadMore } = useHistory();
   const { datesWithHistory, fetchDatesForMonth, isLoading: isLoadingDates } = useHistoryDate();
 
@@ -49,6 +51,14 @@ export const Rekishi = (): JSX.Element => {
   useEffect(() => {
     fetchDatesForMonth(selectedDate);
   }, [fetchDatesForMonth, selectedDate]);
+
+  useEffect(() => {
+    if (theme === 'system') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  }, [theme]);
 
   const handleScroll = useCallback(() => {
     if (mainContentRef.current) {

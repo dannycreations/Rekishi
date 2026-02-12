@@ -6,14 +6,22 @@ import type { JSX } from 'react';
 
 const HistoryViewItemSkeleton = memo((): JSX.Element => {
   return (
-    <div className="item-list">
-      <Skeleton className="mr-2 icon-sm rounded" />
-      <Skeleton className="mr-2 icon-sm rounded-full" />
-      <div className="min-w-0 flex-1">
-        <Skeleton className="h-4 w-3/4 rounded" />
-        <Skeleton className="mt-2 h-3 w-1/2 rounded" />
+    <div className="item-list pointer-events-none">
+      <div className="flex items-center">
+        <Skeleton className="h-4 w-4 rounded" />
       </div>
-      <Skeleton className="ml-2 h-4 w-20 shrink-0 rounded" />
+      <Skeleton className="icon-md rounded-sm" />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center">
+          <Skeleton className="h-4 w-3/4 rounded" />
+        </div>
+        <div className="mt-1">
+          <Skeleton className="h-3 w-1/2 rounded" />
+        </div>
+      </div>
+      <div className="ml-2 flex h-6 w-32 shrink-0 items-center justify-end">
+        <Skeleton className="h-3 w-12 rounded" />
+      </div>
     </div>
   );
 });
@@ -22,8 +30,11 @@ export const HistoryViewGroupSkeleton = memo((): JSX.Element => {
   return (
     <section>
       <div className="section-header">
-        <Skeleton className="h-5 w-16 rounded" />
-        <Skeleton className="h-6 w-20 rounded-md" />
+        <Skeleton className="h-4 w-12 rounded" />
+        <div className="btn-danger opacity-50">
+          <Skeleton className="icon-xs mr-1 rounded-sm" />
+          <Skeleton className="h-3 w-10 rounded-sm" />
+        </div>
       </div>
       <div className="flex flex-col space-y-1">
         <HistoryViewItemSkeleton />
@@ -38,20 +49,25 @@ const DailyGroupHeaderSkeleton = memo((): JSX.Element => {
   return (
     <div className="section-header">
       <div className="flex items-center gap-2">
-        <Skeleton className="icon-sm rounded" />
-        <Skeleton className="h-7 w-40 rounded" />
+        <div className="checkbox-custom h-4 w-4 rounded" />
+        <Skeleton className="h-5 w-48 rounded" />
       </div>
-      <Skeleton className="h-6 w-32 rounded-md" />
+      <div className="flex items-center space-x-2">
+        <div className="btn-danger opacity-50">
+          <Skeleton className="icon-xs mr-1 rounded-sm" />
+          <Skeleton className="h-3 w-20 rounded-sm" />
+        </div>
+      </div>
     </div>
   );
 });
 
 export const HistoryViewSkeleton = memo((): JSX.Element => {
   return (
-    <div className="layout-stack-md p-3">
+    <div className="layout-stack-md p-3 pointer-events-none">
       <section>
         <DailyGroupHeaderSkeleton />
-        <hr className="mb-3 border-slate-200" />
+        <hr className="my-2 border-line" />
         <div className="layout-stack-sm">
           <HistoryViewGroupSkeleton />
           <HistoryViewGroupSkeleton />
@@ -59,7 +75,7 @@ export const HistoryViewSkeleton = memo((): JSX.Element => {
       </section>
       <section>
         <DailyGroupHeaderSkeleton />
-        <hr className="mb-3 border-slate-200" />
+        <hr className="my-2 border-line" />
         <div className="layout-stack-sm">
           <HistoryViewGroupSkeleton />
         </div>

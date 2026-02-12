@@ -15,7 +15,7 @@ interface SettingRowProps {
 
 const SettingRow = memo(({ title, description, children }: SettingRowProps): JSX.Element => {
   return (
-    <div className="layout-flex-between rounded-lg border border-line bg-surface px-2 py-1">
+    <div className="layout-flex-between card">
       <div>
         <h4 className="txt-highlight">{title}</h4>
         <p className="txt-muted">{description}</p>

@@ -135,31 +135,31 @@ export const ExportView = (): JSX.Element => {
     <>
       <div className="layout-stack-md">
         <div className="card layout-stack-md">
-          <div>
+          <div className="layout-stack-sm">
             <h3 className="txt-title-lg">Date Range</h3>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="layout-stack-sm">
                 <label className="txt-label" htmlFor="start-date">
                   Start Date
                 </label>
                 <button
                   ref={startDateTriggerRef}
                   id="start-date"
-                  className="btn-secondary mt-1 flex w-full items-center justify-between text-left"
+                  className="btn-secondary flex w-full items-center justify-between text-left"
                   onClick={() => setActiveCalendar(activeCalendar === 'start' ? null : 'start')}
                 >
                   <span className="txt-main">{startDate}</span>
                   <Icon name="Calendar" className="icon-sm text-text-tertiary" />
                 </button>
               </div>
-              <div>
+              <div className="layout-stack-sm">
                 <label className="txt-label" htmlFor="end-date">
                   End Date
                 </label>
                 <button
                   ref={endDateTriggerRef}
                   id="end-date"
-                  className="btn-secondary mt-1 flex w-full items-center justify-between text-left"
+                  className="btn-secondary flex w-full items-center justify-between text-left"
                   onClick={() => setActiveCalendar(activeCalendar === 'end' ? null : 'end')}
                 >
                   <span className="txt-main">{endDate}</span>
@@ -169,9 +169,9 @@ export const ExportView = (): JSX.Element => {
             </div>
           </div>
 
-          <div>
+          <div className="layout-stack-sm">
             <h3 className="txt-title-lg">Format</h3>
-            <div className="mt-2 flex space-x-2">
+            <div className="flex space-x-2">
               <RadioCard checked={format === 'json'} description="JavaScript Object Notation" label="JSON" onChange={setFormat} value="json" />
               <RadioCard checked={format === 'csv'} description="Comma-Separated Values" label="CSV" onChange={setFormat} value="csv" />
             </div>
@@ -180,7 +180,7 @@ export const ExportView = (): JSX.Element => {
           <button className="btn-primary layout-flex-center w-full" disabled={isLoading} onClick={handleExport}>
             {isLoading ? (
               <>
-                <Icon name="Loader2" className="mr-2 icon-md animate-spin" />
+                <Icon name="Loader2" className="icon-md mr-2 animate-spin" />
                 Exporting...
               </>
             ) : (

@@ -117,10 +117,10 @@ export const BlacklistView = (): JSX.Element => {
     <div className="layout-stack-md">
       <div>
         <form className="flex items-center space-x-2" onSubmit={handleAddDomain}>
-          <div className="relative grow">
+          <div className="search-container">
             <input
               autoFocus
-              className="input-base pl-2 pr-7"
+              className="input-base px-3 pr-7"
               onChange={(e) => {
                 setNewDomain(e.target.value);
                 setError(null);
@@ -160,25 +160,27 @@ export const BlacklistView = (): JSX.Element => {
             ))}
           </ul>
         ) : (
-          <p className="centered-view">Your blacklist is empty. Add domains using the form above.</p>
+          <div className="centered-view">
+            <p className="txt-main">Your blacklist is empty. Add domains using the form above.</p>
+          </div>
         )}
       </div>
 
       {isTooltipOpen && (
         <Tooltip anchorEl={tooltipAnchorRef.current} onMouseEnter={handleTooltipOpen} onMouseLeave={handleTooltipClose}>
           <h4 className="mb-2 txt-title-sm">Supported Patterns</h4>
-          <ul className="list-inside list-disc space-y-2 txt-muted">
+          <ul className="layout-stack-sm list-inside list-disc txt-muted">
             <li>
-              <strong>Exact domain:</strong> <code className="rounded bg-surface-hover p-1">example.com</code>
+              <strong className="txt-highlight">Exact domain:</strong> <code className="rounded bg-surface-hover p-1">example.com</code>
             </li>
             <li>
-              <strong>Subdomains:</strong> <code className="rounded bg-surface-hover p-1">*.example.com</code>
+              <strong className="txt-highlight">Subdomains:</strong> <code className="rounded bg-surface-hover p-1">*.example.com</code>
             </li>
             <li>
-              <strong>URL paths:</strong> <code className="rounded bg-surface-hover p-1">example.com/path/*</code>
+              <strong className="txt-highlight">URL paths:</strong> <code className="rounded bg-surface-hover p-1">example.com/path/*</code>
             </li>
             <li>
-              <strong>Regular expression:</strong> <code className="rounded bg-surface-hover p-1">/google\.com/</code>
+              <strong className="txt-highlight">Regular expression:</strong> <code className="rounded bg-surface-hover p-1">/google\.com/</code>
             </li>
           </ul>
           <p className="mt-2 txt-muted">Regex and path patterns match against the full URL (e.g., `domain.com/path`).</p>

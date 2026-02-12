@@ -247,13 +247,7 @@ export const HistoryView = memo(
 
             return (
               <section key={dayKey}>
-                <div
-                  data-day-key={dayKey}
-                  style={{
-                    visibility: isDayHeaderCovered ? 'hidden' : 'visible',
-                    height: isDayHeaderCovered ? 0 : 'auto',
-                  }}
-                >
+                <div data-day-key={dayKey} className={isDayHeaderCovered ? 'hidden-displaced' : ''}>
                   <HistoryItemHeader
                     dayHeaderText={dayHeaderText}
                     dayItems={dayGroup.items}
@@ -265,7 +259,7 @@ export const HistoryView = memo(
                     totalSearchItemsCount={historyItems.length}
                     totalSelectedCount={selectedItems.size}
                   />
-                  <hr className="mt-2 mb-2 border-line" />
+                  <hr className="my-2 border-line" />
                 </div>
                 <div className="layout-stack-sm">
                   {dayGroup.hourlyGroups.map((group) => {

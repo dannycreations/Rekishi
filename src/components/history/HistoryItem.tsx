@@ -39,7 +39,7 @@ const HistoryHighlight = memo(({ text, highlight }: HistoryHighlightProps): JSX.
     <>
       {parts.map((part, i) =>
         part.toLowerCase() === highlight.toLowerCase() ? (
-          <mark key={i} className="rounded-sm bg-highlight text-primary px-1">
+          <mark key={i} className="rounded-sm bg-highlight px-1 text-primary">
             {part}
           </mark>
         ) : (
@@ -122,8 +122,8 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
 
   return (
     <div className={`group item-list ${isChecked ? 'item-list-selected' : 'item-list-hover'}`} onClick={handleToggle}>
-      <div className="flex items-center">
-        <div className={`checkbox-custom ${isChecked ? 'checkbox-checked' : 'checkbox-unchecked group-hover:border-text-tertiary'}`}>
+      <div className="layout-flex-center">
+        <div className={`checkbox-custom ${isChecked ? 'checkbox-checked' : 'checkbox-unchecked'}`}>
           {isChecked && <Icon name="Check" className="icon-xs text-background" />}
         </div>
       </div>
@@ -143,7 +143,7 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
           <a className="link-standard" href={url} onClick={(e) => e.stopPropagation()} rel="noopener noreferrer" target="_blank">
             <HistoryHighlight text={title || url} highlight={shouldHighlight ? searchQuery : ''} />
           </a>
-          <Icon name="ExternalLink" className="ml-1 icon-xs text-text-tertiary opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+          <Icon name="ExternalLink" className="icon-xs ml-1 text-text-tertiary opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
         </div>
         <p className="truncate txt-muted">
           <HistoryHighlight text={url} highlight={shouldHighlight ? searchQuery : ''} />

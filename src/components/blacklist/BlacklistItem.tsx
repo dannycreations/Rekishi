@@ -65,7 +65,7 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
 
   if (isEditing) {
     return (
-      <li className="flex items-center justify-between rounded-md bg-surface-hover px-2 py-1">
+      <li className="layout-flex-between item-list-selected rounded-md px-2 py-1">
         <input
           autoFocus
           className="input-base px-2 py-1"
@@ -87,10 +87,10 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
   }
 
   return (
-    <li className="group item-list justify-between">
+    <li className="group item-list layout-flex-between">
       <div className="flex items-center space-x-2">
         <span className="txt-main">{item.value}</span>
-        {item.isRegex && <span className="rounded-md bg-line p-1 font-mono txt-muted txt-highlight">REGEX</span>}
+        {item.isRegex && <span className="rounded-md bg-line p-1 font-mono txt-highlight txt-muted">REGEX</span>}
       </div>
       <div className="flex items-center space-x-1">
         <button className="btn-ghost" onClick={handleEdit}>

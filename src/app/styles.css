@@ -101,6 +101,11 @@
   .toast-animate-exit {
     animation: toast-exit 200ms ease-in forwards;
   }
+
+  .hidden-displaced {
+    visibility: hidden;
+    height: 0;
+  }
 }
 
 @layer components {
@@ -200,10 +205,6 @@
   }
 
   /* Buttons */
-  .btn-base {
-    @apply cursor-pointer transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
-  }
-
   .btn-primary {
     @apply cursor-pointer transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 rounded-lg bg-primary p-2 text-sm font-semibold text-background hover:opacity-90 active:scale-95;
   }
@@ -250,8 +251,24 @@
     @apply fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm transition-opacity duration-200;
   }
 
+  .modal-backdrop-open {
+    @apply opacity-100;
+  }
+
+  .modal-backdrop-closed {
+    @apply opacity-0;
+  }
+
   .modal-container {
     @apply relative mx-3 flex w-full flex-col rounded-lg bg-background-soft shadow-xl outline-none transition-all duration-200;
+  }
+
+  .modal-container-open {
+    @apply scale-100 opacity-100;
+  }
+
+  .modal-container-closed {
+    @apply scale-95 opacity-0;
   }
 
   .modal-header {
@@ -344,14 +361,21 @@
   /* Custom UI Elements */
   .checkbox-custom {
     @apply relative flex h-4 w-4 shrink-0 select-none items-center justify-center rounded border-2 transition-colors duration-200;
+    @apply border-line;
   }
 
-  .checkbox-checked {
+  .checkbox-custom.checkbox-checked {
     @apply border-primary bg-primary;
   }
 
-  .checkbox-unchecked {
-    @apply border-line;
+  .item-list:hover .checkbox-custom,
+  .group\/header:hover .checkbox-custom {
+    @apply border-text-tertiary;
+  }
+
+  .item-list:hover .checkbox-custom.checkbox-checked,
+  .group\/header:hover .checkbox-custom.checkbox-checked {
+    @apply border-primary;
   }
 
   .radio-card {

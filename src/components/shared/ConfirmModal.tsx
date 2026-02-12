@@ -44,10 +44,10 @@ export const ConfirmModal = memo(
     }
 
     const modalContent = (
-      <div className={`modal-backdrop ${isOpen ? 'opacity-100' : 'opacity-0'}`} onClick={onClose}>
+      <div className={`modal-backdrop ${isOpen ? 'modal-backdrop-open' : 'modal-backdrop-closed'}`} onClick={onClose}>
         <div
           ref={modalRef}
-          className={`modal-container max-w-md ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
+          className={`modal-container max-w-md ${isOpen ? 'modal-container-open' : 'modal-container-closed'}`}
           onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
         >
           <header className="modal-header">

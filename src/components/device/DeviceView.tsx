@@ -13,11 +13,11 @@ const DEVICE_ICONS: Record<string, IconName> = {
 
 const DeviceCardSkeleton = (): JSX.Element => {
   return (
-    <div className="card flex items-center space-x-2 p-2">
+    <div className="card flex items-center space-x-2">
       <Skeleton className="h-14 w-14 rounded-full" />
-      <div className="flex-1 space-y-2">
-        <Skeleton className="h-5 w-3/4 rounded" />
-        <Skeleton className="h-4 w-1/2 rounded" />
+      <div className="flex-1 layout-stack-sm">
+        <Skeleton className="h-5 w-3/4" />
+        <Skeleton className="h-4 w-1/2" />
       </div>
     </div>
   );
@@ -35,19 +35,19 @@ export const DeviceView = (): JSX.Element => {
           <DeviceCardSkeleton />
         </div>
       ) : error ? (
-        <div className="btn-danger p-3 text-center">{error}</div>
+        <div className="layout-flex-center h-full txt-error">{error}</div>
       ) : devices.length === 0 ? (
         <div className="centered-view">
-          <Icon name="Smartphone" className="icon-xxl text-text-tertiary" />
+          <Icon name="Smartphone" className="centered-view-icon" />
           <h3 className="txt-title-lg">No Other Devices Found</h3>
-          <p className="txt-muted">It looks like you're not signed into Chrome on any other devices. Sign in on another device to sync history.</p>
+          <p className="txt-main">It looks like you're not signed into Chrome on any other devices. Sign in on another device to sync history.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {devices.map((device) => {
             const iconName = DEVICE_ICONS[device.type] || 'Monitor';
             return (
-              <div key={device.name} className="card flex items-center space-x-2 p-2">
+              <div key={device.name} className="card flex items-center space-x-2">
                 <div className="rounded-full bg-surface-hover p-2">
                   <Icon name={iconName} className="icon-xl text-text-secondary" />
                 </div>

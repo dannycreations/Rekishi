@@ -1,14 +1,12 @@
 import type { ViewType } from './types';
 
 export const VIEW_TITLES: Record<ViewType, string> = {
-  devices: 'Devices',
   blacklist: 'Blacklist',
   export: 'Export',
   settings: 'Settings',
 } as const;
 
 export const VIEW_MODAL_SIZES: Partial<Record<ViewType, 'md' | 'lg' | 'xl' | '2xl' | '3xl'>> = {
-  devices: '3xl',
   blacklist: 'lg',
   export: 'md',
   settings: 'lg',

@@ -4,7 +4,7 @@ import { mapToChromeHistoryItem } from '../helpers/historyHelper';
 import { parseSettingsFromJSON } from '../helpers/settingHelper';
 import { getDayBoundaries } from '../utilities/dateUtil';
 
-import type { ChromeDevice, ChromeHistoryItem, SearchParams } from '../app/types';
+import type { ChromeHistoryItem, SearchParams } from '../app/types';
 import type { BlacklistMatchers } from '../helpers/blacklistHelper';
 
 const FAKE_DATA_STORE: Record<string, chrome.history.HistoryItem> = {};
@@ -222,20 +222,6 @@ export const deleteUrl = (details: { readonly url: string }): Promise<void> => {
     setTimeout(() => {
       resolve();
     }, 50);
-  });
-};
-
-export const getDevices = (): Promise<readonly ChromeDevice[]> => {
-  return new Promise((resolve) => {
-    const now = Date.now();
-    setTimeout(() => {
-      resolve([
-        { deviceName: 'My MacBook Pro', sessions: [{ lastModified: (now - 2 * 60 * 1000) / 1000 }] },
-        { deviceName: 'Pixel 8 Pro', sessions: [{ lastModified: (now - 60 * 60 * 1000) / 1000 }] },
-        { deviceName: 'Windows Gaming PC', sessions: [{ lastModified: (now - 24 * 60 * 60 * 1000) / 1000 }] },
-        { deviceName: 'Living Room iMac', sessions: [{ lastModified: (now - 3 * 24 * 60 * 60 * 1000) / 1000 }] },
-      ]);
-    }, 150);
   });
 };
 

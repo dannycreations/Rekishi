@@ -1,7 +1,7 @@
 import { mapToChromeHistoryItem } from '../helpers/historyHelper';
-import { deleteAllHistory as fakeDeleteAllHistory, deleteUrl as fakeDeleteUrl, getDevices as fakeGetDevices, search as fakeSearch } from './fakeApi';
+import { deleteAllHistory as fakeDeleteAllHistory, deleteUrl as fakeDeleteUrl, search as fakeSearch } from './fakeApi';
 
-import type { ChromeDevice, ChromeHistoryItem, SearchParams } from '../app/types';
+import type { ChromeHistoryItem, SearchParams } from '../app/types';
 
 const wrapChromeApi = async <T>(apiCall: () => Promise<T>, errorMessage: string): Promise<T> => {
   try {
@@ -34,13 +34,6 @@ export const deleteUrl = async (details: { readonly url: string }): Promise<void
     return wrapChromeApi(() => chrome.history.deleteUrl(details), 'Error deleting history item');
   }
   return fakeDeleteUrl(details);
-};
-
-export const getDevices = async (): Promise<readonly ChromeDevice[]> => {
-  if (typeof chrome !== 'undefined' && chrome.sessions?.getDevices) {
-    return chrome.sessions.getDevices();
-  }
-  return fakeGetDevices();
 };
 
 export const deleteAllHistory = async (): Promise<void> => {

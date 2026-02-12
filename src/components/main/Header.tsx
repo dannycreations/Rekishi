@@ -117,9 +117,6 @@ export const Header = memo(
       setIsCalendarOpen(false);
     }, []);
 
-    const handleOpenDevices = useCallback(() => {
-      onOpenModal('devices');
-    }, [onOpenModal]);
     const handleOpenBlacklist = useCallback(() => {
       onOpenModal('blacklist');
     }, [onOpenModal]);
@@ -167,7 +164,6 @@ export const Header = memo(
         </div>
 
         <div className="nav-group">
-          <NavButton icon={<Icon name="Smartphone" className="icon-md" />} onClick={handleOpenDevices} />
           <NavButton icon={<Icon name="Link2Off" className="icon-md" />} onClick={handleOpenBlacklist} />
           <NavButton icon={<Icon name="Download" className="icon-md" />} onClick={handleOpenExport} />
           <NavButton icon={<Icon name="Settings" className="icon-md" />} onClick={handleOpenSettings} />

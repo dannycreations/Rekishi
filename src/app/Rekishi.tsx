@@ -3,7 +3,6 @@ import './styles.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BlacklistView } from '../components/blacklist/BlacklistView';
-import { DeviceView } from '../components/device/DeviceView';
 import { ExportView } from '../components/export/ExportView';
 import { HistoryView } from '../components/history/HistoryView';
 import { HistoryViewSkeleton } from '../components/history/HistoryViewSkeleton';
@@ -23,7 +22,6 @@ import type { JSX } from 'react';
 import type { ViewType } from './types';
 
 const MODAL_COMPONENTS: Record<ViewType, JSX.Element> = {
-  devices: <DeviceView />,
   blacklist: <BlacklistView />,
   export: <ExportView />,
   settings: <SettingView />,

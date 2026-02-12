@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { DAILY_PAGE_SIZE, INIT_CHUNK_SIZE, SEARCH_PAGE_SIZE } from '../app/constants';
-import { applyClientSideSearch, compileSearchRegex } from '../helpers/historyHelper';
+import { applyClientSideSearch } from '../helpers/historyHelper';
 import { deleteUrl, search } from '../services/chromeApi';
 import { useBlacklistStore } from '../stores/useBlacklistStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
-import { isPotentialRegex } from '../utilities/commonUtil';
+import { compileRegex, isPotentialRegex } from '../utilities/commonUtil';
 import { isSameDay } from '../utilities/dateUtil';
 
 import type { ChromeHistoryItem } from '../app/types';
@@ -61,7 +61,7 @@ export const useHistory = (): UseHistoryReturn => {
     if (!isRegex) {
       return { regex: null, error: null };
     }
-    return compileSearchRegex(searchQuery);
+    return compileRegex(searchQuery);
   }, [isRegex, searchQuery]);
 
   const fetchHistoryData = useCallback(

@@ -1,5 +1,23 @@
+import type { RegexResult } from '../app/types';
+
 export const escapeRegex = (text: string): string => {
   return text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
+
+export const compileRegex = (query: string): RegexResult => {
+  if (query.length <= 2) {
+    return { regex: null, error: null };
+  }
+  const pattern = query.slice(1, -1);
+  if (!pattern) {
+    return { regex: null, error: null };
+  }
+  try {
+    return { regex: new RegExp(pattern, 'i'), error: null };
+  } catch (error: unknown) {
+    console.error('Invalid regex provided:', error);
+    return { regex: null, error: 'Invalid regular expression.' };
+  }
 };
 
 export const isPotentialRegex = (input: string): boolean => {

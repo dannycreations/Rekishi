@@ -3,15 +3,8 @@ import { createBlacklistMatchers, isUrlBlacklisted, parseBlacklistFromJSON } fro
 import { mapToChromeHistoryItem } from '../helpers/historyHelper';
 import { parseSettingsFromJSON } from '../helpers/settingHelper';
 
-import type { ChromeDevice, ChromeHistoryItem } from '../app/types';
+import type { ChromeDevice, ChromeHistoryItem, SearchParams } from '../app/types';
 import type { BlacklistMatchers } from '../helpers/blacklistHelper';
-
-interface SearchParams {
-  readonly text: string;
-  readonly startTime?: number;
-  readonly endTime?: number;
-  readonly maxResults?: number;
-}
 
 const FAKE_DATA_STORE: Record<string, chrome.history.HistoryItem> = {};
 let FAKE_DATA_INITIALIZED = false;

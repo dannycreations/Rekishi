@@ -26,3 +26,15 @@ export interface HistoryItemGroup {
 }
 
 export type ViewType = 'devices' | 'blacklist' | 'export' | 'settings';
+
+export interface SearchParams {
+  readonly text: string;
+  readonly startTime?: number;
+  readonly endTime?: number;
+  readonly maxResults?: number;
+}
+
+export interface RegexResult {
+  readonly regex: RegExp | null;
+  readonly error: string | null;
+}

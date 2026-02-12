@@ -2,6 +2,7 @@ import { BLACKLIST_STORAGE_KEY, SETTINGS_STORAGE_KEY } from '../app/constants';
 import { createBlacklistMatchers, isUrlBlacklisted, parseBlacklistFromJSON } from '../helpers/blacklistHelper';
 import { mapToChromeHistoryItem } from '../helpers/historyHelper';
 import { parseSettingsFromJSON } from '../helpers/settingHelper';
+import { getDayBoundaries } from '../utilities/dateUtil';
 
 import type { ChromeDevice, ChromeHistoryItem, SearchParams } from '../app/types';
 import type { BlacklistMatchers } from '../helpers/blacklistHelper';
@@ -113,9 +114,8 @@ const runFakeRetentionCleanup = (): void => {
     if (!isNaN(retentionDays) && retentionDays > 0) {
       const retentionCutoff = new Date();
       retentionCutoff.setDate(retentionCutoff.getDate() - retentionDays);
-      retentionCutoff.setHours(0, 0, 0, 0);
+      const { startTime: cutoffTime } = getDayBoundaries(retentionCutoff);
 
-      const cutoffTime = retentionCutoff.getTime();
       Object.keys(FAKE_DATA_STORE).forEach((key) => {
         if (FAKE_DATA_STORE[key].lastVisitTime! < cutoffTime) {
           delete FAKE_DATA_STORE[key];

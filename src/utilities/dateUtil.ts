@@ -11,6 +11,14 @@ export const formatDayHeader = (date: Date): string => {
   return `${weekday}, ${year}/${month}/${day}`;
 };
 
+export const getDayBoundaries = (date: Date): { startTime: number; endTime: number } => {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
+  return { startTime: start.getTime(), endTime: end.getTime() };
+};
+
 export const formatDateForInput = (date: Date): string => {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');

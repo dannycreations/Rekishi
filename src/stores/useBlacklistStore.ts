@@ -19,48 +19,40 @@ interface BlacklistState {
 
 export const useBlacklistStore = createWithEqualityFn(
   persist<BlacklistState>(
-    (set, get) => ({
-      blacklistedItems: [],
-      blacklistMatchers: { plain: new Set(), domainRegex: null, urlRegex: null },
-      addDomain: (value, isRegex) => {
-        set((state) => {
-          if (state.blacklistedItems.some((item) => item.value === value)) {
-            return state;
-          }
-          const newItems: readonly BlacklistItem[] = [...state.blacklistedItems, { value, isRegex }];
-          return {
-            blacklistedItems: newItems,
-            blacklistMatchers: createBlacklistMatchers(newItems),
-          };
-        });
-      },
-      editDomain: (oldValue, newValue, newIsRegex) => {
-        set((state) => {
-          const newItems: readonly BlacklistItem[] = state.blacklistedItems.map((item) => {
-            if (item.value === oldValue) {
-              return { value: newValue, isRegex: newIsRegex };
+    (set, get) => {
+      const updateBlacklist = (newItems: readonly BlacklistItem[]): Partial<BlacklistState> => ({
+        blacklistedItems: newItems,
+        blacklistMatchers: createBlacklistMatchers(newItems),
+      });
+
+      return {
+        blacklistedItems: [],
+        blacklistMatchers: { plain: new Set(), domainRegex: null, urlRegex: null },
+        addDomain: (value, isRegex) => {
+          set((state) => {
+            if (state.blacklistedItems.some((item) => item.value === value)) {
+              return state;
             }
-            return item;
+            return updateBlacklist([...state.blacklistedItems, { value, isRegex }]);
           });
-          return {
-            blacklistedItems: newItems,
-            blacklistMatchers: createBlacklistMatchers(newItems),
-          };
-        });
-      },
-      removeDomain: (value) => {
-        set((state) => {
-          const newItems: readonly BlacklistItem[] = state.blacklistedItems.filter((item) => item.value !== value);
-          return {
-            blacklistedItems: newItems,
-            blacklistMatchers: createBlacklistMatchers(newItems),
-          };
-        });
-      },
-      isBlacklisted: (url: string): boolean => {
-        return isUrlBlacklisted(url, get().blacklistMatchers);
-      },
-    }),
+        },
+        editDomain: (oldValue, newValue, newIsRegex) => {
+          set((state) => {
+            const newItems = state.blacklistedItems.map((item) => (item.value === oldValue ? { value: newValue, isRegex: newIsRegex } : item));
+            return updateBlacklist(newItems);
+          });
+        },
+        removeDomain: (value) => {
+          set((state) => {
+            const newItems = state.blacklistedItems.filter((item) => item.value !== value);
+            return updateBlacklist(newItems);
+          });
+        },
+        isBlacklisted: (url: string): boolean => {
+          return isUrlBlacklisted(url, get().blacklistMatchers);
+        },
+      };
+    },
     {
       name: BLACKLIST_STORAGE_KEY,
       storage: createJSONStorage(() => chromeSyncStorage),

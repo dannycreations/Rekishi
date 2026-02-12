@@ -6,7 +6,7 @@ import { deleteUrl, search } from '../services/chromeApi';
 import { useBlacklistStore } from '../stores/useBlacklistStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
 import { compileRegex, isPotentialRegex } from '../utilities/commonUtil';
-import { isSameDay } from '../utilities/dateUtil';
+import { getDayBoundaries, isSameDay } from '../utilities/dateUtil';
 
 import type { ChromeHistoryItem } from '../app/types';
 
@@ -50,19 +50,19 @@ export const useHistory = (): UseHistoryReturn => {
   }));
   const isRegex = useMemo(() => isPotentialRegex(searchQuery), [searchQuery]);
 
-  const history = rawHistory;
-
-  useEffect(() => {
-    historyItemMap.current.clear();
-    rawHistory.forEach((item) => historyItemMap.current.set(item.id, item));
-  }, [rawHistory]);
-
   const compiledRegex = useMemo(() => {
     if (!isRegex) {
       return { regex: null, error: null };
     }
     return compileRegex(searchQuery);
   }, [isRegex, searchQuery]);
+
+  const history = rawHistory;
+
+  useEffect(() => {
+    historyItemMap.current.clear();
+    rawHistory.forEach((item) => historyItemMap.current.set(item.id, item));
+  }, [rawHistory]);
 
   const fetchHistoryData = useCallback(
     async (params: {
@@ -139,16 +139,13 @@ export const useHistory = (): UseHistoryReturn => {
   );
 
   const fetchInitialDailyHistory = useCallback((): void => {
-    const startTime = new Date(selectedDate);
-    startTime.setHours(0, 0, 0, 0);
-    const endTime = new Date(selectedDate);
-    endTime.setHours(23, 59, 59, 999);
+    const { startTime, endTime } = getDayBoundaries(selectedDate);
 
     void fetchHistoryData({
-      endTime: endTime.getTime(),
+      endTime,
       isClientSearch: false,
       isSearch: false,
-      startTime: startTime.getTime(),
+      startTime,
       text: '',
     });
   }, [selectedDate, fetchHistoryData]);
@@ -254,15 +251,12 @@ export const useHistory = (): UseHistoryReturn => {
         const nextDate = new Date(lastLoadedDate);
         nextDate.setDate(lastLoadedDate.getDate() - 1);
 
-        const startTime = new Date(nextDate);
-        startTime.setHours(0, 0, 0, 0);
-        const endTime = new Date(nextDate);
-        endTime.setHours(23, 59, 59, 999);
+        const { startTime, endTime } = getDayBoundaries(nextDate);
 
         const newItems = await search({
-          endTime: endTime.getTime(),
+          endTime,
           maxResults: DAILY_PAGE_SIZE,
-          startTime: startTime.getTime(),
+          startTime,
           text: '',
         });
         const uniqueNewItems = newItems.filter((i) => !historyItemMap.current.has(i.id));

@@ -77,6 +77,18 @@ export const HistoryView = memo(
       [openDeleteModal, addToast],
     );
 
+    const handleOpenDeleteAllModal = useCallback(
+      (items: readonly ChromeHistoryItem[], type: 'day' | 'hour'): void => {
+        openDeleteConfirm({
+          count: items.length,
+          onConfirm: () => deleteHistoryItems(items.map((i) => i.id)),
+          title: `Delete Entire ${type === 'day' ? 'Day' : 'Hour'}`,
+          typeText: `all ${items.length} history items for this ${type}`,
+        });
+      },
+      [deleteHistoryItems, openDeleteConfirm],
+    );
+
     const handleOpenDeleteSelectedModal = useCallback((): void => {
       openDeleteConfirm({
         count: selectedItems.size,
@@ -100,18 +112,6 @@ export const HistoryView = memo(
         typeText: `all ${historyItems.length} items from this search`,
       });
     }, [historyItems, deleteHistoryItems, clearSelection, openDeleteConfirm]);
-
-    const handleOpenDeleteAllModal = useCallback(
-      (items: readonly ChromeHistoryItem[], type: 'day' | 'hour'): void => {
-        openDeleteConfirm({
-          count: items.length,
-          onConfirm: () => deleteHistoryItems(items.map((i) => i.id)),
-          title: `Delete Entire ${type === 'day' ? 'Day' : 'Hour'}`,
-          typeText: `all ${items.length} history items for this ${type}`,
-        });
-      },
-      [deleteHistoryItems, openDeleteConfirm],
-    );
 
     const handleDeleteItemRequest = useCallback(
       (item: ChromeHistoryItem): void => {

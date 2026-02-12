@@ -15,7 +15,7 @@ interface SettingRowProps {
 
 const SettingRow = memo(({ title, description, children }: SettingRowProps): JSX.Element => {
   return (
-    <div className="layout-flex-between rounded-lg border border-slate-200 bg-white px-2 py-1">
+    <div className="layout-flex-between rounded-lg border border-line bg-surface px-2 py-1">
       <div>
         <h4 className="txt-highlight">{title}</h4>
         <p className="txt-muted">{description}</p>
@@ -81,27 +81,37 @@ export const SettingView = (): JSX.Element => {
         <SettingSection title="Data">
           <SettingRow description="How long to keep your browsing history." title="History Retention">
             <select
-              className="input-base px-2 py-1"
+              className="input-base w-32 px-2 py-1"
               onChange={(e: ChangeEvent<HTMLSelectElement>) => setDataRetention(e.target.value)}
               value={dataRetention}
             >
-              <option value="disabled">Disabled</option>
-              <option value="90">90 days</option>
-              <option value="30">30 days</option>
-              <option value="14">14 days</option>
-              <option value="7">7 days</option>
+              <option className="bg-surface" value="disabled">
+                Disabled
+              </option>
+              <option className="bg-surface" value="90">
+                90 days
+              </option>
+              <option className="bg-surface" value="30">
+                30 days
+              </option>
+              <option className="bg-surface" value="14">
+                14 days
+              </option>
+              <option className="bg-surface" value="7">
+                7 days
+              </option>
             </select>
           </SettingRow>
         </SettingSection>
 
         <SettingSection title="Actions">
-          <div className="layout-flex-between rounded-lg border border-red-200 bg-white p-2">
+          <div className="layout-flex-between card border-danger/20">
             <div>
-              <h4 className="font-semibold text-red-800">Clear All History</h4>
-              <p className="text-sm text-red-600">Permanently delete all your browsing data.</p>
+              <h4 className="txt-highlight text-danger">Clear All History</h4>
+              <p className="txt-main text-danger/80">Permanently delete all your browsing data.</p>
             </div>
             <div>
-              <button className="btn-primary bg-red-600 hover:bg-red-700" onClick={handleOpenClearHistoryModal}>
+              <button className="btn-danger-large" onClick={handleOpenClearHistoryModal}>
                 Clear Data
               </button>
             </div>

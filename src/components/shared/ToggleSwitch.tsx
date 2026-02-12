@@ -15,7 +15,7 @@ export const ToggleSwitch = memo(({ enabled, setEnabled, disabled = false }: Tog
       onClick={() => !disabled && setEnabled(!enabled)}
     >
       <div className="relative">
-        <div className={`toggle-switch-track ${enabled ? 'bg-slate-800' : 'bg-slate-200'}`} />
+        <div className={`toggle-switch-track ${enabled ? 'bg-primary' : 'bg-line'}`} />
         <div className={`toggle-switch-thumb ${enabled ? 'translate-x-6' : ''}`} />
       </div>
     </div>

@@ -56,9 +56,9 @@ export const ConfirmModal = memo(
               <Icon name="X" className="icon-md" />
             </button>
           </header>
-          <div className="modal-body">
-            <div className="txt-main text-slate-600">{message}</div>
-            <div className="mt-4 flex justify-end space-x-2">
+          <div className="modal-body layout-stack-md">
+            <div className="txt-main">{message}</div>
+            <div className="flex justify-end gap-2">
               <button className="btn-secondary" onClick={onClose}>
                 {cancelText}
               </button>

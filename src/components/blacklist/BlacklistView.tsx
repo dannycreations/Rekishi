@@ -25,13 +25,7 @@ const Tooltip = memo(({ anchorEl, children, onMouseEnter, onMouseLeave }: Toolti
   }
 
   return createPortal(
-    <div
-      ref={popoverRef}
-      style={style}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      className="fixed z-[101] w-72 rounded-lg border border-slate-200 bg-white p-3 txt-main shadow-lg popover-animate-enter"
-    >
+    <div ref={popoverRef} style={style} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} className="popover-container">
       {children}
     </div>,
     document.body,
@@ -160,31 +154,31 @@ export const BlacklistView = (): JSX.Element => {
           </div>
         </div>
         {sortedItems.length > 0 ? (
-          <ul className="layout-stack-sm mt-2">
+          <ul className="layout-stack-sm">
             {sortedItems.map((item) => (
               <BlacklistItem key={item.value} item={item} onEdit={handleEditDomain} onRemove={handleRemoveDomain} />
             ))}
           </ul>
         ) : (
-          <p className="centered-view py-6">Your blacklist is empty. Add domains using the form above.</p>
+          <p className="centered-view">Your blacklist is empty. Add domains using the form above.</p>
         )}
       </div>
 
       {isTooltipOpen && (
         <Tooltip anchorEl={tooltipAnchorRef.current} onMouseEnter={handleTooltipOpen} onMouseLeave={handleTooltipClose}>
           <h4 className="mb-2 txt-title-sm">Supported Patterns</h4>
-          <ul className="list-inside list-disc space-y-2 text-xs">
+          <ul className="list-inside list-disc space-y-2 txt-muted">
             <li>
-              <strong>Exact domain:</strong> <code className="rounded bg-slate-100 p-1">example.com</code>
+              <strong>Exact domain:</strong> <code className="rounded bg-surface-hover p-1">example.com</code>
             </li>
             <li>
-              <strong>Subdomains:</strong> <code className="rounded bg-slate-100 p-1">*.example.com</code>
+              <strong>Subdomains:</strong> <code className="rounded bg-surface-hover p-1">*.example.com</code>
             </li>
             <li>
-              <strong>URL paths:</strong> <code className="rounded bg-slate-100 p-1">example.com/path/*</code>
+              <strong>URL paths:</strong> <code className="rounded bg-surface-hover p-1">example.com/path/*</code>
             </li>
             <li>
-              <strong>Regular expression:</strong> <code className="rounded bg-slate-100 p-1">/google\.com/</code>
+              <strong>Regular expression:</strong> <code className="rounded bg-surface-hover p-1">/google\.com/</code>
             </li>
           </ul>
           <p className="mt-2 txt-muted">Regex and path patterns match against the full URL (e.g., `domain.com/path`).</p>

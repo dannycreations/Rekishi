@@ -52,11 +52,11 @@ export const HistoryItemHeader = memo(
           <div className="cursor-pointer" onClick={() => onToggleDaySelection(dayItems)}>
             <div
               className={`checkbox-custom ${
-                allForDaySelected || someForDaySelected ? 'checkbox-checked' : 'checkbox-unchecked hover:border-slate-400'
+                allForDaySelected || someForDaySelected ? 'checkbox-checked' : 'checkbox-unchecked hover:border-text-tertiary'
               }`}
             >
-              {allForDaySelected && <Icon name="Check" className="icon-xs text-white" />}
-              {someForDaySelected && <div className="h-0.5 w-2 rounded-sm bg-white" />}
+              {allForDaySelected && <Icon name="Check" className="icon-xs text-background" />}
+              {someForDaySelected && <div className="h-0.5 w-2 rounded-sm bg-background" />}
             </div>
           </div>
           <h2 className="section-title-lg">{dayHeaderText}</h2>

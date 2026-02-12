@@ -45,7 +45,7 @@ const Toast = memo(({ toast, onRemove }: { readonly toast: ToastItem; readonly o
         <div className="flex items-start">
           <div className="flex-shrink-0">{TOAST_ICONS[toast.type]}</div>
           <div className="ml-3 w-0 flex-1 pt-1">
-            <p className="text-sm font-medium text-slate-900">{toast.message}</p>
+            <p className="txt-title-sm">{toast.message}</p>
           </div>
           <div className="ml-3 flex flex-shrink-0">
             <button className="btn-ghost" onClick={handleRemove}>

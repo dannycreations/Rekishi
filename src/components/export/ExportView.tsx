@@ -22,11 +22,9 @@ interface RadioCardProps {
 const RadioCard = memo(({ checked, value, label, description, onChange }: RadioCardProps): JSX.Element => {
   return (
     <label className={`radio-card ${checked ? 'radio-card-checked' : ''}`}>
-      <div className="radio-dot-container">
+      <div className={`radio-dot-container ${checked ? 'radio-dot-container-checked' : ''}`}>
         <input checked={checked} className="peer sr-only" name="format" onChange={() => onChange(value)} type="radio" value={value} />
-        <div className={`radio-dot-container ${checked ? 'radio-dot-container-checked' : ''}`}>
-          <div className={`radio-dot ${checked ? 'radio-dot-checked' : ''}`} />
-        </div>
+        <div className={`radio-dot ${checked ? 'radio-dot-checked' : ''}`} />
       </div>
       <div>
         <span className="txt-highlight">{label}</span>
@@ -151,7 +149,7 @@ export const ExportView = (): JSX.Element => {
                   onClick={() => setActiveCalendar(activeCalendar === 'start' ? null : 'start')}
                 >
                   <span className="txt-main">{startDate}</span>
-                  <Icon name="Calendar" className="icon-sm text-slate-400" />
+                  <Icon name="Calendar" className="icon-sm text-text-tertiary" />
                 </button>
               </div>
               <div>
@@ -165,7 +163,7 @@ export const ExportView = (): JSX.Element => {
                   onClick={() => setActiveCalendar(activeCalendar === 'end' ? null : 'end')}
                 >
                   <span className="txt-main">{endDate}</span>
-                  <Icon name="Calendar" className="icon-sm text-slate-400" />
+                  <Icon name="Calendar" className="icon-sm text-text-tertiary" />
                 </button>
               </div>
             </div>
@@ -179,7 +177,7 @@ export const ExportView = (): JSX.Element => {
             </div>
           </div>
 
-          <button className="btn-primary layout-flex-center w-full disabled:bg-slate-500" disabled={isLoading} onClick={handleExport}>
+          <button className="btn-primary layout-flex-center w-full" disabled={isLoading} onClick={handleExport}>
             {isLoading ? (
               <>
                 <Icon name="Loader2" className="mr-2 icon-md animate-spin" />

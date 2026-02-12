@@ -212,9 +212,9 @@ export const HistoryView = memo(
     if (dailyGroups.length === 0 && !isLoadingMore) {
       return (
         <div className="centered-view">
-          <Icon name="Search" className="centered-view-icon icon-xl" />
-          <h2 className="text-xl txt-highlight">No History Found</h2>
-          <p className="mt-2 txt-muted">Your browsing history for the selected period is empty.</p>
+          <Icon name="Search" className="centered-view-icon" />
+          <h2 className="txt-title-lg">No History Found</h2>
+          <p className="txt-muted">Your browsing history for the selected period is empty.</p>
         </div>
       );
     }
@@ -236,7 +236,7 @@ export const HistoryView = memo(
               totalSearchItemsCount={historyItems.length}
               totalSelectedCount={selectedItems.size}
             />
-            <hr className="mt-2 border-slate-200" />
+            <hr className="border-line" />
           </div>
         )}
         <div className="layout-stack-md p-3">
@@ -265,7 +265,7 @@ export const HistoryView = memo(
                     totalSearchItemsCount={historyItems.length}
                     totalSelectedCount={selectedItems.size}
                   />
-                  <hr className="mt-2 mb-2 border-slate-200" />
+                  <hr className="mt-2 mb-2 border-line" />
                 </div>
                 <div className="layout-stack-sm">
                   {dayGroup.hourlyGroups.map((group) => {

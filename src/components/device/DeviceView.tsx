@@ -35,14 +35,12 @@ export const DeviceView = (): JSX.Element => {
           <DeviceCardSkeleton />
         </div>
       ) : error ? (
-        <div className="rounded-lg bg-red-50 p-3 text-center txt-error">{error}</div>
+        <div className="btn-danger p-3 text-center">{error}</div>
       ) : devices.length === 0 ? (
         <div className="centered-view">
-          <Icon name="Smartphone" className="mb-2 icon-xxl text-slate-400" />
-          <h3 className="text-xl txt-highlight">No Other Devices Found</h3>
-          <p className="mt-2 txt-muted">
-            It looks like you're not signed into Chrome on any other devices. Sign in on another device to sync history.
-          </p>
+          <Icon name="Smartphone" className="icon-xxl text-text-tertiary" />
+          <h3 className="txt-title-lg">No Other Devices Found</h3>
+          <p className="txt-muted">It looks like you're not signed into Chrome on any other devices. Sign in on another device to sync history.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -50,8 +48,8 @@ export const DeviceView = (): JSX.Element => {
             const iconName = DEVICE_ICONS[device.type] || 'Monitor';
             return (
               <div key={device.name} className="card flex items-center space-x-2 p-2">
-                <div className="rounded-full bg-slate-100 p-2">
-                  <Icon name={iconName} className="icon-xl text-slate-600" />
+                <div className="rounded-full bg-surface-hover p-2">
+                  <Icon name={iconName} className="icon-xl text-text-secondary" />
                 </div>
                 <div>
                   <h3 className="txt-highlight">{device.name}</h3>

@@ -62,8 +62,6 @@ export const useStickyHeader = (
       if (activeIndex !== -1) {
         activeDayKey = currentPositions[activeIndex].dayKey;
         activeHourText = currentPositions[activeIndex].hourText;
-      } else if (processedDailyGroups.length > 0) {
-        activeDayKey = processedDailyGroups[0].date.toISOString();
       }
 
       setStickyState((prev) => {

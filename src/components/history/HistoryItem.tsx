@@ -39,7 +39,7 @@ const HistoryHighlight = memo(({ text, highlight }: HistoryHighlightProps): JSX.
     <>
       {parts.map((part, i) =>
         part.toLowerCase() === highlight.toLowerCase() ? (
-          <mark key={i} className="rounded-sm bg-yellow-200 px-1">
+          <mark key={i} className="rounded-sm bg-highlight text-primary px-1">
             {part}
           </mark>
         ) : (
@@ -122,17 +122,17 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
 
   return (
     <div className={`group item-list ${isChecked ? 'item-list-selected' : 'item-list-hover'}`} onClick={handleToggle}>
-      <div className="mr-2">
-        <div className={`checkbox-custom ${isChecked ? 'checkbox-checked' : 'checkbox-unchecked group-hover:border-slate-400'}`}>
-          {isChecked && <Icon name="Check" className="icon-xs text-white" />}
+      <div className="flex items-center">
+        <div className={`checkbox-custom ${isChecked ? 'checkbox-checked' : 'checkbox-unchecked group-hover:border-text-tertiary'}`}>
+          {isChecked && <Icon name="Check" className="icon-xs text-background" />}
         </div>
       </div>
       {faviconError ? (
-        <Icon name="Globe" className="mr-2 icon-md text-slate-400" />
+        <Icon name="Globe" className="icon-md text-text-tertiary" />
       ) : (
         <img
           alt=""
-          className="mr-2 icon-md"
+          className="icon-md"
           loading="lazy"
           onError={handleFaviconError}
           src={`https://www.google.com/s2/favicons?sz=32&domain_url=${hostname}`}
@@ -143,7 +143,7 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
           <a className="link-standard" href={url} onClick={(e) => e.stopPropagation()} rel="noopener noreferrer" target="_blank">
             <HistoryHighlight text={title || url} highlight={shouldHighlight ? searchQuery : ''} />
           </a>
-          <Icon name="ExternalLink" className="ml-1 icon-xs text-slate-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+          <Icon name="ExternalLink" className="ml-1 icon-xs text-text-tertiary opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
         </div>
         <p className="truncate txt-muted">
           <HistoryHighlight text={url} highlight={shouldHighlight ? searchQuery : ''} />

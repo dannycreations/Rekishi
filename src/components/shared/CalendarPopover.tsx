@@ -124,11 +124,11 @@ export const CalendarPopover = memo(
               </button>
               <div className="flex items-center gap-2">
                 <span className="txt-title-sm">{monthName}</span>
-                <button className="btn-secondary p-1 txt-label" onClick={handleGoToToday}>
+                <button className="btn-secondary h-6 px-2 py-0 txt-label" onClick={handleGoToToday}>
                   Today
                 </button>
               </div>
-              <button className="btn-ghost disabled:text-slate-300" disabled={isCurrentMonth} onClick={handleNextMonth}>
+              <button className="btn-ghost disabled:text-text-tertiary/50" disabled={isCurrentMonth} onClick={handleNextMonth}>
                 <Icon name="ChevronRight" className="icon-md" />
               </button>
             </div>
@@ -150,7 +150,7 @@ export const CalendarPopover = memo(
                 if (isFuture || isBeforeMin || isAfterMax) {
                   return (
                     <div key={date.toISOString()} className="flex items-center justify-center py-1">
-                      <button disabled className="h-8 w-8 cursor-not-allowed rounded-full text-sm text-slate-300">
+                      <button disabled className="h-8 w-8 cursor-not-allowed rounded-full text-sm text-text-tertiary/50">
                         {date.getDate()}
                       </button>
                     </div>
@@ -168,11 +168,11 @@ export const CalendarPopover = memo(
                       disabled={!hasHistory}
                       className={`h-8 w-8 cursor-pointer rounded-full text-sm transition-colors ${
                         isSelected
-                          ? 'bg-slate-800 font-semibold text-white hover:bg-slate-700'
+                          ? 'bg-primary font-semibold text-background hover:opacity-90'
                           : hasHistory
-                            ? 'text-slate-600 hover:bg-slate-100'
-                            : 'cursor-not-allowed text-slate-300'
-                      } ${!isSelected && isToday && hasHistory ? 'ring-1 ring-slate-400' : ''}`}
+                            ? 'text-text-secondary hover:bg-surface-hover'
+                            : 'cursor-not-allowed text-text-tertiary/50'
+                      } ${!isSelected && isToday && hasHistory ? 'ring-1 ring-text-tertiary/50' : ''}`}
                       onClick={() => onDateSelect(date)}
                     >
                       {date.getDate()}

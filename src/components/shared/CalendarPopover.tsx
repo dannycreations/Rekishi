@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -124,15 +125,15 @@ export const CalendarPopover = memo(
               </button>
               <div className="flex items-center gap-2">
                 <span className="txt-title-sm">{monthName}</span>
-                <button className="btn-secondary h-6 px-2 py-0 txt-label" onClick={handleGoToToday}>
+                <button className="btn-secondary btn-nav-today" onClick={handleGoToToday}>
                   Today
                 </button>
               </div>
-              <button className="btn-ghost disabled:text-text-tertiary/50" disabled={isCurrentMonth} onClick={handleNextMonth}>
+              <button className="btn-ghost" disabled={isCurrentMonth} onClick={handleNextMonth}>
                 <Icon name="ChevronRight" className="icon-md" />
               </button>
             </div>
-            <div className="grid grid-cols-7 gap-y-1 text-center">
+            <div className="grid-calendar">
               {DAYS_OF_WEEK.map((day) => (
                 <div key={day} className="txt-label">
                   {day}
@@ -166,16 +167,18 @@ export const CalendarPopover = memo(
                 const isToday = isSameDay(date, today);
 
                 return (
-                  <div key={date.toISOString()} className="flex items-center justify-center py-1">
+                  <div key={date.toISOString()} className="layout-flex-center py-1">
                     <button
                       disabled={!hasHistory}
-                      className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-sm leading-none transition-colors ${
+                      className={clsx(
+                        'flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-sm leading-none transition-colors',
                         isSelected
                           ? 'border border-line bg-background-soft font-semibold text-primary hover:opacity-90'
                           : hasHistory
                             ? 'text-text-secondary hover:bg-surface-hover'
-                            : 'cursor-not-allowed text-text-tertiary/50'
-                      } ${!isSelected && isToday && hasHistory ? 'border border-line' : ''}`}
+                            : 'cursor-not-allowed text-text-tertiary/50',
+                        !isSelected && isToday && hasHistory && 'border border-line',
+                      )}
                       onClick={() => onDateSelect(date)}
                     >
                       <span className="translate-y-[0.5px]">{date.getDate()}</span>

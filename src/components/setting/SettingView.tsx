@@ -80,11 +80,11 @@ export const SettingView = (): JSX.Element => {
 
   return (
     <>
-      <div className="layout-stack-md">
+      <div className="modal-body-stack">
         <SettingSection title="Appearance">
           <SettingRow description="Choose how Rekishi looks to you." title="Theme">
             <select
-              className="input-base w-32 px-2 py-1"
+              className="input-base btn-setting-select"
               onChange={(e: ChangeEvent<HTMLSelectElement>) => setTheme(e.target.value as Theme)}
               value={theme}
             >
@@ -104,7 +104,7 @@ export const SettingView = (): JSX.Element => {
         <SettingSection title="Data">
           <SettingRow description="How long to keep your browsing history." title="History Retention">
             <select
-              className="input-base w-32 px-2 py-1"
+              className="input-base btn-setting-select"
               onChange={(e: ChangeEvent<HTMLSelectElement>) => setDataRetention(e.target.value)}
               value={dataRetention}
             >
@@ -129,15 +129,13 @@ export const SettingView = (): JSX.Element => {
 
         <SettingSection title="Actions">
           <div className="layout-flex-between card border-danger/10">
-            <div>
+            <div className="layout-stack-sm">
               <h4 className="txt-highlight text-danger">Clear All History</h4>
               <p className="txt-main text-danger/80">Permanently delete all your browsing data.</p>
             </div>
-            <div>
-              <button className="btn-danger-large" onClick={handleOpenClearHistoryModal}>
-                Clear Data
-              </button>
-            </div>
+            <button className="btn-danger-large" onClick={handleOpenClearHistoryModal}>
+              Clear Data
+            </button>
           </div>
         </SettingSection>
       </div>

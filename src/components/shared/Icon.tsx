@@ -10,7 +10,7 @@ interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {
   readonly size?: number;
 }
 
-export const Icon: FC<IconProps> = memo(({ name, size = 20, className, ...props }) => {
+export const Icon: FC<IconProps> = memo(({ name, size, className, ...props }) => {
   const LucideIcon = Lucide[name as keyof typeof Lucide] as ElementType;
 
   if (!LucideIcon) {

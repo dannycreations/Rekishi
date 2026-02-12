@@ -104,18 +104,24 @@ export const Rekishi = (): JSX.Element => {
           setSelectedDate={setSelectedDate}
         />
 
-        <main ref={mainContentRef} className="min-h-0 flex-1 overflow-y-auto">
+        <main ref={mainContentRef} className="main-content">
           {isLoading ? (
             <HistoryViewSkeleton />
           ) : error ? (
-            <div className="layout-flex-center h-full txt-error">
-              <p>Error loading history: {error}</p>
+            <div className="centered-view">
+              <Icon name="AlertCircle" className="centered-view-icon icon-error" />
+              <div className="layout-stack-sm">
+                <h2 className="txt-title-lg">Something went wrong</h2>
+                <p className="txt-error">{error}</p>
+              </div>
             </div>
           ) : noHistoryEver ? (
             <div className="centered-view">
               <Icon name="History" className="centered-view-icon" />
-              <h2 className="txt-title-lg">Welcome to Rekishi!</h2>
-              <p className="txt-main">Start browsing the web to see your history here.</p>
+              <div className="layout-stack-sm">
+                <h2 className="txt-title-lg">Welcome to Rekishi!</h2>
+                <p className="txt-main">Start browsing the web to see your history here.</p>
+              </div>
             </div>
           ) : (
             <HistoryView

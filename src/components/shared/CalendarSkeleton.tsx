@@ -13,7 +13,7 @@ export const CalendarSkeleton = memo((): JSX.Element => {
         <Skeleton className="h-5 w-32 rounded" />
         <Skeleton className="icon-xl rounded-full" />
       </div>
-      <div className="grid grid-cols-7 gap-y-1 text-center">
+      <div className="grid-calendar gap-y-1">
         {DAYS_OF_WEEK.map((day) => (
           <div key={day} className="txt-label">
             {day}

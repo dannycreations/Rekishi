@@ -65,16 +65,16 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
 
   if (isEditing) {
     return (
-      <li className="layout-flex-between item-list-selected rounded-md px-2 py-1">
+      <div className="layout-flex-between item-list-selected rounded-md px-2 py-1">
         <input
           autoFocus
-          className="input-base px-2 py-1"
+          className="input-base btn-edit-inline"
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           type="text"
           value={editValue}
         />
-        <div className="ml-2 flex items-center space-x-1">
+        <div className="ml-2 flex items-center gap-1">
           <button className="btn-success-ghost" onClick={handleSave}>
             <Icon name="Check" className="icon-sm" />
           </button>
@@ -82,17 +82,17 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
             <Icon name="X" className="icon-sm" />
           </button>
         </div>
-      </li>
+      </div>
     );
   }
 
   return (
-    <li className="group item-list layout-flex-between">
-      <div className="flex items-center space-x-2">
+    <div className="group item-list layout-flex-between">
+      <div className="flex items-center gap-2">
         <span className="txt-main">{item.value}</span>
         {item.isRegex && <span className="rounded-md bg-line p-1 font-mono txt-highlight txt-muted">REGEX</span>}
       </div>
-      <div className="flex items-center space-x-1">
+      <div className="flex items-center gap-1">
         <button className="btn-ghost" onClick={handleEdit}>
           <Icon name="Pencil" className="icon-sm" />
         </button>
@@ -100,6 +100,6 @@ export const BlacklistItem = memo(({ item, onEdit, onRemove }: BlacklistItemProp
           <Icon name="Trash2" className="icon-sm" />
         </button>
       </div>
-    </li>
+    </div>
   );
 });

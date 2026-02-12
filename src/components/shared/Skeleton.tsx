@@ -8,5 +8,5 @@ interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const Skeleton = memo(({ className, ...props }: SkeletonProps): JSX.Element => {
-  return <div className={clsx('animate-pulse rounded-md bg-surface-hover', className)} {...props} />;
+  return <div className={clsx('skeleton-base', className)} {...props} />;
 });

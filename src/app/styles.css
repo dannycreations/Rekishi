@@ -170,6 +170,18 @@
     @apply absolute inset-0 mx-auto flex max-w-5xl flex-col overflow-hidden rounded-lg bg-background-soft shadow-lg sm:inset-6;
   }
 
+  .main-header {
+    @apply relative z-20 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-line bg-surface p-3 md:flex-nowrap md:justify-center;
+  }
+
+  .main-content {
+    @apply min-h-0 flex-1 overflow-y-auto;
+  }
+
+  .main-content-padded {
+    @apply p-3 pt-0;
+  }
+
   .layout-stack-sm {
     @apply space-y-2;
   }
@@ -281,6 +293,26 @@
     @apply cursor-pointer transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 rounded-lg p-2 text-text-tertiary hover:scale-110 hover:bg-surface-hover hover:text-text-primary active:scale-95;
   }
 
+  .btn-nav-today {
+    @apply h-6 px-2 py-0 text-xs font-medium text-text-tertiary;
+  }
+
+  .btn-icon-clear {
+    @apply absolute inset-y-0 right-0 flex items-center pr-2;
+  }
+
+  .btn-icon-search {
+    @apply pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2;
+  }
+
+  .btn-setting-select {
+    @apply w-32 px-2 py-1;
+  }
+
+  .btn-edit-inline {
+    @apply px-2 py-1;
+  }
+
   .btn-success-ghost {
     @apply cursor-pointer transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 rounded-md p-1 text-text-tertiary hover:bg-green-100 hover:text-green-600 active:scale-90;
   }
@@ -333,6 +365,14 @@
 
   .modal-body {
     @apply flex-1 overflow-y-auto p-3;
+  }
+
+  .modal-body-stack {
+    @apply space-y-3;
+  }
+
+  .grid-calendar {
+    @apply grid grid-cols-7 text-center;
   }
 
   .popover-container {
@@ -452,6 +492,10 @@
 
   .radio-dot-checked {
     @apply bg-primary;
+  }
+
+  .skeleton-base {
+    @apply animate-pulse bg-surface-hover;
   }
 
   .toggle-switch {

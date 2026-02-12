@@ -114,13 +114,13 @@ export const BlacklistView = (): JSX.Element => {
   }, []);
 
   return (
-    <div className="layout-stack-md">
+    <div className="modal-body-stack">
       <div>
-        <form className="flex items-center space-x-2" onSubmit={handleAddDomain}>
+        <form className="flex items-center gap-2" onSubmit={handleAddDomain}>
           <div className="search-container">
             <input
               autoFocus
-              className="input-base px-3 pr-7"
+              className="input-base pr-7"
               onChange={(e) => {
                 setNewDomain(e.target.value);
                 setError(null);
@@ -129,7 +129,7 @@ export const BlacklistView = (): JSX.Element => {
               type="text"
               value={newDomain}
             />
-            <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+            <div className="btn-icon-clear">
               {newDomain && (
                 <button className="btn-ghost" onClick={() => setNewDomain('')} type="button">
                   <Icon name="X" className="icon-sm" />
@@ -154,11 +154,11 @@ export const BlacklistView = (): JSX.Element => {
           </div>
         </div>
         {sortedItems.length > 0 ? (
-          <ul className="layout-stack-sm">
+          <div className="layout-stack-sm">
             {sortedItems.map((item) => (
               <BlacklistItem key={item.value} item={item} onEdit={handleEditDomain} onRemove={handleRemoveDomain} />
             ))}
-          </ul>
+          </div>
         ) : (
           <div className="centered-view">
             <p className="txt-main">Your blacklist is empty. Add domains using the form above.</p>
@@ -169,7 +169,7 @@ export const BlacklistView = (): JSX.Element => {
       {isTooltipOpen && (
         <Tooltip anchorEl={tooltipAnchorRef.current} onMouseEnter={handleTooltipOpen} onMouseLeave={handleTooltipClose}>
           <h4 className="mb-2 txt-title-sm">Supported Patterns</h4>
-          <ul className="layout-stack-sm list-inside list-disc txt-muted">
+          <ul className="layout-stack-sm list-inside list-disc txt-main">
             <li>
               <strong className="txt-highlight">Exact domain:</strong> <code className="rounded bg-surface-hover p-1">example.com</code>
             </li>

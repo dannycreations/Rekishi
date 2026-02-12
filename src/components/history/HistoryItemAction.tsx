@@ -14,7 +14,7 @@ interface HistoryItemActionProps {
 
 export const HistoryItemAction = memo(({ isCopied, onCopy, onSearchSimilar, onBlacklist, onDelete }: HistoryItemActionProps): JSX.Element => {
   return (
-    <div className="absolute inset-0 hidden items-center justify-end space-x-1 group-hover:flex">
+    <div className="absolute inset-0 hidden items-center justify-end gap-1 group-hover:flex">
       <button className="btn-ghost" onClick={onCopy}>
         {isCopied ? <Icon name="Check" className="icon-sm icon-success" /> : <Icon name="Copy" className="icon-sm" />}
       </button>

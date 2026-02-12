@@ -29,7 +29,7 @@ export const ConfirmModal = memo(
   }: ConfirmModalProps): JSX.Element | null => {
     return (
       <Modal containerClassName="max-w-md" isOpen={isOpen} onClose={onClose} title={title}>
-        <div className="layout-stack-md">
+        <div className="modal-body-stack">
           <div className="txt-main">{message}</div>
           <div className="flex justify-end gap-2">
             <button className="btn-secondary" onClick={onClose}>

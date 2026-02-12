@@ -58,7 +58,7 @@ export const HistoryItemHeader = memo(
           </div>
           <h2 className="section-title-lg">{dayHeaderText}</h2>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           {isSearchMode && onDeleteSearch && (
             <DeleteButton disabled={!totalSearchItemsCount || totalSearchItemsCount === 0} onClick={onDeleteSearch}>
               Delete entire search

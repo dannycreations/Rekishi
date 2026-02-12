@@ -7,12 +7,12 @@ import type { JSX } from 'react';
 const HistoryViewItemSkeleton = memo((): JSX.Element => {
   return (
     <div className="item-list pointer-events-none">
-      <div className="flex items-center">
+      <div className="layout-flex-center">
         <Skeleton className="h-4 w-4 rounded" />
       </div>
-      <Skeleton className="icon-md rounded-sm" />
+      <Skeleton className="icon-md rounded" />
       <div className="min-w-0 flex-1">
-        <div className="flex items-center">
+        <div>
           <Skeleton className="h-4 w-3/4 rounded" />
         </div>
         <div className="mt-1">
@@ -31,12 +31,12 @@ export const HistoryViewGroupSkeleton = memo((): JSX.Element => {
     <section>
       <div className="section-header">
         <Skeleton className="h-4 w-12 rounded" />
-        <div className="btn-danger opacity-50">
-          <Skeleton className="icon-xs mr-1 rounded-sm" />
-          <Skeleton className="h-3 w-10 rounded-sm" />
+        <div className="btn-danger opacity-50 pointer-events-none">
+          <Skeleton className="icon-xs mr-1 rounded" />
+          <Skeleton className="h-3 w-10 rounded" />
         </div>
       </div>
-      <div className="flex flex-col space-y-1">
+      <div className="layout-stack-sm">
         <HistoryViewItemSkeleton />
         <HistoryViewItemSkeleton />
         <HistoryViewItemSkeleton />
@@ -49,13 +49,13 @@ const DailyGroupHeaderSkeleton = memo((): JSX.Element => {
   return (
     <div className="section-header">
       <div className="flex items-center gap-2">
-        <div className="checkbox-custom h-4 w-4 rounded" />
+        <div className="checkbox-custom rounded" />
         <Skeleton className="h-5 w-48 rounded" />
       </div>
       <div className="flex items-center space-x-2">
-        <div className="btn-danger opacity-50">
-          <Skeleton className="icon-xs mr-1 rounded-sm" />
-          <Skeleton className="h-3 w-20 rounded-sm" />
+        <div className="btn-danger opacity-50 pointer-events-none">
+          <Skeleton className="icon-xs mr-1 rounded" />
+          <Skeleton className="h-3 w-20 rounded" />
         </div>
       </div>
     </div>
@@ -64,7 +64,7 @@ const DailyGroupHeaderSkeleton = memo((): JSX.Element => {
 
 export const HistoryViewSkeleton = memo((): JSX.Element => {
   return (
-    <div className="layout-stack-md p-3 pointer-events-none">
+    <div className="layout-stack-md main-content-padded pointer-events-none">
       <section>
         <DailyGroupHeaderSkeleton />
         <hr className="my-2 border-line" />

@@ -167,14 +167,14 @@ export const HistoryView = memo(
         <div className="centered-view">
           <Icon name="Search" className="centered-view-icon" />
           <h2 className="txt-title-lg">No History Found</h2>
-          <p className="txt-muted">Your browsing history for the selected period is empty.</p>
+          <p className="txt-main">Your browsing history for the selected period is empty.</p>
         </div>
       );
     }
 
     return (
       <>
-        <div className="p-3 pt-0">
+        <div className="main-content-padded">
           {dailyGroups.map((dayGroup) => {
             const dayKey = dayGroup.date.toISOString();
             const dayHeaderText = formatDayHeader(dayGroup.date);
@@ -195,7 +195,7 @@ export const HistoryView = memo(
                   />
                   <hr className="mx-2 mt-3 border-line" />
                 </div>
-                <div className="layout-stack-sm mt-3">
+                <div className="layout-stack-md mt-3">
                   {dayGroup.hourlyGroups.map((group) => (
                     <div key={group.time} data-day-key={dayKey} data-hour-key={group.time}>
                       <HistoryItemGroup

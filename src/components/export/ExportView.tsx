@@ -134,7 +134,7 @@ export const ExportView = (): JSX.Element => {
 
   return (
     <>
-      <div className="layout-stack-md">
+      <div className="modal-body-stack">
         <div className="card layout-stack-md">
           <div className="layout-stack-sm">
             <h3 className="txt-title-lg">Date Range</h3>
@@ -172,7 +172,7 @@ export const ExportView = (): JSX.Element => {
 
           <div className="layout-stack-sm">
             <h3 className="txt-title-lg">Format</h3>
-            <div className="flex space-x-2">
+            <div className="flex gap-2">
               <RadioCard checked={format === 'json'} description="JavaScript Object Notation" label="JSON" onChange={setFormat} value="json" />
               <RadioCard checked={format === 'csv'} description="Comma-Separated Values" label="CSV" onChange={setFormat} value="csv" />
             </div>

@@ -128,7 +128,7 @@ export const Header = memo(
     }, [onOpenModal]);
 
     return (
-      <header className="relative z-20 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-line bg-surface p-3 md:flex-nowrap md:justify-center">
+      <header className="main-header">
         <div className="logo-group">
           <Icon name="History" className="icon-lg text-text-primary" />
           <h1 className="logo-text">Rekishi</h1>
@@ -136,7 +136,7 @@ export const Header = memo(
 
         <div className="order-last flex w-full grow items-center gap-2 md:order-0 md:w-auto md:grow-0">
           <div className="search-container">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2">
+            <div className="btn-icon-search">
               <Icon name="Search" className="icon-sm text-text-tertiary" />
             </div>
             <input
@@ -147,7 +147,7 @@ export const Header = memo(
               type="text"
               value={localSearchQuery}
             />
-            <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+            <div className="btn-icon-clear">
               {localSearchQuery && (
                 <button className="btn-ghost" onClick={handleClearSearch}>
                   <Icon name="X" className="icon-sm" />
@@ -155,12 +155,10 @@ export const Header = memo(
               )}
             </div>
           </div>
-          <div>
-            <button ref={calendarButtonRef} className="btn-secondary flex items-center gap-2" onClick={handleToggleCalendar}>
-              <span className="txt-main text-text-primary">{formattedDate}</span>
-              <Icon name="Calendar" className="icon-sm text-text-tertiary" />
-            </button>
-          </div>
+          <button ref={calendarButtonRef} className="btn-secondary flex items-center gap-2" onClick={handleToggleCalendar}>
+            <span className="txt-main text-text-primary">{formattedDate}</span>
+            <Icon name="Calendar" className="icon-sm text-text-tertiary" />
+          </button>
         </div>
 
         <div className="nav-group">

@@ -28,7 +28,7 @@ export const HistoryItemGroup = memo(
           <h2 className="section-title-sm">{group.time}</h2>
           <DeleteButton onClick={handleOpenDeleteModal}>Delete</DeleteButton>
         </div>
-        <div className="flex flex-col space-y-1">
+        <div className="layout-stack-sm">
           {group.items.map((item) => (
             <HistoryItem
               key={item.id}

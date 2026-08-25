@@ -6,7 +6,6 @@ import { useToastStore } from '../../stores/useToastStore';
 import { escapeRegex, getHostnameFromUrl, isPotentialRegex } from '../../utilities/common';
 import { formatTimeShort } from '../../utilities/date';
 import { Icon } from '../shared/Icon';
-import { HistoryItemAction } from './HistoryItemAction';
 
 import type { JSX, MouseEvent } from 'react';
 import type { ChromeHistoryItem } from '../../app/types';
@@ -151,13 +150,20 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
       </div>
       <div className="relative ml-2 flex h-6 w-32 shrink-0 items-center justify-end">
         <span className="text-right txt-muted group-hover:hidden">{visitTime}</span>
-        <HistoryItemAction
-          isCopied={isCopied}
-          onBlacklist={handleBlacklist}
-          onCopy={handleCopyUrl}
-          onDelete={handleDelete}
-          onSearchSimilar={handleSearchSimilar}
-        />
+        <div className="absolute inset-0 hidden items-center justify-end gap-1 group-hover:flex">
+          <button className="btn-ghost" onClick={handleCopyUrl}>
+            {isCopied ? <Icon name="Check" className="icon-sm icon-success" /> : <Icon name="Copy" className="icon-sm" />}
+          </button>
+          <button className="btn-ghost" onClick={handleSearchSimilar}>
+            <Icon name="Search" className="icon-sm" />
+          </button>
+          <button className="btn-ghost" onClick={handleBlacklist}>
+            <Icon name="Link2Off" className="icon-sm" />
+          </button>
+          <button className="btn-danger-ghost" onClick={handleDelete}>
+            <Icon name="Trash2" className="icon-sm" />
+          </button>
+        </div>
       </div>
     </div>
   );

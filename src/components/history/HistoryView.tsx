@@ -1,12 +1,12 @@
 import { memo, useCallback, useMemo, useRef } from 'react';
 
 import { useConfirm } from '../../hooks/useConfirm';
-import { useHistoryGroup } from '../../hooks/useHistoryGroup';
 import { useSelection } from '../../hooks/useSelection';
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
 import { useToastStore } from '../../stores/useToastStore';
 import { getHostnameFromUrl } from '../../utilities/common';
 import { formatDayHeader } from '../../utilities/date';
+import { groupHistoryByDayAndHour } from '../../utilities/history';
 import { Icon } from '../shared/Icon';
 import { HistoryItemGroup } from './HistoryItemGroup';
 import { HistoryItemHeader } from './HistoryItemHeader';
@@ -33,7 +33,20 @@ export const HistoryView = memo(
     const addToast = useToastStore((state) => state.addToast);
     const { addDomain } = useBlacklistStore();
 
-    const { dailyGroups, dayKeyByItemId } = useHistoryGroup(historyItems);
+    const dailyGroups = useMemo(() => groupHistoryByDayAndHour(historyItems), [historyItems]);
+
+    const dayKeyByItemId = useMemo(() => {
+      const dayKeys = new Map<string, string>();
+      for (const dayGroup of dailyGroups) {
+        const dayKey = dayGroup.date.toISOString();
+        for (const hourGroup of dayGroup.hourlyGroups) {
+          for (const item of hourGroup.items) {
+            dayKeys.set(item.id, dayKey);
+          }
+        }
+      }
+      return dayKeys;
+    }, [dailyGroups]);
 
     const selectedCountByDayKey = useMemo(() => {
       const counts = new Map<string, number>();

@@ -1,7 +1,17 @@
-import { compileRegex, isPotentialRegex } from './common';
+import { isPotentialRegex, safeRegExp } from './common';
 import { isSameDay } from './date';
 
 import type { ChromeHistoryItem, HourGroup } from '../app/types';
+
+const REGEX_SEARCH_ERROR = 'Invalid regular expression.';
+
+const compileRegex = (query: string): RegExp | null => {
+  const regex = safeRegExp(query.slice(1, -1), 'i');
+  if (!regex) {
+    console.error('Invalid regex provided:', query);
+  }
+  return regex;
+};
 
 export const mapToChromeHistoryItem = (item: chrome.history.HistoryItem): ChromeHistoryItem => {
   return {
@@ -13,6 +23,10 @@ export const mapToChromeHistoryItem = (item: chrome.history.HistoryItem): Chrome
   };
 };
 
+export const shouldSearchClientSide = (query: string): boolean => {
+  return isPotentialRegex(query) || query.length < 3;
+};
+
 export const applyClientSideSearch = (
   items: readonly ChromeHistoryItem[],
   searchQuery: string,
@@ -21,12 +35,9 @@ export const applyClientSideSearch = (
   readonly error?: string;
 } => {
   if (isPotentialRegex(searchQuery)) {
-    const { regex, error } = compileRegex(searchQuery);
-    if (error) {
-      return { items: [], error };
-    }
+    const regex = compileRegex(searchQuery);
     if (!regex) {
-      return { items: [] };
+      return { items: [], error: REGEX_SEARCH_ERROR };
     }
     return { items: items.filter((item) => regex.test(item.title) || regex.test(item.url)) };
   }

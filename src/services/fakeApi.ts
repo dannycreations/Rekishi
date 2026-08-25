@@ -2,7 +2,7 @@ import { BLACKLIST_STORAGE_KEY, SETTINGS_STORAGE_KEY } from '../app/constants';
 import { createBlacklistMatchers, isUrlBlacklisted, parseBlacklistFromJSON } from '../utilities/blacklist';
 import { getDayBoundaries } from '../utilities/date';
 import { mapToChromeHistoryItem } from '../utilities/history';
-import { parseSettingsFromJSON } from '../utilities/setting';
+import { parseRetentionDays, parseSettingsFromJSON } from '../utilities/setting';
 
 import type { ChromeHistoryItem, SearchParams } from '../app/types';
 import type { BlacklistMatchers } from '../utilities/blacklist';
@@ -106,22 +106,21 @@ const runFakeRetentionCleanup = (): void => {
   }
   const settingsJson = localStorage.getItem(SETTINGS_STORAGE_KEY);
   const settings = parseSettingsFromJSON(settingsJson);
-  const { dataRetention } = settings;
+  const retentionDays = parseRetentionDays(settings.dataRetention);
 
-  if (dataRetention !== 'disabled') {
-    const retentionDays = parseInt(dataRetention, 10);
-    if (!isNaN(retentionDays) && retentionDays > 0) {
-      const retentionCutoff = new Date();
-      retentionCutoff.setDate(retentionCutoff.getDate() - retentionDays);
-      const { startTime: cutoffTime } = getDayBoundaries(retentionCutoff);
-
-      Object.keys(FAKE_DATA_STORE).forEach((key) => {
-        if (FAKE_DATA_STORE[key].lastVisitTime! < cutoffTime) {
-          delete FAKE_DATA_STORE[key];
-        }
-      });
-    }
+  if (retentionDays === null) {
+    return;
   }
+
+  const retentionCutoff = new Date();
+  retentionCutoff.setDate(retentionCutoff.getDate() - retentionDays);
+  const { startTime: cutoffTime } = getDayBoundaries(retentionCutoff);
+
+  Object.keys(FAKE_DATA_STORE).forEach((key) => {
+    if (FAKE_DATA_STORE[key].lastVisitTime! < cutoffTime) {
+      delete FAKE_DATA_STORE[key];
+    }
+  });
 };
 
 const initializeFakeData = (): void => {

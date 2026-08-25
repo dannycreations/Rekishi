@@ -1,4 +1,4 @@
-import { escapeRegex, getHostnameFromUrl, isPotentialRegex, parseStoredJSON } from './common';
+import { escapeRegex, getHostnameFromUrl, isPotentialRegex, parseStoredJSON, safeRegExp } from './common';
 
 export interface BlacklistItem {
   readonly isRegex: boolean;
@@ -23,12 +23,11 @@ export const createBlacklistMatchers = (items: readonly BlacklistItem[]): Blackl
 
   for (const item of items) {
     if (item.isRegex) {
-      try {
-        new RegExp(item.value);
-        urlRegexSources.push(`(${item.value})`);
-      } catch (error: unknown) {
-        console.error(`Invalid regex in blacklist, skipping: ${item.value}`, error);
+      if (!safeRegExp(item.value)) {
+        console.error(`Invalid regex in blacklist, skipping: ${item.value}`);
+        continue;
       }
+      urlRegexSources.push(`(${item.value})`);
     } else if (item.value.includes('*')) {
       const wildcardRegex = wildcardToRegex(item.value);
       if (item.value.includes('/')) {
@@ -97,12 +96,8 @@ export const parseInput = (input: string): { readonly value: string; readonly is
     return null;
   }
 
-  if (isRegex) {
-    try {
-      new RegExp(value);
-    } catch {
-      return { error: 'Invalid Regular Expression' };
-    }
+  if (isRegex && !safeRegExp(value)) {
+    return { error: 'Invalid Regular Expression' };
   }
 
   return { value, isRegex };

@@ -2,7 +2,6 @@ import { cn } from 'cnfast';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import { search } from '../../services/chromeApi';
-import { useHistoryDateStore } from '../../stores/useHistoryDateStore';
 import { useToastStore } from '../../stores/useToastStore';
 import { formatDateForInput, getDayBoundaries, parseDateFromInput } from '../../utilities/date';
 import { downloadFile, generateFileContent } from '../../utilities/export';
@@ -52,16 +51,6 @@ export const ExportView = (): JSX.Element => {
   const [activeCalendar, setActiveCalendar] = useState<'start' | 'end' | null>(null);
   const startDateTriggerRef = useRef<HTMLButtonElement>(null);
   const endDateTriggerRef = useRef<HTMLButtonElement>(null);
-
-  const {
-    datesWithHistory,
-    fetchDatesForMonth,
-    isLoading: isLoadingDates,
-  } = useHistoryDateStore((state) => ({
-    datesWithHistory: state.datesWithHistory,
-    fetchDatesForMonth: state.fetchDatesForMonth,
-    isLoading: state.isLoading,
-  }));
 
   const handleExport = useCallback(async (): Promise<void> => {
     setIsLoading(true);
@@ -201,9 +190,6 @@ export const ExportView = (): JSX.Element => {
       </div>
       <CalendarPopover
         anchorEl={activeAnchorEl}
-        datesWithHistory={datesWithHistory}
-        fetchDatesForMonth={fetchDatesForMonth}
-        isLoading={isLoadingDates}
         maxDate={maxCalendarDate}
         minDate={minCalendarDate}
         onClose={() => setActiveCalendar(null)}

@@ -1,18 +1,12 @@
-export interface RegexResult {
-  readonly regex: RegExp | null;
-  readonly error: string | null;
-}
-
 export const escapeRegex = (text: string): string => {
   return text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
 
-export const compileRegex = (query: string): RegexResult => {
+export const safeRegExp = (source: string, flags?: string): RegExp | null => {
   try {
-    return { regex: new RegExp(query.slice(1, -1), 'i'), error: null };
-  } catch (error: unknown) {
-    console.error('Invalid regex provided:', error);
-    return { regex: null, error: 'Invalid regular expression.' };
+    return new RegExp(source, flags);
+  } catch {
+    return null;
   }
 };
 

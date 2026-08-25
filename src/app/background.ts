@@ -1,11 +1,13 @@
 import { createBlacklistMatchers, isUrlBlacklisted, parseBlacklistFromJSON } from '../utilities/blacklist';
 import { mapToChromeHistoryItem } from '../utilities/history';
-import { defaultSettings, parseSettingsFromJSON } from '../utilities/setting';
+import { defaultSettings, parseRetentionDays, parseSettingsFromJSON } from '../utilities/setting';
 import { chromeSyncStorage } from '../utilities/storage';
 import { BLACKLIST_STORAGE_KEY, CLEANER_ALARM_KEY, CLEANUP_STORAGE_KEY, RETENTION_STORAGE_KEY, SETTINGS_STORAGE_KEY } from './constants';
 
 import type { BlacklistItem } from '../utilities/blacklist';
 import type { Settings } from '../utilities/setting';
+
+const toErrorMessage = (error: unknown): string => (error instanceof Error ? error.message : String(error));
 
 let blacklistMatchers = createBlacklistMatchers([]);
 let blacklistedItems: readonly BlacklistItem[] = [];
@@ -49,8 +51,7 @@ const runBlacklistCleanup = async (): Promise<void> => {
     if (blacklistedUrlsToDelete.size > 0) {
       const deletionPromises = Array.from(blacklistedUrlsToDelete).map((url) =>
         chrome.history.deleteUrl({ url }).catch((error) => {
-          const message = error instanceof Error ? error.message : String(error);
-          console.error(`Error deleting blacklisted URL during cleanup (${url}):`, message);
+          console.error(`Error deleting blacklisted URL during cleanup (${url}):`, toErrorMessage(error));
         }),
       );
       await Promise.all(deletionPromises);
@@ -58,8 +59,7 @@ const runBlacklistCleanup = async (): Promise<void> => {
 
     await chrome.storage.local.set({ [CLEANUP_STORAGE_KEY]: now });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error in blacklist cleanup:', message);
+    console.error('Error in blacklist cleanup:', toErrorMessage(error));
   }
 };
 
@@ -76,14 +76,9 @@ const runRetentionCleanup = async (): Promise<void> => {
       return;
     }
 
-    const { dataRetention } = currentSettings;
+    const retentionDays = parseRetentionDays(currentSettings.dataRetention);
 
-    if (dataRetention === 'disabled') {
-      return;
-    }
-
-    const retentionDays = parseInt(dataRetention, 10);
-    if (isNaN(retentionDays) || retentionDays <= 0) {
+    if (retentionDays === null) {
       return;
     }
 
@@ -94,8 +89,7 @@ const runRetentionCleanup = async (): Promise<void> => {
     await chrome.history.deleteRange({ startTime: 0, endTime: endDate.getTime() });
     await chrome.storage.local.set({ [RETENTION_STORAGE_KEY]: now });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error cleaning up old history:', message);
+    console.error('Error cleaning up old history:', toErrorMessage(error));
   }
 };
 
@@ -109,8 +103,7 @@ const handleVisited = async (historyItem: chrome.history.HistoryItem): Promise<v
       try {
         await chrome.history.deleteUrl({ url: historyItem.url });
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        console.error(`Error deleting blacklisted URL (${historyItem.url}):`, message);
+        console.error(`Error deleting blacklisted URL (${historyItem.url}):`, toErrorMessage(error));
       }
     }
   } else if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {

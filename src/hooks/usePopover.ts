@@ -2,6 +2,12 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 
 import type { CSSProperties, RefObject } from 'react';
 
+const HIDDEN_STYLE: CSSProperties = {
+  position: 'fixed',
+  top: '-9999px',
+  left: '-9999px',
+};
+
 interface UsePopoverReturn {
   readonly popoverRef: RefObject<HTMLDivElement | null>;
   readonly style: CSSProperties;
@@ -9,11 +15,7 @@ interface UsePopoverReturn {
 
 export const usePopover = (anchorEl: HTMLElement | null): UsePopoverReturn => {
   const popoverRef = useRef<HTMLDivElement>(null);
-  const [style, setStyle] = useState<CSSProperties>({
-    position: 'fixed',
-    top: '-9999px',
-    left: '-9999px',
-  });
+  const [style, setStyle] = useState<CSSProperties>(HIDDEN_STYLE);
 
   const updatePosition = useCallback(() => {
     if (anchorEl && popoverRef.current) {
@@ -52,11 +54,7 @@ export const usePopover = (anchorEl: HTMLElement | null): UsePopoverReturn => {
         };
       });
     } else {
-      setStyle({
-        position: 'fixed',
-        top: '-9999px',
-        left: '-9999px',
-      });
+      setStyle(HIDDEN_STYLE);
     }
   }, [anchorEl]);
 

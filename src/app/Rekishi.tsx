@@ -17,33 +17,30 @@ import { useHistory } from '../hooks/useHistory';
 import { useHistoryDateStore } from '../stores/useHistoryDateStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
 import { useSettingStore } from '../stores/useSettingStore';
-import { VIEW_TITLES } from './constants';
 
-import type { JSX } from 'react';
+import type { FC, JSX } from 'react';
 import type { ViewType } from './types';
 
-const MODAL_COMPONENTS: Record<ViewType, JSX.Element> = {
-  blacklist: <BlacklistView />,
-  export: <ExportView />,
-  settings: <SettingView />,
-} as const;
+interface ViewDefinition {
+  readonly component: FC;
+  readonly containerClassName: string;
+  readonly title: string;
+}
 
-const MODAL_CONTAINER_CLASSES: Record<ViewType, string> = {
-  blacklist: 'max-w-lg',
-  export: 'max-w-md',
-  settings: 'max-w-lg',
-} as const;
+const VIEWS: Record<ViewType, ViewDefinition> = {
+  blacklist: { component: BlacklistView, containerClassName: 'max-w-lg', title: 'Blacklist' },
+  export: { component: ExportView, containerClassName: 'max-w-md', title: 'Export' },
+  settings: { component: SettingView, containerClassName: 'max-w-lg', title: 'Settings' },
+};
 
 export const Rekishi = (): JSX.Element => {
   const [activeModal, setActiveModal] = useState<ViewType | null>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const mainContentRef = useRef<HTMLElement>(null);
 
-  const { searchQuery, selectedDate, setSearchQuery, setSelectedDate } = useHistoryStore((state) => ({
+  const { searchQuery, selectedDate } = useHistoryStore((state) => ({
     searchQuery: state.searchQuery,
     selectedDate: state.selectedDate,
-    setSearchQuery: state.setSearchQuery,
-    setSelectedDate: state.setSelectedDate,
   }));
   const theme = useSettingStore((state) => state.theme);
   const { deleteHistoryItem, deleteHistoryItems, error, hasMore, history, isLoading, isLoadingMore, loadMore } = useHistory();
@@ -105,19 +102,12 @@ export const Rekishi = (): JSX.Element => {
     [history, datesWithHistory, isLoading, isLoadingDates],
   );
 
+  const activeView = activeModal ? VIEWS[activeModal] : null;
+
   return (
     <div className="app-container">
       <div className="main-layout">
-        <Header
-          datesWithHistory={datesWithHistory}
-          fetchDatesForMonth={fetchDatesForMonth}
-          isLoadingDates={isLoadingDates}
-          onOpenModal={setActiveModal}
-          onSearch={setSearchQuery}
-          searchQuery={searchQuery}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-        />
+        <Header onOpenModal={setActiveModal} />
 
         <main ref={mainContentRef} className="main-content">
           {isLoading ? (
@@ -151,14 +141,9 @@ export const Rekishi = (): JSX.Element => {
           )}
         </main>
 
-        {activeModal && (
-          <Modal
-            containerClassName={cn(MODAL_CONTAINER_CLASSES[activeModal], 'max-h-[90vh]')}
-            isOpen
-            onClose={handleCloseModal}
-            title={VIEW_TITLES[activeModal]}
-          >
-            {MODAL_COMPONENTS[activeModal]}
+        {activeView && (
+          <Modal containerClassName={cn(activeView.containerClassName, 'max-h-[90vh]')} isOpen onClose={handleCloseModal} title={activeView.title}>
+            <activeView.component />
           </Modal>
         )}
       </div>

@@ -1,12 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { DAILY_PAGE_SIZE, INIT_CHUNK_SIZE, SEARCH_PAGE_SIZE } from '../app/constants';
+import { DAILY_PAGE_SIZE, SEARCH_PAGE_SIZE } from '../app/constants';
 import { deleteUrl, search } from '../services/chromeApi';
 import { useBlacklistStore } from '../stores/useBlacklistStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
-import { isPotentialRegex } from '../utilities/common';
 import { getDayBoundaries, isSameDay } from '../utilities/date';
-import { applyClientSideSearch } from '../utilities/history';
+import { applyClientSideSearch, shouldSearchClientSide } from '../utilities/history';
 
 import type { ChromeHistoryItem } from '../app/types';
 
@@ -50,67 +49,48 @@ export const useHistory = (): UseHistoryReturn => {
 
   const fetchHistoryData = useCallback(
     async (params: {
+      readonly clientSearch: boolean;
+      readonly endTime?: number;
       readonly isSearch: boolean;
       readonly startTime: number;
-      readonly endTime?: number;
       readonly text: string;
-      readonly isClientSearch: boolean;
     }): Promise<void> => {
       setIsLoading(true);
       setError(null);
       setRawHistory([]);
-      if (!params.isSearch) {
-        setLastLoadedDate(new Date(params.startTime));
-      } else {
+      if (params.isSearch) {
         setHasMoreSearchResults(true);
+      } else {
+        setLastLoadedDate(new Date(params.startTime));
       }
 
-      const fetchItems = async (maxResults: number): Promise<readonly ChromeHistoryItem[]> => {
+      try {
         const results = await search({
           endTime: params.endTime,
-          maxResults,
+          maxResults: params.isSearch ? SEARCH_PAGE_SIZE : DAILY_PAGE_SIZE,
           startTime: params.startTime,
-          text: params.isClientSearch ? '' : params.text,
+          text: params.clientSearch ? '' : params.text,
         });
 
-        const filtered = results.filter((item) => !isBlacklisted(item.url));
-
-        if (params.isClientSearch) {
-          const { items, error: filterError } = applyClientSideSearch(filtered, params.text);
-          if (filterError) {
-            setError(filterError);
+        let items: readonly ChromeHistoryItem[] = results.filter((item) => !isBlacklisted(item.url));
+        if (params.clientSearch) {
+          const searched = applyClientSideSearch(items, params.text);
+          if (searched.error) {
+            setError(searched.error);
           }
-          return items;
+          items = searched.items;
         }
-        return filtered;
-      };
 
-      try {
-        const initialItems = await fetchItems(INIT_CHUNK_SIZE);
+        const currentState = useHistoryStore.getState();
+        const isStillRelevant = params.isSearch
+          ? currentState.searchQuery === params.text
+          : isSameDay(new Date(params.startTime), currentState.selectedDate);
 
-        const isStillRelevant = (): boolean => {
-          const currentState = useHistoryStore.getState();
-          return params.isSearch ? currentState.searchQuery === params.text : isSameDay(new Date(params.startTime), currentState.selectedDate);
-        };
-
-        if (isStillRelevant()) {
-          setRawHistory(initialItems);
+        if (isStillRelevant) {
+          setRawHistory(items);
           setIsLoading(false);
-
-          if (params.isSearch && initialItems.length < INIT_CHUNK_SIZE) {
+          if (params.isSearch && results.length < SEARCH_PAGE_SIZE) {
             setHasMoreSearchResults(false);
-          }
-        }
-
-        if (initialItems.length >= INIT_CHUNK_SIZE) {
-          const pageSize = params.isSearch ? SEARCH_PAGE_SIZE : DAILY_PAGE_SIZE;
-          const moreItems = await fetchItems(pageSize);
-
-          if (isStillRelevant()) {
-            setRawHistory(moreItems);
-            if (params.isSearch && moreItems.length < pageSize) {
-              setHasMoreSearchResults(false);
-            }
           }
         }
       } catch (err: unknown) {
@@ -126,8 +106,8 @@ export const useHistory = (): UseHistoryReturn => {
     const { startTime, endTime } = getDayBoundaries(selectedDate);
 
     void fetchHistoryData({
+      clientSearch: false,
       endTime,
-      isClientSearch: false,
       isSearch: false,
       startTime,
       text: '',
@@ -136,7 +116,7 @@ export const useHistory = (): UseHistoryReturn => {
 
   const fetchInitialSearchHistory = useCallback((): void => {
     void fetchHistoryData({
-      isClientSearch: isPotentialRegex(searchQuery) || searchQuery.length < 3,
+      clientSearch: shouldSearchClientSide(searchQuery),
       isSearch: true,
       startTime: 0,
       text: searchQuery,
@@ -206,14 +186,13 @@ export const useHistory = (): UseHistoryReturn => {
           return;
         }
 
-        const clientSideSearch = isPotentialRegex(searchQuery) || searchQuery.length < 3;
-        const textForSearch = clientSideSearch ? '' : searchQuery;
+        const clientSearch = shouldSearchClientSide(searchQuery);
 
         const newItems = await search({
           endTime: lastItem.lastVisitTime,
           maxResults: SEARCH_PAGE_SIZE,
           startTime: 0,
-          text: textForSearch,
+          text: clientSearch ? '' : searchQuery,
         });
 
         if (newItems.length < SEARCH_PAGE_SIZE) {
@@ -223,12 +202,12 @@ export const useHistory = (): UseHistoryReturn => {
         const uniqueNewItems = newItems.filter((item) => !existingIds.has(item.id));
         let itemsToAdd: readonly ChromeHistoryItem[] = uniqueNewItems.filter((item) => !isBlacklisted(item.url));
 
-        if (clientSideSearch) {
-          const { items, error: filterError } = applyClientSideSearch(itemsToAdd, searchQuery);
-          if (filterError && !error) {
-            setError(filterError);
+        if (clientSearch) {
+          const searched = applyClientSideSearch(itemsToAdd, searchQuery);
+          if (searched.error && !error) {
+            setError(searched.error);
           }
-          itemsToAdd = items;
+          itemsToAdd = searched.items;
         }
 
         setRawHistory((prev) => [...prev, ...itemsToAdd]);
@@ -295,12 +274,7 @@ export const useHistory = (): UseHistoryReturn => {
     [rawHistory],
   );
 
-  const hasMore = useMemo((): boolean => {
-    if (searchQuery) {
-      return hasMoreSearchResults;
-    }
-    return true;
-  }, [searchQuery, hasMoreSearchResults]);
+  const hasMore = searchQuery ? hasMoreSearchResults : true;
 
   return {
     deleteHistoryItem,

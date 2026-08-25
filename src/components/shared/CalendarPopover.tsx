@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 
 import { DAYS_OF_WEEK } from '../../app/constants';
 import { usePopover } from '../../hooks/usePopover';
+import { useHistoryDateStore } from '../../stores/useHistoryDateStore';
 import { isSameDay, toDateKey } from '../../utilities/date';
 import { CalendarSkeleton } from './CalendarSkeleton';
 import { Icon } from './Icon';
@@ -12,9 +13,6 @@ import type { ReactPortal } from 'react';
 
 interface CalendarPopoverProps {
   readonly anchorEl: HTMLElement | null;
-  readonly datesWithHistory: ReadonlySet<string>;
-  readonly fetchDatesForMonth: (date: Date) => void;
-  readonly isLoading: boolean;
   readonly maxDate?: Date;
   readonly minDate?: Date;
   readonly onClose: () => void;
@@ -23,17 +21,12 @@ interface CalendarPopoverProps {
 }
 
 export const CalendarPopover = memo(
-  ({
-    selectedDate,
-    onDateSelect,
-    datesWithHistory,
-    isLoading,
-    fetchDatesForMonth,
-    anchorEl,
-    onClose,
-    minDate,
-    maxDate,
-  }: CalendarPopoverProps): ReactPortal | null => {
+  ({ selectedDate, onDateSelect, anchorEl, onClose, minDate, maxDate }: CalendarPopoverProps): ReactPortal | null => {
+    const { datesWithHistory, fetchDatesForMonth, isLoading } = useHistoryDateStore((state) => ({
+      datesWithHistory: state.datesWithHistory,
+      fetchDatesForMonth: state.fetchDatesForMonth,
+      isLoading: state.isLoading,
+    }));
     const [displayDate, setDisplayDate] = useState(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
     const { popoverRef, style } = usePopover(anchorEl);
 

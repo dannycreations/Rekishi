@@ -1,21 +1,62 @@
-import * as Lucide from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowUp,
+  Calendar,
+  Check,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Download,
+  ExternalLink,
+  Globe,
+  HelpCircle,
+  History,
+  Info,
+  Link2Off,
+  Loader2,
+  Pencil,
+  Search,
+  Settings,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { memo } from 'react';
 
-import type { ElementType, FC, SVGProps } from 'react';
+import type { FC, SVGProps } from 'react';
 
-export type IconName = keyof typeof Lucide;
+const ICONS = {
+  AlertCircle,
+  ArrowUp,
+  Calendar,
+  Check,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Download,
+  ExternalLink,
+  Globe,
+  HelpCircle,
+  History,
+  Info,
+  Link2Off,
+  Loader2,
+  Pencil,
+  Search,
+  Settings,
+  Trash2,
+  X,
+};
+
+export type IconName = keyof typeof ICONS;
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {
   readonly name: IconName;
-  readonly size?: number;
 }
 
-export const Icon: FC<IconProps> = memo(({ name, size, className, ...props }) => {
-  const LucideIcon = Lucide[name as keyof typeof Lucide] as ElementType;
+export const Icon: FC<IconProps> = memo(({ name, className, ...props }) => {
+  const LucideIcon = ICONS[name];
 
-  if (!LucideIcon) {
-    return null;
-  }
-
-  return <LucideIcon size={size} className={className} {...props} />;
+  return <LucideIcon className={className} {...props} />;
 });

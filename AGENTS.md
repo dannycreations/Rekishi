@@ -1,4 +1,4 @@
-# React Development Guide
+# Rekishi Development Guide
 
 ## Guidelines
 

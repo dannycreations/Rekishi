@@ -1,19 +1,15 @@
-import type { RegexResult } from '../app/types';
+export interface RegexResult {
+  readonly regex: RegExp | null;
+  readonly error: string | null;
+}
 
 export const escapeRegex = (text: string): string => {
   return text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
 
 export const compileRegex = (query: string): RegexResult => {
-  if (query.length <= 2) {
-    return { regex: null, error: null };
-  }
-  const pattern = query.slice(1, -1);
-  if (!pattern) {
-    return { regex: null, error: null };
-  }
   try {
-    return { regex: new RegExp(pattern, 'i'), error: null };
+    return { regex: new RegExp(query.slice(1, -1), 'i'), error: null };
   } catch (error: unknown) {
     console.error('Invalid regex provided:', error);
     return { regex: null, error: 'Invalid regular expression.' };
@@ -31,26 +27,22 @@ export const getHostnameFromUrl = (url: string): string => {
   }
 
   try {
-    const hostname = new URL(url).hostname;
-    return hostname.replace(/^www\./, '');
+    return new URL(url).hostname.replace(/^www\./, '');
   } catch {
     const matches = url.match(/:\/\/([^/?#:]+)/);
-    if (matches?.[1]) {
-      return matches[1].replace(/^www\./, '');
-    }
-    return '';
+    return matches?.[1]?.replace(/^www\./, '') ?? '';
   }
 };
 
-export const parsePersistedState = <T, S>(json: string | null, selector: (state: S) => T, defaultValue: T): T => {
+export const parseStoredJSON = <T>(json: string | null): T | null => {
   if (!json) {
-    return defaultValue;
+    return null;
   }
   try {
-    const parsed = JSON.parse(json) as { state?: S };
-    return parsed.state ? selector(parsed.state) : defaultValue;
+    const parsed = JSON.parse(json) as { state?: T };
+    return parsed.state ?? null;
   } catch (error) {
     console.error('Failed to parse state from storage', error);
-    return defaultValue;
+    return null;
   }
 };

@@ -3,7 +3,7 @@ import { memo } from 'react';
 
 import type { ElementType, FC, SVGProps } from 'react';
 
-export type IconName = keyof typeof Lucide | (string & {});
+export type IconName = keyof typeof Lucide;
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {
   readonly name: IconName;

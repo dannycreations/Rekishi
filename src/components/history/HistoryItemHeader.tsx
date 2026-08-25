@@ -10,10 +10,9 @@ import type { ChromeHistoryItem } from '../../app/types';
 interface HistoryItemHeaderProps {
   readonly dayHeaderText: string;
   readonly dayItems: readonly ChromeHistoryItem[];
-  readonly isHourHeader: boolean;
   readonly onDeleteAll: () => void;
   readonly onDeleteSelected: () => void;
-  readonly onToggleDaySelection: (items: readonly ChromeHistoryItem[]) => void;
+  readonly onToggleDaySelection: () => void;
   readonly selectedItemsCount: number;
   readonly totalSelectedCount: number;
 }
@@ -22,7 +21,6 @@ export const HistoryItemHeader = memo(
   ({
     dayHeaderText,
     dayItems,
-    isHourHeader,
     selectedItemsCount,
     onToggleDaySelection,
     onDeleteSelected,
@@ -32,19 +30,13 @@ export const HistoryItemHeader = memo(
     const allForDaySelected = useMemo(() => selectedItemsCount === dayItems.length && dayItems.length > 0, [selectedItemsCount, dayItems.length]);
     const someForDaySelected = useMemo(() => selectedItemsCount > 0 && !allForDaySelected, [selectedItemsCount, allForDaySelected]);
 
-    const buttonText = useMemo(() => {
-      if (totalSelectedCount > 0) {
-        return `Delete (${totalSelectedCount})`;
-      }
-      return isHourHeader ? 'Delete entire hour' : 'Delete entire day';
-    }, [totalSelectedCount, isHourHeader]);
-
+    const buttonText = totalSelectedCount > 0 ? `Delete (${totalSelectedCount})` : 'Delete entire day';
     const handleButtonClick = totalSelectedCount > 0 ? onDeleteSelected : onDeleteAll;
 
     return (
       <div className="section-header">
         <div className="flex items-center gap-2">
-          <div className="cursor-pointer group/header" onClick={() => onToggleDaySelection(dayItems)}>
+          <div className="cursor-pointer group/header" onClick={onToggleDaySelection}>
             <div className={cn('checkbox-custom', (allForDaySelected || someForDaySelected) && 'checkbox-checked')}>
               {allForDaySelected && <Icon name="Check" className="icon-xs text-primary" />}
               {someForDaySelected && <div className="h-0.5 w-2 rounded-sm bg-primary" />}

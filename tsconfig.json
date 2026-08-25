@@ -10,6 +10,7 @@
     "isolatedModules": false,
 
     "outDir": "dist",
+    "rootDir": "src",
     "declaration": false,
     "noEmit": false,
     "stripInternal": true,

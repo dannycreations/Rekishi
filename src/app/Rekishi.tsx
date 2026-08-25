@@ -14,7 +14,7 @@ import { Modal } from '../components/shared/Modal';
 import { ScrollToTop } from '../components/shared/ScrollToTop';
 import { ToastContainer } from '../components/shared/Toast';
 import { useHistory } from '../hooks/useHistory';
-import { useHistoryDate } from '../hooks/useHistoryDate';
+import { useHistoryDateStore } from '../stores/useHistoryDateStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
 import { useSettingStore } from '../stores/useSettingStore';
 import { VIEW_TITLES } from './constants';
@@ -47,7 +47,15 @@ export const Rekishi = (): JSX.Element => {
   }));
   const theme = useSettingStore((state) => state.theme);
   const { deleteHistoryItem, deleteHistoryItems, error, hasMore, history, isLoading, isLoadingMore, loadMore } = useHistory();
-  const { datesWithHistory, fetchDatesForMonth, isLoading: isLoadingDates } = useHistoryDate();
+  const {
+    datesWithHistory,
+    fetchDatesForMonth,
+    isLoading: isLoadingDates,
+  } = useHistoryDateStore((state) => ({
+    datesWithHistory: state.datesWithHistory,
+    fetchDatesForMonth: state.fetchDatesForMonth,
+    isLoading: state.isLoading,
+  }));
 
   useEffect(() => {
     mainContentRef.current?.scrollTo(0, 0);

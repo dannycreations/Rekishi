@@ -1,11 +1,11 @@
 import { BLACKLIST_STORAGE_KEY, SETTINGS_STORAGE_KEY } from '../app/constants';
-import { createBlacklistMatchers, isUrlBlacklisted, parseBlacklistFromJSON } from '../helpers/blacklistHelper';
-import { mapToChromeHistoryItem } from '../helpers/historyHelper';
-import { parseSettingsFromJSON } from '../helpers/settingHelper';
-import { getDayBoundaries } from '../utilities/dateUtil';
+import { createBlacklistMatchers, isUrlBlacklisted, parseBlacklistFromJSON } from '../utilities/blacklist';
+import { getDayBoundaries } from '../utilities/date';
+import { mapToChromeHistoryItem } from '../utilities/history';
+import { parseSettingsFromJSON } from '../utilities/setting';
 
 import type { ChromeHistoryItem, SearchParams } from '../app/types';
-import type { BlacklistMatchers } from '../helpers/blacklistHelper';
+import type { BlacklistMatchers } from '../utilities/blacklist';
 
 const FAKE_DATA_STORE: Record<string, chrome.history.HistoryItem> = {};
 let FAKE_DATA_INITIALIZED = false;
@@ -97,7 +97,6 @@ const generateFakeHistoryItem = (timestamp: number): chrome.history.HistoryItem 
     title,
     lastVisitTime: timestamp,
     visitCount: Math.floor(Math.random() * 10) + 1,
-    typedCount: Math.random() > 0.8 ? 1 : 0,
   };
 };
 

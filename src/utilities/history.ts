@@ -1,6 +1,7 @@
-import { isSameDay } from '../utilities/dateUtil';
+import { compileRegex, isPotentialRegex } from './common';
+import { isSameDay } from './date';
 
-import type { ChromeHistoryItem, HistoryItemGroup, RegexResult } from '../app/types';
+import type { ChromeHistoryItem, HourGroup } from '../app/types';
 
 export const mapToChromeHistoryItem = (item: chrome.history.HistoryItem): ChromeHistoryItem => {
   return {
@@ -9,28 +10,25 @@ export const mapToChromeHistoryItem = (item: chrome.history.HistoryItem): Chrome
     title: item.title ?? item.url ?? '',
     lastVisitTime: item.lastVisitTime ?? 0,
     visitCount: item.visitCount ?? 0,
-    typedCount: item.typedCount ?? 0,
   };
 };
 
 export const applyClientSideSearch = (
   items: readonly ChromeHistoryItem[],
   searchQuery: string,
-  isRegex: boolean,
-  compiledRegex: RegexResult,
 ): {
   readonly items: readonly ChromeHistoryItem[];
   readonly error?: string;
 } => {
-  if (isRegex) {
-    if (compiledRegex.error) {
-      return { items: [], error: compiledRegex.error };
+  if (isPotentialRegex(searchQuery)) {
+    const { regex, error } = compileRegex(searchQuery);
+    if (error) {
+      return { items: [], error };
     }
-    if (compiledRegex.regex) {
-      const regex = compiledRegex.regex;
-      return { items: items.filter((item) => regex.test(item.title) || regex.test(item.url)) };
+    if (!regex) {
+      return { items: [] };
     }
-    return { items: [] };
+    return { items: items.filter((item) => regex.test(item.title) || regex.test(item.url)) };
   }
 
   const query = searchQuery.toLowerCase();
@@ -42,7 +40,13 @@ export const applyClientSideSearch = (
 export interface DayGroup {
   readonly date: Date;
   readonly items: readonly ChromeHistoryItem[];
-  readonly hourlyGroups: readonly HistoryItemGroup[];
+  readonly hourlyGroups: readonly HourGroup[];
+}
+
+interface MutableDayGroup {
+  date: Date;
+  items: ChromeHistoryItem[];
+  hourlyGroups: HourGroup[];
 }
 
 export const groupHistoryByDayAndHour = (items: readonly ChromeHistoryItem[]): readonly DayGroup[] => {
@@ -50,8 +54,8 @@ export const groupHistoryByDayAndHour = (items: readonly ChromeHistoryItem[]): r
     return [];
   }
 
-  const dayGroups: { date: Date; items: ChromeHistoryItem[]; hourlyGroups: HistoryItemGroup[] }[] = [];
-  let currentDayGroup: { date: Date; items: ChromeHistoryItem[]; hourlyGroups: HistoryItemGroup[] } | null = null;
+  const dayGroups: MutableDayGroup[] = [];
+  let currentDayGroup: MutableDayGroup | null = null;
   let currentHourGroup: { time: string; items: ChromeHistoryItem[] } | null = null;
   let currentHour = -1;
 

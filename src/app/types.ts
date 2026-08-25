@@ -4,10 +4,9 @@ export interface ChromeHistoryItem {
   readonly title: string;
   readonly lastVisitTime: number;
   readonly visitCount: number;
-  readonly typedCount?: number;
 }
 
-export interface HistoryItemGroup {
+export interface HourGroup {
   readonly time: string;
   readonly items: readonly ChromeHistoryItem[];
 }
@@ -21,9 +20,4 @@ export interface SearchParams {
   readonly startTime?: number;
   readonly endTime?: number;
   readonly maxResults?: number;
-}
-
-export interface RegexResult {
-  readonly regex: RegExp | null;
-  readonly error: string | null;
 }

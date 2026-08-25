@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { DAILY_PAGE_SIZE, INIT_CHUNK_SIZE, SEARCH_PAGE_SIZE } from '../app/constants';
-import { applyClientSideSearch } from '../helpers/historyHelper';
 import { deleteUrl, search } from '../services/chromeApi';
 import { useBlacklistStore } from '../stores/useBlacklistStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
-import { compileRegex, isPotentialRegex } from '../utilities/commonUtil';
-import { getDayBoundaries, isSameDay } from '../utilities/dateUtil';
+import { isPotentialRegex } from '../utilities/common';
+import { getDayBoundaries, isSameDay } from '../utilities/date';
+import { applyClientSideSearch } from '../utilities/history';
 
 import type { ChromeHistoryItem } from '../app/types';
 
@@ -47,14 +47,6 @@ export const useHistory = (): UseHistoryReturn => {
     searchQuery: state.searchQuery,
     selectedDate: state.selectedDate,
   }));
-  const isRegex = useMemo(() => isPotentialRegex(searchQuery), [searchQuery]);
-
-  const compiledRegex = useMemo(() => {
-    if (!isRegex) {
-      return { regex: null, error: null };
-    }
-    return compileRegex(searchQuery);
-  }, [isRegex, searchQuery]);
 
   const fetchHistoryData = useCallback(
     async (params: {
@@ -84,7 +76,7 @@ export const useHistory = (): UseHistoryReturn => {
         const filtered = results.filter((item) => !isBlacklisted(item.url));
 
         if (params.isClientSearch) {
-          const { items, error: filterError } = applyClientSideSearch(filtered, params.text, isRegex, compiledRegex);
+          const { items, error: filterError } = applyClientSideSearch(filtered, params.text);
           if (filterError) {
             setError(filterError);
           }
@@ -127,7 +119,7 @@ export const useHistory = (): UseHistoryReturn => {
         setIsLoading(false);
       }
     },
-    [isBlacklisted, isRegex, compiledRegex],
+    [isBlacklisted],
   );
 
   const fetchInitialDailyHistory = useCallback((): void => {
@@ -144,12 +136,12 @@ export const useHistory = (): UseHistoryReturn => {
 
   const fetchInitialSearchHistory = useCallback((): void => {
     void fetchHistoryData({
-      isClientSearch: isRegex || searchQuery.length < 3,
+      isClientSearch: isPotentialRegex(searchQuery) || searchQuery.length < 3,
       isSearch: true,
       startTime: 0,
       text: searchQuery,
     });
-  }, [searchQuery, isRegex, fetchHistoryData]);
+  }, [searchQuery, fetchHistoryData]);
 
   useEffect(() => {
     if (searchQuery) {
@@ -157,7 +149,7 @@ export const useHistory = (): UseHistoryReturn => {
     } else {
       fetchInitialDailyHistory();
     }
-  }, [searchQuery, selectedDate, isRegex, fetchInitialDailyHistory, fetchInitialSearchHistory, blacklistedItems]);
+  }, [searchQuery, selectedDate, fetchInitialDailyHistory, fetchInitialSearchHistory, blacklistedItems]);
 
   const messageListener = useCallback(
     (message: unknown): void => {
@@ -171,7 +163,7 @@ export const useHistory = (): UseHistoryReturn => {
 
         let isMatch: boolean;
         if (searchQuery) {
-          const { items } = applyClientSideSearch([newItem], searchQuery, isRegex, compiledRegex);
+          const { items } = applyClientSideSearch([newItem], searchQuery);
           isMatch = items.length > 0;
         } else {
           isMatch = isSameDay(selectedDate, new Date(newItem.lastVisitTime));
@@ -186,7 +178,7 @@ export const useHistory = (): UseHistoryReturn => {
         });
       }
     },
-    [isBlacklisted, searchQuery, isRegex, compiledRegex, selectedDate],
+    [isBlacklisted, searchQuery, selectedDate],
   );
 
   useEffect(() => {
@@ -214,7 +206,7 @@ export const useHistory = (): UseHistoryReturn => {
           return;
         }
 
-        const clientSideSearch = isRegex || searchQuery.length < 3;
+        const clientSideSearch = isPotentialRegex(searchQuery) || searchQuery.length < 3;
         const textForSearch = clientSideSearch ? '' : searchQuery;
 
         const newItems = await search({
@@ -232,7 +224,7 @@ export const useHistory = (): UseHistoryReturn => {
         let itemsToAdd: readonly ChromeHistoryItem[] = uniqueNewItems.filter((item) => !isBlacklisted(item.url));
 
         if (clientSideSearch) {
-          const { items, error: filterError } = applyClientSideSearch(itemsToAdd, searchQuery, isRegex, compiledRegex);
+          const { items, error: filterError } = applyClientSideSearch(itemsToAdd, searchQuery);
           if (filterError && !error) {
             setError(filterError);
           }
@@ -262,7 +254,7 @@ export const useHistory = (): UseHistoryReturn => {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoading, isLoadingMore, searchQuery, lastLoadedDate, hasMoreSearchResults, isRegex, error, compiledRegex, rawHistory, isBlacklisted]);
+  }, [isLoading, isLoadingMore, searchQuery, lastLoadedDate, hasMoreSearchResults, error, rawHistory, isBlacklisted]);
 
   const deleteHistoryItem = useCallback(
     async (id: string): Promise<void> => {

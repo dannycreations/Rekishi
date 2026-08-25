@@ -1,27 +1,14 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { formatDateForInput } from '../../utilities/dateUtil';
+import { formatDateForInput } from '../../utilities/date';
 import { CalendarPopover } from '../shared/CalendarPopover';
 import { Icon } from '../shared/Icon';
 
-import type { ChangeEvent, JSX, ReactNode } from 'react';
+import type { ChangeEvent, JSX } from 'react';
 import type { ViewType } from '../../app/types';
 
-interface NavButtonProps {
-  readonly icon: ReactNode;
-  readonly onClick: () => void;
-}
-
-const NavButton = memo(({ icon, onClick }: NavButtonProps): JSX.Element => {
-  return (
-    <button className="btn-nav" onClick={onClick}>
-      {icon}
-    </button>
-  );
-});
-
 interface HeaderProps {
-  readonly datesWithHistory: Set<string>;
+  readonly datesWithHistory: ReadonlySet<string>;
   readonly fetchDatesForMonth: (date: Date) => void;
   readonly isLoadingDates: boolean;
   readonly onOpenModal: (view: ViewType) => void;
@@ -162,9 +149,15 @@ export const Header = memo(
         </div>
 
         <div className="nav-group">
-          <NavButton icon={<Icon name="Link2Off" className="icon-md" />} onClick={handleOpenBlacklist} />
-          <NavButton icon={<Icon name="Download" className="icon-md" />} onClick={handleOpenExport} />
-          <NavButton icon={<Icon name="Settings" className="icon-md" />} onClick={handleOpenSettings} />
+          <button className="btn-nav" onClick={handleOpenBlacklist}>
+            <Icon name="Link2Off" className="icon-md" />
+          </button>
+          <button className="btn-nav" onClick={handleOpenExport}>
+            <Icon name="Download" className="icon-md" />
+          </button>
+          <button className="btn-nav" onClick={handleOpenSettings}>
+            <Icon name="Settings" className="icon-md" />
+          </button>
         </div>
 
         <CalendarPopover

@@ -3,7 +3,7 @@ import { shallow } from 'zustand/shallow';
 import { createWithEqualityFn } from 'zustand/traditional';
 
 import { SETTINGS_STORAGE_KEY } from '../app/constants';
-import { chromeSyncStorage } from '../helpers/storageHelper';
+import { chromeSyncStorage } from '../utilities/storage';
 
 import type { Theme } from '../app/types';
 

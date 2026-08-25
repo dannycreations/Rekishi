@@ -4,10 +4,10 @@ import { DeleteButton } from '../shared/DeleteButton';
 import { HistoryItem } from './HistoryItem';
 
 import type { JSX } from 'react';
-import type { ChromeHistoryItem, HistoryItemGroup as HistoryItemGroupType } from '../../app/types';
+import type { ChromeHistoryItem, HourGroup } from '../../app/types';
 
 interface HistoryItemGroupProps {
-  readonly group: HistoryItemGroupType;
+  readonly group: HourGroup;
   readonly onBlacklistRequest: (item: ChromeHistoryItem) => void;
   readonly onDeleteRequest: (item: ChromeHistoryItem) => void;
   readonly onDeleteHourRequest: (items: readonly ChromeHistoryItem[]) => void;

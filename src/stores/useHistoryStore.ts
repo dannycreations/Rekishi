@@ -3,7 +3,7 @@ import { shallow } from 'zustand/shallow';
 import { createWithEqualityFn } from 'zustand/traditional';
 
 import { HISTORY_STORAGE_KEY } from '../app/constants';
-import { chromeLocalStorage } from '../helpers/storageHelper';
+import { chromeLocalStorage } from '../utilities/storage';
 
 interface HistoryState {
   readonly searchQuery: string;

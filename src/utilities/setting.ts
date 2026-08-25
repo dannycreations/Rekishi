@@ -1,4 +1,4 @@
-import { parsePersistedState } from '../utilities/commonUtil';
+import { parseStoredJSON } from './common';
 
 interface StoredState {
   readonly dataRetention?: string;
@@ -13,11 +13,8 @@ export const defaultSettings: Settings = {
 } as const;
 
 export const parseSettingsFromJSON = (json: string | null): Settings => {
-  return parsePersistedState<Settings, StoredState>(
-    json,
-    (state) => ({
-      dataRetention: state.dataRetention ?? defaultSettings.dataRetention,
-    }),
-    { ...defaultSettings },
-  );
+  const stored = parseStoredJSON<StoredState>(json);
+  return {
+    dataRetention: stored?.dataRetention ?? defaultSettings.dataRetention,
+  };
 };

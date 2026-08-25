@@ -1,16 +1,16 @@
 import { cn } from 'cnfast';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
-import { useHistoryDate } from '../../hooks/useHistoryDate';
 import { search } from '../../services/chromeApi';
+import { useHistoryDateStore } from '../../stores/useHistoryDateStore';
 import { useToastStore } from '../../stores/useToastStore';
-import { formatDateForInput, getDayBoundaries, parseDateFromInput } from '../../utilities/dateUtil';
-import { downloadFile, generateFileContent } from '../../utilities/exportUtil';
+import { formatDateForInput, getDayBoundaries, parseDateFromInput } from '../../utilities/date';
+import { downloadFile, generateFileContent } from '../../utilities/export';
 import { CalendarPopover } from '../shared/CalendarPopover';
 import { Icon } from '../shared/Icon';
 
 import type { JSX } from 'react';
-import type { ExportFormat } from '../../utilities/exportUtil';
+import type { ExportFormat } from '../../utilities/export';
 
 interface RadioCardProps {
   readonly checked: boolean;
@@ -53,7 +53,15 @@ export const ExportView = (): JSX.Element => {
   const startDateTriggerRef = useRef<HTMLButtonElement>(null);
   const endDateTriggerRef = useRef<HTMLButtonElement>(null);
 
-  const { datesWithHistory, fetchDatesForMonth, isLoading: isLoadingDates } = useHistoryDate();
+  const {
+    datesWithHistory,
+    fetchDatesForMonth,
+    isLoading: isLoadingDates,
+  } = useHistoryDateStore((state) => ({
+    datesWithHistory: state.datesWithHistory,
+    fetchDatesForMonth: state.fetchDatesForMonth,
+    isLoading: state.isLoading,
+  }));
 
   const handleExport = useCallback(async (): Promise<void> => {
     setIsLoading(true);

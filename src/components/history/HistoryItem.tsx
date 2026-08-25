@@ -3,8 +3,8 @@ import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useHistoryStore } from '../../stores/useHistoryStore';
 import { useToastStore } from '../../stores/useToastStore';
-import { escapeRegex, getHostnameFromUrl, isPotentialRegex } from '../../utilities/commonUtil';
-import { formatTimeShort } from '../../utilities/dateUtil';
+import { escapeRegex, getHostnameFromUrl, isPotentialRegex } from '../../utilities/common';
+import { formatTimeShort } from '../../utilities/date';
 import { Icon } from '../shared/Icon';
 import { HistoryItemAction } from './HistoryItemAction';
 
@@ -69,9 +69,8 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
   const [isCopied, setIsCopied] = useState(false);
   const addToast = useToastStore((state) => state.addToast);
 
-  const isRegex = useMemo(() => isPotentialRegex(searchQuery), [searchQuery]);
   const hostname = useMemo(() => getHostnameFromUrl(url), [url]);
-  const shouldHighlight = searchQuery && !isRegex;
+  const shouldHighlight = searchQuery && !isPotentialRegex(searchQuery);
 
   const visitTime = useMemo(() => formatTimeShort(lastVisitTime), [lastVisitTime]);
 

@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 
 import { DAYS_OF_WEEK } from '../../app/constants';
 import { usePopover } from '../../hooks/usePopover';
-import { isSameDay } from '../../utilities/dateUtil';
+import { isSameDay, toDateKey } from '../../utilities/date';
 import { CalendarSkeleton } from './CalendarSkeleton';
 import { Icon } from './Icon';
 
@@ -12,7 +12,7 @@ import type { ReactPortal } from 'react';
 
 interface CalendarPopoverProps {
   readonly anchorEl: HTMLElement | null;
-  readonly datesWithHistory: Set<string>;
+  readonly datesWithHistory: ReadonlySet<string>;
   readonly fetchDatesForMonth: (date: Date) => void;
   readonly isLoading: boolean;
   readonly maxDate?: Date;
@@ -161,7 +161,7 @@ export const CalendarPopover = memo(
                   );
                 }
 
-                const dateString = date.toISOString().split('T')[0];
+                const dateString = toDateKey(date);
                 const hasHistory = datesWithHistory.has(dateString);
                 const isSelected = isSameDay(date, selectedDate);
                 const isToday = isSameDay(date, today);

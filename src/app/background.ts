@@ -1,13 +1,13 @@
-import { createBlacklistMatchers, isUrlBlacklisted, parseBlacklistFromJSON } from '../helpers/blacklistHelper';
-import { mapToChromeHistoryItem } from '../helpers/historyHelper';
-import { defaultSettings, parseSettingsFromJSON } from '../helpers/settingHelper';
-import { chromeSyncStorage } from '../helpers/storageHelper';
+import { createBlacklistMatchers, isUrlBlacklisted, parseBlacklistFromJSON } from '../utilities/blacklist';
+import { mapToChromeHistoryItem } from '../utilities/history';
+import { defaultSettings, parseSettingsFromJSON } from '../utilities/setting';
+import { chromeSyncStorage } from '../utilities/storage';
 import { BLACKLIST_STORAGE_KEY, CLEANER_ALARM_KEY, CLEANUP_STORAGE_KEY, RETENTION_STORAGE_KEY, SETTINGS_STORAGE_KEY } from './constants';
 
-import type { BlacklistItem, BlacklistMatchers } from '../helpers/blacklistHelper';
-import type { Settings } from '../helpers/settingHelper';
+import type { BlacklistItem } from '../utilities/blacklist';
+import type { Settings } from '../utilities/setting';
 
-let blacklistMatchers: BlacklistMatchers = { plain: new Set(), domainRegex: null, urlRegex: null };
+let blacklistMatchers = createBlacklistMatchers([]);
 let blacklistedItems: readonly BlacklistItem[] = [];
 let currentSettings: Settings = { ...defaultSettings };
 

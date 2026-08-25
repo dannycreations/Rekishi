@@ -3,10 +3,10 @@ import { shallow } from 'zustand/shallow';
 import { createWithEqualityFn } from 'zustand/traditional';
 
 import { BLACKLIST_STORAGE_KEY } from '../app/constants';
-import { createBlacklistMatchers, isUrlBlacklisted } from '../helpers/blacklistHelper';
-import { chromeSyncStorage } from '../helpers/storageHelper';
+import { createBlacklistMatchers, isUrlBlacklisted } from '../utilities/blacklist';
+import { chromeSyncStorage } from '../utilities/storage';
 
-import type { BlacklistItem, BlacklistMatchers } from '../helpers/blacklistHelper';
+import type { BlacklistItem, BlacklistMatchers } from '../utilities/blacklist';
 
 interface BlacklistState {
   readonly blacklistedItems: readonly BlacklistItem[];
@@ -27,7 +27,7 @@ export const useBlacklistStore = createWithEqualityFn(
 
       return {
         blacklistedItems: [],
-        blacklistMatchers: { plain: new Set(), domainRegex: null, urlRegex: null },
+        blacklistMatchers: createBlacklistMatchers([]),
         addDomain: (value, isRegex) => {
           set((state) => {
             if (state.blacklistedItems.some((item) => item.value === value)) {

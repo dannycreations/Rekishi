@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 
-import { groupHistoryByDayAndHour } from '../helpers/historyHelper';
+import { groupHistoryByDayAndHour } from '../utilities/history';
 
 import type { ChromeHistoryItem } from '../app/types';
-import type { DayGroup } from '../helpers/historyHelper';
+import type { DayGroup } from '../utilities/history';
 
 interface UseHistoryGroupReturn {
   readonly dailyGroups: readonly DayGroup[];

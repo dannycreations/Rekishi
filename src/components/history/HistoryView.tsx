@@ -5,8 +5,8 @@ import { useHistoryGroup } from '../../hooks/useHistoryGroup';
 import { useSelection } from '../../hooks/useSelection';
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
 import { useToastStore } from '../../stores/useToastStore';
-import { getHostnameFromUrl } from '../../utilities/commonUtil';
-import { formatDayHeader } from '../../utilities/dateUtil';
+import { getHostnameFromUrl } from '../../utilities/common';
+import { formatDayHeader } from '../../utilities/date';
 import { Icon } from '../shared/Icon';
 import { HistoryItemGroup } from './HistoryItemGroup';
 import { HistoryItemHeader } from './HistoryItemHeader';
@@ -181,7 +181,6 @@ export const HistoryView = memo(
                   <HistoryItemHeader
                     dayHeaderText={dayHeaderText}
                     dayItems={dayGroup.items}
-                    isHourHeader={false}
                     onDeleteAll={() => handleOpenDeleteAllModal(dayGroup.items, 'day')}
                     onDeleteSelected={handleOpenDeleteSelectedModal}
                     onToggleDaySelection={() => toggleDaySelection(dayGroup.items)}

@@ -5,6 +5,18 @@ type StorageAreaName = 'local' | 'sync';
 const createChromeStorage = (area: StorageAreaName): StateStorage => {
   const chromeStorageArea = typeof chrome !== 'undefined' && chrome.storage ? chrome.storage[area] : undefined;
 
+  const fallbackRead = (name: string): string | null => (typeof localStorage === 'undefined' ? null : localStorage.getItem(name));
+  const fallbackWrite = (name: string, value: string): void => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(name, value);
+    }
+  };
+  const fallbackRemove = (name: string): void => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(name);
+    }
+  };
+
   return {
     getItem: async (name: string): Promise<string | null> => {
       if (chromeStorageArea) {
@@ -14,34 +26,31 @@ const createChromeStorage = (area: StorageAreaName): StateStorage => {
           return typeof value === 'string' ? value : null;
         } catch (error) {
           console.error(`Failed to read from chrome.storage.${area}`, error);
-          return localStorage.getItem(name);
         }
       }
-      return localStorage.getItem(name);
+      return fallbackRead(name);
     },
     setItem: async (name: string, value: string): Promise<void> => {
       if (chromeStorageArea) {
         try {
           await chromeStorageArea.set({ [name]: value });
+          return;
         } catch (error) {
           console.error(`Failed to write to chrome.storage.${area}`, error);
-          localStorage.setItem(name, value);
         }
-      } else {
-        localStorage.setItem(name, value);
       }
+      fallbackWrite(name, value);
     },
     removeItem: async (name: string): Promise<void> => {
       if (chromeStorageArea) {
         try {
           await chromeStorageArea.remove([name]);
+          return;
         } catch (error) {
           console.error(`Failed to remove from chrome.storage.${area}`, error);
-          localStorage.removeItem(name);
         }
-      } else {
-        localStorage.removeItem(name);
       }
+      fallbackRemove(name);
     },
   };
 };

@@ -1,4 +1,4 @@
-import { mapToChromeHistoryItem } from '../helpers/historyHelper';
+import { mapToChromeHistoryItem } from '../utilities/history';
 import { deleteAllHistory as fakeDeleteAllHistory, deleteUrl as fakeDeleteUrl, search as fakeSearch } from './fakeApi';
 
 import type { ChromeHistoryItem, SearchParams } from '../app/types';

@@ -332,7 +332,7 @@
 
   /* Modals */
   .modal-backdrop {
-    @apply fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm transition-opacity duration-200;
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-overlay transition-opacity duration-200;
   }
 
   .modal-backdrop-open {
@@ -394,7 +394,7 @@
   }
 
   .sticky-header {
-    @apply sticky top-0 z-10 bg-background-soft/95 backdrop-blur-sm;
+    @apply sticky top-0 z-10 bg-background-soft/80;
   }
 
   /* Items & Lists */

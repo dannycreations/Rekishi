@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -170,7 +170,7 @@ export const CalendarPopover = memo(
                   <div key={date.toISOString()} className="layout-flex-center py-1">
                     <button
                       disabled={!hasHistory}
-                      className={clsx(
+                      className={cn(
                         'flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-sm leading-none transition-colors',
                         isSelected
                           ? 'border border-line bg-background-soft font-semibold text-primary hover:opacity-90'

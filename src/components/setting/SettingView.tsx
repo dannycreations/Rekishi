@@ -47,7 +47,7 @@ export const SettingView = (): JSX.Element => {
     theme: state.theme,
     setTheme: state.setTheme,
   }));
-  const { Modal: ClearHistoryModal, openModal: openClearHistoryModal } = useConfirm();
+  const { modal: clearHistoryModal, openModal: openClearHistoryModal } = useConfirm();
   const addToast = useToastStore((state) => state.addToast);
 
   const handleConfirmClearHistory = useCallback(async (): Promise<void> => {
@@ -139,7 +139,7 @@ export const SettingView = (): JSX.Element => {
           </div>
         </SettingSection>
       </div>
-      <ClearHistoryModal />
+      {clearHistoryModal}
     </>
   );
 };

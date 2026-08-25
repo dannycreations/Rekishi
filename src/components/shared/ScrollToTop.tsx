@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo } from 'react';
 
 import { Icon } from './Icon';
@@ -13,7 +13,7 @@ interface ScrollToTopProps {
 export const ScrollToTop = memo(({ isVisible, onClick }: ScrollToTopProps): JSX.Element => {
   return (
     <button
-      className={clsx('scroll-to-top transition-transform duration-300 ease-in-out', isVisible ? 'scale-100' : 'scale-0')}
+      className={cn('scroll-to-top transition-transform duration-300 ease-in-out', isVisible ? 'scale-100' : 'scale-0')}
       onClick={onClick}
       type="button"
     >

@@ -39,19 +39,19 @@ export const applyClientSideSearch = (
   };
 };
 
-interface GroupHistoryReturn {
+export interface DayGroup {
   readonly date: Date;
   readonly items: readonly ChromeHistoryItem[];
   readonly hourlyGroups: readonly HistoryItemGroup[];
 }
 
-export const groupHistoryByDayAndHour = (items: readonly ChromeHistoryItem[]): readonly GroupHistoryReturn[] => {
+export const groupHistoryByDayAndHour = (items: readonly ChromeHistoryItem[]): readonly DayGroup[] => {
   if (!items || items.length === 0) {
     return [];
   }
 
-  const dayGroups: { date: Date; items: ChromeHistoryItem[]; hourlyGroups: { time: string; items: ChromeHistoryItem[] }[] }[] = [];
-  let currentDayGroup: { date: Date; items: ChromeHistoryItem[]; hourlyGroups: { time: string; items: ChromeHistoryItem[] }[] } | null = null;
+  const dayGroups: { date: Date; items: ChromeHistoryItem[]; hourlyGroups: HistoryItemGroup[] }[] = [];
+  let currentDayGroup: { date: Date; items: ChromeHistoryItem[]; hourlyGroups: HistoryItemGroup[] } | null = null;
   let currentHourGroup: { time: string; items: ChromeHistoryItem[] } | null = null;
   let currentHour = -1;
 

@@ -1,8 +1,8 @@
-import { memo, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { ConfirmModal } from '../components/shared/ConfirmModal';
 
-import type { JSX, MemoExoticComponent, ReactNode } from 'react';
+import type { JSX, ReactNode } from 'react';
 
 interface ConfirmOptions {
   readonly cancelText?: string;
@@ -14,8 +14,8 @@ interface ConfirmOptions {
 }
 
 interface UseConfirmReturn {
-  readonly Modal: MemoExoticComponent<() => JSX.Element | null>;
-  readonly openModal: (opts: ConfirmOptions) => void;
+  readonly modal: JSX.Element | null;
+  readonly openModal: (options: ConfirmOptions) => void;
 }
 
 export const useConfirm = (): UseConfirmReturn => {
@@ -36,24 +36,18 @@ export const useConfirm = (): UseConfirmReturn => {
     }
   }, [options, closeModal]);
 
-  const Modal = memo((): JSX.Element | null => {
-    if (!options) {
-      return null;
-    }
+  const modal = options ? (
+    <ConfirmModal
+      cancelText={options.cancelText}
+      confirmButtonClass={options.confirmButtonClass}
+      confirmText={options.confirmText}
+      isOpen
+      message={options.message}
+      onClose={closeModal}
+      onConfirm={handleConfirm}
+      title={options.title}
+    />
+  ) : null;
 
-    return (
-      <ConfirmModal
-        cancelText={options.cancelText}
-        confirmButtonClass={options.confirmButtonClass}
-        confirmText={options.confirmText}
-        isOpen={!!options}
-        message={options.message}
-        onClose={closeModal}
-        onConfirm={handleConfirm}
-        title={options.title}
-      />
-    );
-  });
-
-  return { Modal, openModal };
+  return { modal, openModal };
 };

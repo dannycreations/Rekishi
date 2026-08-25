@@ -8,7 +8,6 @@ import type { ChromeHistoryItem, HistoryItemGroup as HistoryItemGroupType } from
 
 interface HistoryItemGroupProps {
   readonly group: HistoryItemGroupType;
-  readonly isSticky?: boolean;
   readonly onBlacklistRequest: (item: ChromeHistoryItem) => void;
   readonly onDeleteRequest: (item: ChromeHistoryItem) => void;
   readonly onDeleteHourRequest: (items: readonly ChromeHistoryItem[]) => void;

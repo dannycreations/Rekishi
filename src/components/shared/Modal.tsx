@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -31,9 +31,9 @@ export const Modal = memo(({ isOpen, onClose, title, children, containerClassNam
   }
 
   return createPortal(
-    <div className={clsx('modal-backdrop', isOpen ? 'modal-backdrop-open' : 'modal-backdrop-closed')} onClick={onClose}>
+    <div className={cn('modal-backdrop', isOpen ? 'modal-backdrop-open' : 'modal-backdrop-closed')} onClick={onClose}>
       <div
-        className={clsx('modal-container', containerClassName, isOpen ? 'modal-container-open' : 'modal-container-closed')}
+        className={cn('modal-container', containerClassName, isOpen ? 'modal-container-open' : 'modal-container-closed')}
         onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
       >
         <header className="modal-header">

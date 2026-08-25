@@ -26,6 +26,10 @@ export const formatDateForInput = (date: Date): string => {
   return `${year}/${month}/${day}`;
 };
 
+export const parseDateFromInput = (value: string): Date => {
+  return new Date(`${value.replace(/\//g, '-')}T00:00:00`);
+};
+
 export const formatTimeShort = (timestamp: number): string => {
   return new Date(timestamp).toLocaleTimeString('en-US', {
     hour: '2-digit',

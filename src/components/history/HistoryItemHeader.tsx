@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo, useMemo } from 'react';
 
 import { DeleteButton } from '../shared/DeleteButton';
@@ -11,13 +11,10 @@ interface HistoryItemHeaderProps {
   readonly dayHeaderText: string;
   readonly dayItems: readonly ChromeHistoryItem[];
   readonly isHourHeader: boolean;
-  readonly isSearchMode?: boolean;
   readonly onDeleteAll: () => void;
-  readonly onDeleteSearch?: () => void;
   readonly onDeleteSelected: () => void;
   readonly onToggleDaySelection: (items: readonly ChromeHistoryItem[]) => void;
   readonly selectedItemsCount: number;
-  readonly totalSearchItemsCount?: number;
   readonly totalSelectedCount: number;
 }
 
@@ -31,9 +28,6 @@ export const HistoryItemHeader = memo(
     onDeleteSelected,
     onDeleteAll,
     totalSelectedCount,
-    isSearchMode,
-    onDeleteSearch,
-    totalSearchItemsCount,
   }: HistoryItemHeaderProps): JSX.Element => {
     const allForDaySelected = useMemo(() => selectedItemsCount === dayItems.length && dayItems.length > 0, [selectedItemsCount, dayItems.length]);
     const someForDaySelected = useMemo(() => selectedItemsCount > 0 && !allForDaySelected, [selectedItemsCount, allForDaySelected]);
@@ -51,7 +45,7 @@ export const HistoryItemHeader = memo(
       <div className="section-header">
         <div className="flex items-center gap-2">
           <div className="cursor-pointer group/header" onClick={() => onToggleDaySelection(dayItems)}>
-            <div className={clsx('checkbox-custom', (allForDaySelected || someForDaySelected) && 'checkbox-checked')}>
+            <div className={cn('checkbox-custom', (allForDaySelected || someForDaySelected) && 'checkbox-checked')}>
               {allForDaySelected && <Icon name="Check" className="icon-xs text-primary" />}
               {someForDaySelected && <div className="h-0.5 w-2 rounded-sm bg-primary" />}
             </div>
@@ -59,11 +53,6 @@ export const HistoryItemHeader = memo(
           <h2 className="section-title-lg">{dayHeaderText}</h2>
         </div>
         <div className="flex items-center gap-2">
-          {isSearchMode && onDeleteSearch && (
-            <DeleteButton disabled={!totalSearchItemsCount || totalSearchItemsCount === 0} onClick={onDeleteSearch}>
-              Delete entire search
-            </DeleteButton>
-          )}
           <DeleteButton disabled={totalSelectedCount === 0 && dayItems.length === 0} onClick={handleButtonClick}>
             {buttonText}
           </DeleteButton>

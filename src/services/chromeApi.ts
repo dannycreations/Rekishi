@@ -10,9 +10,6 @@ const wrapChromeApi = async <T>(apiCall: () => Promise<T>, errorMessage: string)
     const message = error instanceof Error ? error.message : 'An unknown error occurred';
     console.error(`${errorMessage}:`, message);
     throw new Error(message);
-  } finally {
-    // This is intentional: if we're not in a chrome environment, the apiCall above
-    // might not even be defined or might fail immediately. The check below is more robust.
   }
 };
 

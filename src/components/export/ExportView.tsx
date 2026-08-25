@@ -1,10 +1,10 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import { useHistoryDate } from '../../hooks/useHistoryDate';
 import { search } from '../../services/chromeApi';
 import { useToastStore } from '../../stores/useToastStore';
-import { formatDateForInput } from '../../utilities/dateUtil';
+import { formatDateForInput, getDayBoundaries, parseDateFromInput } from '../../utilities/dateUtil';
 import { downloadFile, generateFileContent } from '../../utilities/exportUtil';
 import { CalendarPopover } from '../shared/CalendarPopover';
 import { Icon } from '../shared/Icon';
@@ -22,10 +22,10 @@ interface RadioCardProps {
 
 const RadioCard = memo(({ checked, value, label, description, onChange }: RadioCardProps): JSX.Element => {
   return (
-    <label className={clsx('radio-card', checked && 'radio-card-checked')}>
-      <div className={clsx('radio-dot-container', checked && 'radio-dot-container-checked')}>
+    <label className={cn('radio-card', checked && 'radio-card-checked')}>
+      <div className={cn('radio-dot-container', checked && 'radio-dot-container-checked')}>
         <input checked={checked} className="peer sr-only" name="format" onChange={() => onChange(value)} type="radio" value={value} />
-        <div className={clsx('radio-dot', checked && 'radio-dot-checked')} />
+        <div className={cn('radio-dot', checked && 'radio-dot-checked')} />
       </div>
       <div>
         <span className="txt-highlight">{label}</span>
@@ -59,18 +59,20 @@ export const ExportView = (): JSX.Element => {
     setIsLoading(true);
 
     try {
-      const start = new Date(`${startDate.replace(/\//g, '-')}T00:00:00`);
-      const end = new Date(`${endDate.replace(/\//g, '-')}T23:59:59.999`);
+      const start = parseDateFromInput(startDate);
+      const end = parseDateFromInput(endDate);
 
       if (start > end) {
         addToast('Start date cannot be after end date.', 'error');
         return;
       }
 
+      const { startTime, endTime } = getDayBoundaries(end);
+
       const historyItems = await search({
-        endTime: end.getTime(),
+        endTime,
         maxResults: 0,
-        startTime: start.getTime(),
+        startTime,
         text: '',
       });
 
@@ -101,8 +103,7 @@ export const ExportView = (): JSX.Element => {
   }, [activeCalendar]);
 
   const activeSelectedDate = useMemo((): Date => {
-    const dateStr = activeCalendar === 'start' ? startDate : endDate;
-    return new Date(`${dateStr.replace(/\//g, '-')}T00:00:00`);
+    return parseDateFromInput(activeCalendar === 'start' ? startDate : endDate);
   }, [activeCalendar, startDate, endDate]);
 
   const handleDateSelect = useCallback(
@@ -120,14 +121,14 @@ export const ExportView = (): JSX.Element => {
 
   const minCalendarDate = useMemo((): Date | undefined => {
     if (activeCalendar === 'end') {
-      return new Date(`${startDate.replace(/\//g, '-')}T00:00:00`);
+      return parseDateFromInput(startDate);
     }
     return undefined;
   }, [activeCalendar, startDate]);
 
   const maxCalendarDate = useMemo((): Date => {
     if (activeCalendar === 'start') {
-      return new Date(`${endDate.replace(/\//g, '-')}T00:00:00`);
+      return parseDateFromInput(endDate);
     }
     return new Date();
   }, [activeCalendar, endDate]);

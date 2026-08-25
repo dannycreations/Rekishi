@@ -6,12 +6,6 @@ export const VIEW_TITLES: Record<ViewType, string> = {
   settings: 'Settings',
 } as const;
 
-export const VIEW_MODAL_SIZES: Partial<Record<ViewType, 'md' | 'lg' | 'xl' | '2xl' | '3xl'>> = {
-  blacklist: 'lg',
-  export: 'md',
-  settings: 'lg',
-} as const;
-
 export const BLACKLIST_STORAGE_KEY = 'rekishi-blacklist';
 export const HISTORY_STORAGE_KEY = 'rekishi-history';
 export const SETTINGS_STORAGE_KEY = 'rekishi-setting';

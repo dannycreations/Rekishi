@@ -28,27 +28,23 @@ interface HistoryViewProps {
 export const HistoryView = memo(
   ({ deleteHistoryItems, hasMore, historyItems, isLoadingMore, loadMore, onDelete, scrollContainerRef }: HistoryViewProps): JSX.Element => {
     const { selectedItems, toggleSelection, toggleDaySelection, clearSelection } = useSelection();
-    const { Modal: DeleteModal, openModal: openDeleteModal } = useConfirm();
-    const { Modal: BlacklistModal, openModal: openBlacklistModal } = useConfirm();
+    const { modal: deleteModal, openModal: openDeleteModal } = useConfirm();
+    const { modal: blacklistModal, openModal: openBlacklistModal } = useConfirm();
     const addToast = useToastStore((state) => state.addToast);
     const { addDomain } = useBlacklistStore();
 
-    const { dailyGroups, itemLocator } = useHistoryGroup(historyItems);
+    const { dailyGroups, dayKeyByItemId } = useHistoryGroup(historyItems);
 
-    const selectionCounts = useMemo(() => {
-      const counts = {
-        byDay: new Map<string, number>(),
-        byHour: new Map<string, number>(),
-      };
+    const selectedCountByDayKey = useMemo(() => {
+      const counts = new Map<string, number>();
       selectedItems.forEach((itemId) => {
-        const location = itemLocator.get(itemId);
-        if (location) {
-          counts.byDay.set(location.dayKey, (counts.byDay.get(location.dayKey) || 0) + 1);
-          counts.byHour.set(location.hourKey, (counts.byHour.get(location.hourKey) || 0) + 1);
+        const dayKey = dayKeyByItemId.get(itemId);
+        if (dayKey) {
+          counts.set(dayKey, (counts.get(dayKey) || 0) + 1);
         }
       });
       return counts;
-    }, [selectedItems, itemLocator]);
+    }, [selectedItems, dayKeyByItemId]);
 
     const openDeleteConfirm = useCallback(
       (config: { count: number; title: string; typeText: string; onConfirm: () => Promise<void> }): void => {
@@ -189,8 +185,7 @@ export const HistoryView = memo(
                     onDeleteAll={() => handleOpenDeleteAllModal(dayGroup.items, 'day')}
                     onDeleteSelected={handleOpenDeleteSelectedModal}
                     onToggleDaySelection={() => toggleDaySelection(dayGroup.items)}
-                    selectedItemsCount={selectionCounts.byDay.get(dayKey) || 0}
-                    totalSearchItemsCount={historyItems.length}
+                    selectedItemsCount={selectedCountByDayKey.get(dayKey) || 0}
                     totalSelectedCount={selectedItems.size}
                   />
                   <hr className="mx-2 mt-3 border-line" />
@@ -199,8 +194,7 @@ export const HistoryView = memo(
                   {dayGroup.hourlyGroups.map((group) => (
                     <div key={group.time} data-day-key={dayKey} data-hour-key={group.time}>
                       <HistoryItemGroup
-                        group={{ ...group, items: group.items }}
-                        isSticky={false}
+                        group={group}
                         onBlacklistRequest={handleBlacklistRequest}
                         onDeleteHourRequest={(items) => handleOpenDeleteAllModal(items, 'hour')}
                         onDeleteRequest={handleDeleteItemRequest}
@@ -222,8 +216,8 @@ export const HistoryView = memo(
             </div>
           )}
         </div>
-        <DeleteModal />
-        <BlacklistModal />
+        {deleteModal}
+        {blacklistModal}
       </>
     );
   },

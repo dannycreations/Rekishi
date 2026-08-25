@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -41,7 +41,7 @@ const Toast = memo(({ toast, onRemove }: { readonly toast: ToastItem; readonly o
   }, [handleRemove]);
 
   return (
-    <div className={clsx('toast-card', isExiting ? 'toast-animate-exit' : 'toast-animate-enter')}>
+    <div className={cn('toast-card', isExiting ? 'toast-animate-exit' : 'toast-animate-enter')}>
       <div className="p-3">
         <div className="flex items-start">
           <div className="shrink-0">{TOAST_ICONS[toast.type]}</div>

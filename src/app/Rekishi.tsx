@@ -1,5 +1,6 @@
 import './styles.css';
 
+import { cn } from 'cnfast';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BlacklistView } from '../components/blacklist/BlacklistView';
@@ -9,14 +10,14 @@ import { HistoryViewSkeleton } from '../components/history/HistoryViewSkeleton';
 import { Header } from '../components/main/Header';
 import { SettingView } from '../components/setting/SettingView';
 import { Icon } from '../components/shared/Icon';
+import { Modal } from '../components/shared/Modal';
 import { ScrollToTop } from '../components/shared/ScrollToTop';
 import { ToastContainer } from '../components/shared/Toast';
-import { ViewModal } from '../components/shared/ViewModal';
 import { useHistory } from '../hooks/useHistory';
 import { useHistoryDate } from '../hooks/useHistoryDate';
 import { useHistoryStore } from '../stores/useHistoryStore';
 import { useSettingStore } from '../stores/useSettingStore';
-import { VIEW_MODAL_SIZES, VIEW_TITLES } from './constants';
+import { VIEW_TITLES } from './constants';
 
 import type { JSX } from 'react';
 import type { ViewType } from './types';
@@ -25,6 +26,12 @@ const MODAL_COMPONENTS: Record<ViewType, JSX.Element> = {
   blacklist: <BlacklistView />,
   export: <ExportView />,
   settings: <SettingView />,
+} as const;
+
+const MODAL_CONTAINER_CLASSES: Record<ViewType, string> = {
+  blacklist: 'max-w-lg',
+  export: 'max-w-md',
+  settings: 'max-w-lg',
 } as const;
 
 export const Rekishi = (): JSX.Element => {
@@ -137,9 +144,14 @@ export const Rekishi = (): JSX.Element => {
         </main>
 
         {activeModal && (
-          <ViewModal isOpen={!!activeModal} onClose={handleCloseModal} size={VIEW_MODAL_SIZES[activeModal]} title={VIEW_TITLES[activeModal] ?? ''}>
+          <Modal
+            containerClassName={cn(MODAL_CONTAINER_CLASSES[activeModal], 'max-h-[90vh]')}
+            isOpen
+            onClose={handleCloseModal}
+            title={VIEW_TITLES[activeModal]}
+          >
             {MODAL_COMPONENTS[activeModal]}
-          </ViewModal>
+          </Modal>
         )}
       </div>
 

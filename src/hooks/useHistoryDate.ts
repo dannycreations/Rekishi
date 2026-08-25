@@ -4,7 +4,6 @@ import { search } from '../services/chromeApi';
 
 interface UseHistoryDateReturn {
   readonly datesWithHistory: Set<string>;
-  readonly error: string | null;
   readonly fetchDatesForMonth: (date: Date) => void;
   readonly isLoading: boolean;
 }
@@ -12,7 +11,6 @@ interface UseHistoryDateReturn {
 export const useHistoryDate = (): UseHistoryDateReturn => {
   const [datesWithHistory, setDatesWithHistory] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const fetchedMonthsRef = useRef<Set<string>>(new Set());
   const isFetchingRef = useRef(false);
 
@@ -24,7 +22,6 @@ export const useHistoryDate = (): UseHistoryDateReturn => {
 
     isFetchingRef.current = true;
     setIsLoading(true);
-    setError(null);
 
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -52,12 +49,11 @@ export const useHistoryDate = (): UseHistoryDateReturn => {
       fetchedMonthsRef.current.add(monthKey);
     } catch (error: unknown) {
       console.error('Failed to load history dates for month:', error);
-      setError('Failed to load history dates.');
     } finally {
       isFetchingRef.current = false;
       setIsLoading(false);
     }
   }, []);
 
-  return { datesWithHistory, isLoading, error, fetchDatesForMonth };
+  return { datesWithHistory, isLoading, fetchDatesForMonth };
 };

@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useHistoryStore } from '../../stores/useHistoryStore';
@@ -122,9 +122,9 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
   );
 
   return (
-    <div className={clsx('group item-list', isChecked ? 'item-list-selected' : 'item-list-hover')} onClick={handleToggle}>
+    <div className={cn('group item-list', isChecked ? 'item-list-selected' : 'item-list-hover')} onClick={handleToggle}>
       <div className="layout-flex-center">
-        <div className={clsx('checkbox-custom', isChecked && 'checkbox-checked')}>
+        <div className={cn('checkbox-custom', isChecked && 'checkbox-checked')}>
           {isChecked && <Icon name="Check" className="icon-xs text-primary" />}
         </div>
       </div>

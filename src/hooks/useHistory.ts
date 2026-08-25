@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { DAILY_PAGE_SIZE, INIT_CHUNK_SIZE, SEARCH_PAGE_SIZE } from '../app/constants';
 import { applyClientSideSearch } from '../helpers/historyHelper';
@@ -33,7 +33,6 @@ interface UseHistoryReturn {
 
 export const useHistory = (): UseHistoryReturn => {
   const [rawHistory, setRawHistory] = useState<readonly ChromeHistoryItem[]>([]);
-  const historyItemMap = useRef<Map<string, ChromeHistoryItem>>(new Map());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,13 +55,6 @@ export const useHistory = (): UseHistoryReturn => {
     }
     return compileRegex(searchQuery);
   }, [isRegex, searchQuery]);
-
-  const history = rawHistory;
-
-  useEffect(() => {
-    historyItemMap.current.clear();
-    rawHistory.forEach((item) => historyItemMap.current.set(item.id, item));
-  }, [rawHistory]);
 
   const fetchHistoryData = useCallback(
     async (params: {
@@ -212,6 +204,7 @@ export const useHistory = (): UseHistoryReturn => {
       return;
     }
     setIsLoadingMore(true);
+    const existingIds = new Set(rawHistory.map((item) => item.id));
 
     try {
       if (searchQuery) {
@@ -235,7 +228,7 @@ export const useHistory = (): UseHistoryReturn => {
           setHasMoreSearchResults(false);
         }
 
-        const uniqueNewItems = newItems.filter((i) => !historyItemMap.current.has(i.id));
+        const uniqueNewItems = newItems.filter((item) => !existingIds.has(item.id));
         let itemsToAdd: readonly ChromeHistoryItem[] = uniqueNewItems.filter((item) => !isBlacklisted(item.url));
 
         if (clientSideSearch) {
@@ -259,7 +252,7 @@ export const useHistory = (): UseHistoryReturn => {
           startTime,
           text: '',
         });
-        const uniqueNewItems = newItems.filter((i) => !historyItemMap.current.has(i.id));
+        const uniqueNewItems = newItems.filter((item) => !existingIds.has(item.id));
         setRawHistory((prev) => [...prev, ...uniqueNewItems.filter((item) => !isBlacklisted(item.url))]);
         setLastLoadedDate(nextDate);
       }
@@ -271,38 +264,44 @@ export const useHistory = (): UseHistoryReturn => {
     }
   }, [isLoading, isLoadingMore, searchQuery, lastLoadedDate, hasMoreSearchResults, isRegex, error, compiledRegex, rawHistory, isBlacklisted]);
 
-  const deleteHistoryItem = useCallback(async (id: string): Promise<void> => {
-    try {
-      const itemToDelete = historyItemMap.current.get(id);
-      if (itemToDelete?.url) {
-        await deleteUrl({ url: itemToDelete.url });
-        setRawHistory((prev) => prev.filter((item) => item.url !== itemToDelete.url));
-      }
-    } catch (error: unknown) {
-      console.error('Failed to delete history item:', error);
-      setError('Failed to delete history item.');
-    }
-  }, []);
-
-  const deleteHistoryItems = useCallback(async (ids: readonly string[]): Promise<void> => {
-    try {
-      const urlsToDelete = new Set<string>();
-      for (const id of ids) {
-        const item = historyItemMap.current.get(id);
-        if (item?.url) {
-          urlsToDelete.add(item.url);
+  const deleteHistoryItem = useCallback(
+    async (id: string): Promise<void> => {
+      try {
+        const itemToDelete = rawHistory.find((entry) => entry.id === id);
+        if (itemToDelete?.url) {
+          await deleteUrl({ url: itemToDelete.url });
+          setRawHistory((prev) => prev.filter((item) => item.url !== itemToDelete.url));
         }
+      } catch (error: unknown) {
+        console.error('Failed to delete history item:', error);
+        setError('Failed to delete history item.');
       }
+    },
+    [rawHistory],
+  );
 
-      const deletePromises = Array.from(urlsToDelete).map((url) => deleteUrl({ url }));
-      await Promise.all(deletePromises);
+  const deleteHistoryItems = useCallback(
+    async (ids: readonly string[]): Promise<void> => {
+      try {
+        const urlsToDelete = new Set<string>();
+        for (const id of ids) {
+          const item = rawHistory.find((entry) => entry.id === id);
+          if (item?.url) {
+            urlsToDelete.add(item.url);
+          }
+        }
 
-      setRawHistory((prev) => prev.filter((item) => !urlsToDelete.has(item.url)));
-    } catch (error: unknown) {
-      console.error('Failed to delete history items:', error);
-      setError('Failed to delete history items.');
-    }
-  }, []);
+        const deletePromises = Array.from(urlsToDelete).map((url) => deleteUrl({ url }));
+        await Promise.all(deletePromises);
+
+        setRawHistory((prev) => prev.filter((item) => !urlsToDelete.has(item.url)));
+      } catch (error: unknown) {
+        console.error('Failed to delete history items:', error);
+        setError('Failed to delete history items.');
+      }
+    },
+    [rawHistory],
+  );
 
   const hasMore = useMemo((): boolean => {
     if (searchQuery) {
@@ -316,7 +315,7 @@ export const useHistory = (): UseHistoryReturn => {
     deleteHistoryItems,
     error,
     hasMore,
-    history,
+    history: rawHistory,
     isLoading,
     isLoadingMore,
     loadMore,

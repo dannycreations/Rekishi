@@ -1,4 +1,4 @@
-import { clsx } from 'clsx';
+import { cn } from 'cnfast';
 import { memo } from 'react';
 
 import { Modal } from './Modal';
@@ -35,7 +35,7 @@ export const ConfirmModal = memo(
             <button className="btn-secondary" onClick={onClose}>
               {cancelText}
             </button>
-            <button className={clsx('btn-primary', confirmButtonClass)} onClick={onConfirm}>
+            <button className={cn('btn-primary', confirmButtonClass)} onClick={onConfirm}>
               {confirmText}
             </button>
           </div>

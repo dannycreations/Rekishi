@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { memo, useMemo } from 'react';
 
 import { DeleteButton } from '../shared/DeleteButton';

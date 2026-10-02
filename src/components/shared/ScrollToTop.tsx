@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { memo } from 'react';
 
 import { Icon } from './Icon';

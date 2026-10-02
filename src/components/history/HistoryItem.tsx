@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useHistoryStore } from '../../stores/useHistoryStore';

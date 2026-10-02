@@ -1,6 +1,6 @@
 import './styles.css';
 
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BlacklistView } from '../components/blacklist/BlacklistView';

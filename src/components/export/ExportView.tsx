@@ -1,4 +1,4 @@
-import { cn } from 'cnfast';
+import { cn } from 'cn';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import { search } from '../../services/chromeApi';

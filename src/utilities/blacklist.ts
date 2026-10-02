@@ -11,6 +11,8 @@ export interface BlacklistMatchers {
   readonly urlRegex: RegExp | null;
 }
 
+const PATH_WILDCARD_SUFFIX = '/*';
+
 const wildcardToRegex = (pattern: string): string => {
   const escaped = escapeRegex(pattern);
   return escaped.replace(/\\\*/g, '.*');
@@ -22,26 +24,33 @@ export const createBlacklistMatchers = (items: readonly BlacklistItem[]): Blackl
   const urlRegexSources: string[] = [];
 
   for (const item of items) {
+    const { value } = item;
+
+    if (!item.isRegex && !value.includes('*')) {
+      plain.add(value);
+      continue;
+    }
+
+    let sources = urlRegexSources;
+    let source: string;
+
     if (item.isRegex) {
-      if (!safeRegExp(item.value)) {
-        console.error(`Invalid regex in blacklist, skipping: ${item.value}`);
-        continue;
-      }
-      urlRegexSources.push(`(${item.value})`);
-    } else if (item.value.includes('*')) {
-      const wildcardRegex = wildcardToRegex(item.value);
-      if (item.value.includes('/')) {
-        if (wildcardRegex.endsWith('/.*')) {
-          const base = wildcardRegex.slice(0, -3);
-          urlRegexSources.push(`(^${base}(\\/.*)?$)`);
-        } else {
-          urlRegexSources.push(`(^${wildcardRegex})`);
-        }
-      } else {
-        domainRegexSources.push(`(^${wildcardRegex}$)`);
-      }
+      source = `(${value})`;
+    } else if (!value.includes('/')) {
+      source = `(^${wildcardToRegex(value)}$)`;
+      sources = domainRegexSources;
+    } else if (value.endsWith(PATH_WILDCARD_SUFFIX)) {
+      source = `(^${wildcardToRegex(value.slice(0, -PATH_WILDCARD_SUFFIX.length))}(\\/.*)?$)`;
     } else {
-      plain.add(item.value);
+      source = `(^${wildcardToRegex(value)})`;
+    }
+
+    // Every entry becomes one alternation branch, so a pattern that is a valid regex on its own can
+    // still break the expression it is embedded in. Check the branch, not just the pattern.
+    if (safeRegExp(`(?:${source})`)) {
+      sources.push(source);
+    } else {
+      console.error(`Invalid regex in blacklist, skipping: ${value}`);
     }
   }
 

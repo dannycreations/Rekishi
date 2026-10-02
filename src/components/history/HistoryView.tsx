@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { useConfirm } from '../../hooks/useConfirm';
 import { useSelection } from '../../hooks/useSelection';
@@ -17,7 +17,6 @@ import type { ChromeHistoryItem } from '../../app/types';
 
 interface HistoryViewProps {
   readonly deleteHistoryItems: (ids: string[]) => Promise<void>;
-  readonly hasMore: boolean;
   readonly historyItems: readonly ChromeHistoryItem[];
   readonly isLoadingMore: boolean;
   readonly loadMore: () => void;
@@ -26,38 +25,30 @@ interface HistoryViewProps {
 }
 
 export const HistoryView = memo(
-  ({ deleteHistoryItems, hasMore, historyItems, isLoadingMore, loadMore, onDelete, scrollContainerRef }: HistoryViewProps): JSX.Element => {
+  ({ deleteHistoryItems, historyItems, isLoadingMore, loadMore, onDelete, scrollContainerRef }: HistoryViewProps): JSX.Element => {
     const { selectedItems, toggleSelection, toggleDaySelection, clearSelection } = useSelection();
     const { modal: deleteModal, openModal: openDeleteModal } = useConfirm();
     const { modal: blacklistModal, openModal: openBlacklistModal } = useConfirm();
     const addToast = useToastStore((state) => state.addToast);
-    const { addDomain } = useBlacklistStore();
+    const addDomain = useBlacklistStore((state) => state.addDomain);
 
     const dailyGroups = useMemo(() => groupHistoryByDayAndHour(historyItems), [historyItems]);
 
-    const dayKeyByItemId = useMemo(() => {
-      const dayKeys = new Map<string, string>();
-      for (const dayGroup of dailyGroups) {
-        const dayKey = dayGroup.date.toISOString();
-        for (const hourGroup of dayGroup.hourlyGroups) {
-          for (const item of hourGroup.items) {
-            dayKeys.set(item.id, dayKey);
-          }
-        }
-      }
-      return dayKeys;
-    }, [dailyGroups]);
-
     const selectedCountByDayKey = useMemo(() => {
       const counts = new Map<string, number>();
-      selectedItems.forEach((itemId) => {
-        const dayKey = dayKeyByItemId.get(itemId);
-        if (dayKey) {
-          counts.set(dayKey, (counts.get(dayKey) || 0) + 1);
+      for (const dayGroup of dailyGroups) {
+        let count = 0;
+        for (const item of dayGroup.items) {
+          if (selectedItems.has(item.id)) {
+            count++;
+          }
         }
-      });
+        if (count > 0) {
+          counts.set(dayGroup.date.toISOString(), count);
+        }
+      }
       return counts;
-    }, [selectedItems, dayKeyByItemId]);
+    }, [dailyGroups, selectedItems]);
 
     const openDeleteConfirm = useCallback(
       (config: { count: number; title: string; typeText: string; onConfirm: () => Promise<void> }): void => {
@@ -142,20 +133,27 @@ export const HistoryView = memo(
       [addDomain, addToast, openBlacklistModal],
     );
 
-    const observer = useRef<IntersectionObserver | null>(null);
+    // One observer for the sentinel: loadMore guards itself, but its identity changes on every history
+    // update, so the callback is read through a ref instead of re-creating the observer.
+    const loadMoreRef = useRef(loadMore);
+    useEffect(() => {
+      loadMoreRef.current = loadMore;
+    }, [loadMore]);
+
+    const observerRef = useRef<IntersectionObserver | null>(null);
     const lastElementRef = useCallback(
       (node: HTMLDivElement | null): void => {
-        if (isLoadingMore) {
+        observerRef.current?.disconnect();
+        observerRef.current = null;
+
+        if (!node) {
           return;
         }
-        if (observer.current) {
-          observer.current.disconnect();
-        }
 
-        observer.current = new IntersectionObserver(
+        const observer = new IntersectionObserver(
           (entries: IntersectionObserverEntry[]) => {
-            if (entries[0].isIntersecting && hasMore) {
-              loadMore();
+            if (entries[0].isIntersecting) {
+              loadMoreRef.current();
             }
           },
           {
@@ -163,12 +161,10 @@ export const HistoryView = memo(
             rootMargin: '0px 0px 500px 0px',
           },
         );
-
-        if (node) {
-          observer.current.observe(node);
-        }
+        observer.observe(node);
+        observerRef.current = observer;
       },
-      [isLoadingMore, hasMore, loadMore, scrollContainerRef],
+      [scrollContainerRef],
     );
 
     if (dailyGroups.length === 0 && !isLoadingMore) {

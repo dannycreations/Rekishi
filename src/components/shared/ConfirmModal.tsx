@@ -9,7 +9,6 @@ interface ConfirmModalProps {
   readonly cancelText?: string;
   readonly confirmButtonClass?: string;
   readonly confirmText?: string;
-  readonly isOpen: boolean;
   readonly message: ReactNode;
   readonly onClose: () => void;
   readonly onConfirm: () => void;
@@ -18,7 +17,6 @@ interface ConfirmModalProps {
 
 export const ConfirmModal = memo(
   ({
-    isOpen,
     onClose,
     onConfirm,
     title,
@@ -26,9 +24,9 @@ export const ConfirmModal = memo(
     confirmText = 'Confirm',
     cancelText = 'Cancel',
     confirmButtonClass = '',
-  }: ConfirmModalProps): JSX.Element | null => {
+  }: ConfirmModalProps): JSX.Element => {
     return (
-      <Modal containerClassName="max-w-md" isOpen={isOpen} onClose={onClose} title={title}>
+      <Modal containerClassName="max-w-md" onClose={onClose} title={title}>
         <div className="modal-body-stack">
           <div className="txt-main">{message}</div>
           <div className="flex justify-end gap-2">

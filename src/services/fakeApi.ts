@@ -29,72 +29,38 @@ const runFakeBlacklistCleanup = (): void => {
   });
 };
 
+const SEARCH_RESULT_PATH = '/search';
+
+const SEARCH_QUERIES = ['react hooks', 'typescript tutorial', 'css grid', 'zustand vs redux', 'esbuild performance', 'how to center a div'];
+
+// Search engines are picked by path and get a query-driven title; the rest carry their own title.
+const FAKE_SITES: readonly { readonly domain: string; readonly path: string; readonly title?: string }[] = [
+  { domain: 'google.com', path: SEARCH_RESULT_PATH },
+  { domain: 'bing.com', path: SEARCH_RESULT_PATH },
+  { domain: 'duckduckgo.com', path: SEARCH_RESULT_PATH },
+  { domain: 'yahoo.com', path: SEARCH_RESULT_PATH },
+  { domain: 'github.com', path: '/issues/123', title: 'Project Repository' },
+  { domain: 'vercel.com', path: '/dashboard/project-x', title: 'Deployment Dashboard' },
+  { domain: 'stackoverflow.com', path: '/questions/12345', title: 'Q&A for programmers' },
+  { domain: 'developer.mozilla.org', path: '/en-US/docs/Web/JavaScript', title: 'MDN Web Docs' },
+  { domain: 'tailwindcss.com', path: '/docs/utility-first', title: 'CSS Framework' },
+  { domain: 'react.dev', path: '/learn', title: 'New React Docs' },
+  { domain: 'youtube.com', path: '/watch?v=dQw4w9WgXcQ', title: 'Viral Video' },
+  { domain: 'wikipedia.org', path: '/wiki/History_of_Rome', title: 'History of Rome' },
+  { domain: 'amazon.com', path: '/bestsellers', title: 'Best Sellers' },
+];
+
 const generateFakeHistoryItem = (timestamp: number): chrome.history.HistoryItem => {
-  const domains = [
-    'google.com',
-    'bing.com',
-    'duckduckgo.com',
-    'yahoo.com',
-    'github.com',
-    'vercel.com',
-    'stackoverflow.com',
-    'developer.mozilla.org',
-    'tailwindcss.com',
-    'react.dev',
-    'youtube.com',
-    'wikipedia.org',
-    'amazon.com',
-  ];
-  const searchQueries = ['react hooks', 'typescript tutorial', 'css grid', 'zustand vs redux', 'esbuild performance', 'how to center a div'];
-  const titles = [
-    `Search results for ${searchQueries[Math.floor(Math.random() * searchQueries.length)]}`,
-    `Search results for ${searchQueries[Math.floor(Math.random() * searchQueries.length)]}`,
-    `Search results for ${searchQueries[Math.floor(Math.random() * searchQueries.length)]}`,
-    `Search results for ${searchQueries[Math.floor(Math.random() * searchQueries.length)]}`,
-    'Project Repository',
-    'Deployment Dashboard',
-    'Q&A for programmers',
-    'MDN Web Docs',
-    'CSS Framework',
-    'New React Docs',
-    'Viral Video',
-    'History of Rome',
-    'Best Sellers',
-  ];
-  const paths = [
-    '/search',
-    '/search',
-    '/search',
-    '/search',
-    '/docs/main',
-    '/issues/123',
-    '/dashboard/project-x',
-    '/questions/12345',
-    '/en-US/docs/Web/JavaScript',
-    '/docs/utility-first',
-    '/learn',
-    '/watch?v=dQw4w9WgXcQ',
-    '/wiki/History_of_Rome',
-    '/bestsellers',
-  ];
+  const site = FAKE_SITES[Math.floor(Math.random() * FAKE_SITES.length)];
+  const query = SEARCH_QUERIES[Math.floor(Math.random() * SEARCH_QUERIES.length)];
 
-  const domainIndex = Math.floor(Math.random() * domains.length);
-  const title = titles[domainIndex];
-  const domain = domains[domainIndex];
-  const path = paths[domainIndex];
-
-  let url = `https://${domain}${path}`;
-  if (path === '/search') {
-    const query = searchQueries[Math.floor(Math.random() * searchQueries.length)];
-    url += `?q=${encodeURIComponent(query)}`;
-  }
-
-  const id = url;
+  const url =
+    site.path === SEARCH_RESULT_PATH ? `https://${site.domain}${site.path}?q=${encodeURIComponent(query)}` : `https://${site.domain}${site.path}`;
 
   return {
-    id,
+    id: url,
     url,
-    title,
+    title: site.title ?? `Search results for ${query}`,
     lastVisitTime: timestamp,
     visitCount: Math.floor(Math.random() * 10) + 1,
   };
@@ -140,7 +106,6 @@ const initializeFakeData = (): void => {
     FAKE_DATA_STORE[`${item.id}-${item.lastVisitTime}`] = item;
   }
   FAKE_DATA_INITIALIZED = true;
-  runFakeBlacklistCleanup();
 };
 
 if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) {

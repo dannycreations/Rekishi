@@ -18,18 +18,6 @@ const updateBlacklistCache = (items: readonly BlacklistItem[]): void => {
   blacklistMatchers = createBlacklistMatchers(items);
 };
 
-const updateSettingsCache = (settings: Settings): void => {
-  currentSettings = settings;
-};
-
-const initializeCaches = async (): Promise<void> => {
-  const blacklistJson = await chromeSyncStorage.getItem(BLACKLIST_STORAGE_KEY);
-  updateBlacklistCache(parseBlacklistFromJSON(blacklistJson));
-
-  const settingsJson = await chromeSyncStorage.getItem(SETTINGS_STORAGE_KEY);
-  updateSettingsCache(parseSettingsFromJSON(settingsJson));
-};
-
 const isBlacklisted = (url: string): boolean => {
   return isUrlBlacklisted(url, blacklistMatchers);
 };
@@ -46,16 +34,20 @@ const runBlacklistCleanup = async (): Promise<void> => {
 
     const historyItems = await chrome.history.search({ text: '', maxResults: 0, startTime: lastCleanupTime });
 
-    const blacklistedUrlsToDelete = new Set(historyItems.filter((item) => item.url && isBlacklisted(item.url)).map((item) => item.url!));
+    const blacklistedUrls = new Set<string>();
+    for (const item of historyItems) {
+      if (item.url && isBlacklisted(item.url)) {
+        blacklistedUrls.add(item.url);
+      }
+    }
 
-    if (blacklistedUrlsToDelete.size > 0) {
-      const deletionPromises = Array.from(blacklistedUrlsToDelete).map((url) =>
-        chrome.history.deleteUrl({ url }).catch((error) => {
+    await Promise.all(
+      Array.from(blacklistedUrls, (url) =>
+        chrome.history.deleteUrl({ url }).catch((error: unknown) => {
           console.error(`Error deleting blacklisted URL during cleanup (${url}):`, toErrorMessage(error));
         }),
-      );
-      await Promise.all(deletionPromises);
-    }
+      ),
+    );
 
     await chrome.storage.local.set({ [CLEANUP_STORAGE_KEY]: now });
   } catch (error: unknown) {
@@ -94,24 +86,28 @@ const runRetentionCleanup = async (): Promise<void> => {
 };
 
 const handleVisited = async (historyItem: chrome.history.HistoryItem): Promise<void> => {
-  if (!historyItem.url) {
+  const url = historyItem.url;
+  if (!url) {
     return;
   }
 
-  if (isBlacklisted(historyItem.url)) {
-    if (typeof chrome !== 'undefined' && chrome.history?.deleteUrl) {
-      try {
-        await chrome.history.deleteUrl({ url: historyItem.url });
-      } catch (error: unknown) {
-        console.error(`Error deleting blacklisted URL (${historyItem.url}):`, toErrorMessage(error));
-      }
+  if (isBlacklisted(url)) {
+    try {
+      await chrome.history.deleteUrl({ url });
+    } catch (error: unknown) {
+      console.error(`Error deleting blacklisted URL (${url}):`, toErrorMessage(error));
     }
-  } else if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
-    chrome.runtime.sendMessage({
+    return;
+  }
+
+  chrome.runtime
+    .sendMessage({
       payload: mapToChromeHistoryItem(historyItem),
       type: 'NEW_HISTORY_ITEM',
+    })
+    .catch((error: unknown) => {
+      console.error(`Error forwarding history item (${url}):`, toErrorMessage(error));
     });
-  }
 };
 
 if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
@@ -122,7 +118,7 @@ if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
     }
     if (areaName === 'sync' && changes[SETTINGS_STORAGE_KEY]) {
       const json = (changes[SETTINGS_STORAGE_KEY].newValue as string) ?? null;
-      updateSettingsCache(parseSettingsFromJSON(json));
+      currentSettings = parseSettingsFromJSON(json);
     }
   });
 }
@@ -145,5 +141,13 @@ if (typeof chrome !== 'undefined' && chrome.alarms) {
   });
 }
 
-initializeCaches();
-runRetentionCleanup();
+async function main(): Promise<void> {
+  const blacklistJson = await chromeSyncStorage.getItem(BLACKLIST_STORAGE_KEY);
+  updateBlacklistCache(parseBlacklistFromJSON(blacklistJson));
+
+  currentSettings = parseSettingsFromJSON(await chromeSyncStorage.getItem(SETTINGS_STORAGE_KEY));
+}
+
+void main().catch((err) => {
+  console.error(err);
+});

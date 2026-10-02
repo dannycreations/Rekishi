@@ -3,7 +3,7 @@ import { createWithEqualityFn } from 'zustand/traditional';
 
 import { MONTH_HISTORY_SCAN_LIMIT } from '../app/constants';
 import { search } from '../services/chromeApi';
-import { toDateKey } from '../utilities/date';
+import { formatNumericDate } from '../utilities/date';
 
 interface HistoryDateState {
   readonly datesWithHistory: ReadonlySet<string>;
@@ -16,7 +16,9 @@ export const useHistoryDateStore = createWithEqualityFn<HistoryDateState>((set) 
   let isFetching = false;
 
   const fetchDatesForMonth = async (date: Date): Promise<void> => {
-    const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const monthKey = formatNumericDate(new Date(year, month, 1), '-');
     if (fetchedMonths.has(monthKey) || isFetching) {
       return;
     }
@@ -24,24 +26,21 @@ export const useHistoryDateStore = createWithEqualityFn<HistoryDateState>((set) 
     isFetching = true;
     set({ isLoading: true });
 
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const startTime = new Date(year, month, 1);
-    startTime.setHours(0, 0, 0, 0);
-    const endTime = new Date(year, month + 1, 0);
-    endTime.setHours(23, 59, 59, 999);
+    // Day 0 of the next month is the last day of this month.
+    const startTime = new Date(year, month, 1).getTime();
+    const endTime = new Date(year, month + 1, 0, 23, 59, 59, 999).getTime();
 
     try {
       const historyItems = await search({
-        endTime: endTime.getTime(),
+        endTime,
         maxResults: MONTH_HISTORY_SCAN_LIMIT,
-        startTime: startTime.getTime(),
+        startTime,
         text: '',
       });
 
       const datesInMonth = new Set<string>();
       for (const item of historyItems) {
-        datesInMonth.add(toDateKey(new Date(item.lastVisitTime)));
+        datesInMonth.add(formatNumericDate(new Date(item.lastVisitTime), '-'));
       }
 
       set((state) => ({ datesWithHistory: new Set([...state.datesWithHistory, ...datesInMonth]) }));

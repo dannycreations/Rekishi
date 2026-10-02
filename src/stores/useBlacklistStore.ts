@@ -29,12 +29,9 @@ export const useBlacklistStore = createWithEqualityFn(
         blacklistedItems: [],
         blacklistMatchers: createBlacklistMatchers([]),
         addDomain: (value, isRegex) => {
-          set((state) => {
-            if (state.blacklistedItems.some((item) => item.value === value)) {
-              return state;
-            }
-            return updateBlacklist([...state.blacklistedItems, { value, isRegex }]);
-          });
+          set((state) =>
+            state.blacklistedItems.some((item) => item.value === value) ? state : updateBlacklist([...state.blacklistedItems, { value, isRegex }]),
+          );
         },
         editDomain: (oldValue, newValue, newIsRegex) => {
           set((state) => {

@@ -1,5 +1,5 @@
 import { cn } from 'cn';
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 
 import { DeleteButton } from '../shared/DeleteButton';
 import { Icon } from '../shared/Icon';
@@ -27,8 +27,8 @@ export const HistoryItemHeader = memo(
     onDeleteAll,
     totalSelectedCount,
   }: HistoryItemHeaderProps): JSX.Element => {
-    const allForDaySelected = useMemo(() => selectedItemsCount === dayItems.length && dayItems.length > 0, [selectedItemsCount, dayItems.length]);
-    const someForDaySelected = useMemo(() => selectedItemsCount > 0 && !allForDaySelected, [selectedItemsCount, allForDaySelected]);
+    const allForDaySelected = selectedItemsCount === dayItems.length && dayItems.length > 0;
+    const someForDaySelected = selectedItemsCount > 0 && !allForDaySelected;
 
     const buttonText = totalSelectedCount > 0 ? `Delete (${totalSelectedCount})` : 'Delete entire day';
     const handleButtonClick = totalSelectedCount > 0 ? onDeleteSelected : onDeleteAll;

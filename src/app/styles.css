@@ -339,20 +339,12 @@
     @apply opacity-100;
   }
 
-  .modal-backdrop-closed {
-    @apply opacity-0;
-  }
-
   .modal-container {
     @apply relative mx-3 flex w-full flex-col rounded-lg bg-background-soft shadow-xl outline-none transition-all duration-200;
   }
 
   .modal-container-open {
     @apply scale-100 opacity-100;
-  }
-
-  .modal-container-closed {
-    @apply scale-95 opacity-0;
   }
 
   .modal-header {

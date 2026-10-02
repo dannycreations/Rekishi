@@ -22,14 +22,15 @@ const Toast = memo(({ toast, onRemove }: { readonly toast: ToastItem; readonly o
   }, []);
 
   useEffect(() => {
-    if (isExiting) {
-      const timer = setTimeout(() => {
-        onRemove(toast.id);
-      }, 200);
-
-      return () => clearTimeout(timer);
+    if (!isExiting) {
+      return;
     }
-    return undefined;
+
+    const timer = setTimeout(() => {
+      onRemove(toast.id);
+    }, 200);
+
+    return () => clearTimeout(timer);
   }, [isExiting, onRemove, toast.id]);
 
   useEffect(() => {

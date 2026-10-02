@@ -41,7 +41,6 @@ export const useConfirm = (): UseConfirmReturn => {
       cancelText={options.cancelText}
       confirmButtonClass={options.confirmButtonClass}
       confirmText={options.confirmText}
-      isOpen
       message={options.message}
       onClose={closeModal}
       onConfirm={handleConfirm}

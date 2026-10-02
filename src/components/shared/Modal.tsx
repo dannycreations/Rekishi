@@ -1,5 +1,5 @@
 import { cn } from 'cn';
-import { memo, useEffect, useState } from 'react';
+import { memo } from 'react';
 import { createPortal } from 'react-dom';
 
 import { Icon } from './Icon';
@@ -8,32 +8,16 @@ import type { MouseEvent, ReactNode, ReactPortal } from 'react';
 
 export interface ModalProps {
   readonly children: ReactNode;
-  readonly isOpen: boolean;
   readonly onClose: () => void;
   readonly title: string;
   readonly containerClassName?: string;
 }
 
-export const Modal = memo(({ isOpen, onClose, title, children, containerClassName }: ModalProps): ReactPortal | null => {
-  const [isMounted, setIsMounted] = useState(isOpen);
-
-  useEffect(() => {
-    if (isOpen) {
-      setIsMounted(true);
-    } else {
-      const timer = setTimeout(() => setIsMounted(false), 200);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
-
-  if (!isMounted) {
-    return null;
-  }
-
+export const Modal = memo(({ onClose, title, children, containerClassName }: ModalProps): ReactPortal => {
   return createPortal(
-    <div className={cn('modal-backdrop', isOpen ? 'modal-backdrop-open' : 'modal-backdrop-closed')} onClick={onClose}>
+    <div className="modal-backdrop modal-backdrop-open" onClick={onClose}>
       <div
-        className={cn('modal-container', containerClassName, isOpen ? 'modal-container-open' : 'modal-container-closed')}
+        className={cn('modal-container modal-container-open', containerClassName)}
         onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
       >
         <header className="modal-header">

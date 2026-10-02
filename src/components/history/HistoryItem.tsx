@@ -69,7 +69,7 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
   const addToast = useToastStore((state) => state.addToast);
 
   const hostname = useMemo(() => getHostnameFromUrl(url), [url]);
-  const shouldHighlight = searchQuery && !isPotentialRegex(searchQuery);
+  const highlight = isPotentialRegex(searchQuery) ? '' : searchQuery;
 
   const visitTime = useMemo(() => formatTimeShort(lastVisitTime), [lastVisitTime]);
 
@@ -140,12 +140,12 @@ export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, is
       <div className="min-w-0 flex-1 truncate" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center">
           <a className="link-standard" href={url} onClick={(e) => e.stopPropagation()} rel="noopener noreferrer" target="_blank">
-            <HistoryHighlight text={title || url} highlight={shouldHighlight ? searchQuery : ''} />
+            <HistoryHighlight text={title || url} highlight={highlight} />
           </a>
           <Icon name="ExternalLink" className="icon-xs ml-1 text-text-tertiary opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
         </div>
         <p className="truncate txt-muted">
-          <HistoryHighlight text={url} highlight={shouldHighlight ? searchQuery : ''} />
+          <HistoryHighlight text={url} highlight={highlight} />
         </p>
       </div>
       <div className="relative ml-2 flex h-6 w-32 shrink-0 items-center justify-end">

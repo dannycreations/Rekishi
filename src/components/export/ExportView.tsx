@@ -3,7 +3,7 @@ import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import { search } from '../../services/chromeApi';
 import { useToastStore } from '../../stores/useToastStore';
-import { formatDateForInput, getDayBoundaries, parseDateFromInput } from '../../utilities/date';
+import { formatNumericDate, getDayBoundaries, parseDateFromInput } from '../../utilities/date';
 import { downloadFile, generateFileContent } from '../../utilities/export';
 import { CalendarPopover } from '../shared/CalendarPopover';
 import { Icon } from '../shared/Icon';
@@ -40,12 +40,12 @@ export const ExportView = (): JSX.Element => {
   const addToast = useToastStore((state) => state.addToast);
 
   const [endDate, setEndDate] = useState<string>(() => {
-    return formatDateForInput(new Date());
+    return formatNumericDate(new Date(), '/');
   });
   const [startDate, setStartDate] = useState<string>(() => {
     const d = new Date();
     d.setDate(d.getDate() - 30);
-    return formatDateForInput(d);
+    return formatNumericDate(d, '/');
   });
 
   const [activeCalendar, setActiveCalendar] = useState<'start' | 'end' | null>(null);
@@ -105,7 +105,7 @@ export const ExportView = (): JSX.Element => {
 
   const handleDateSelect = useCallback(
     (date: Date): void => {
-      const formatted = formatDateForInput(date);
+      const formatted = formatNumericDate(date, '/');
       if (activeCalendar === 'start') {
         setStartDate(formatted);
       } else if (activeCalendar === 'end') {

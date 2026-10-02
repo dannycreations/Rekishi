@@ -24,26 +24,25 @@ export const useSelection = (): UseSelectionReturn => {
     });
   }, []);
 
-  const toggleDaySelection = useCallback(
-    (dayItems: readonly ChromeHistoryItem[]): void => {
-      if (dayItems.length === 0) {
-        return;
-      }
-      const dayItemIds = dayItems.map((item) => item.id);
-      const allSelected = dayItems.every((item) => selectedItems.has(item.id));
+  const toggleDaySelection = useCallback((dayItems: readonly ChromeHistoryItem[]): void => {
+    if (dayItems.length === 0) {
+      return;
+    }
 
-      setSelectedItems((prev) => {
-        const newSelected = new Set(prev);
+    setSelectedItems((prev) => {
+      const newSelected = new Set(prev);
+      const allSelected = dayItems.every((item) => newSelected.has(item.id));
+
+      for (const item of dayItems) {
         if (allSelected) {
-          dayItemIds.forEach((id) => newSelected.delete(id));
+          newSelected.delete(item.id);
         } else {
-          dayItemIds.forEach((id) => newSelected.add(id));
+          newSelected.add(item.id);
         }
-        return newSelected;
-      });
-    },
-    [selectedItems],
-  );
+      }
+      return newSelected;
+    });
+  }, []);
 
   const clearSelection = useCallback((): void => {
     setSelectedItems(new Set());

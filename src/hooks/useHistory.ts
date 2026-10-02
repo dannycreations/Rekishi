@@ -19,11 +19,17 @@ const isNewHistoryItemMessage = (message: unknown): message is NewHistoryItemMes
   return !!msg && msg.type === 'NEW_HISTORY_ITEM' && !!msg.payload;
 };
 
+interface HistoryQuery {
+  readonly endTime?: number;
+  readonly isSearch: boolean;
+  readonly startTime: number;
+  readonly text: string;
+}
+
 interface UseHistoryReturn {
   readonly deleteHistoryItem: (id: string) => Promise<void>;
   readonly deleteHistoryItems: (ids: readonly string[]) => Promise<void>;
   readonly error: string | null;
-  readonly hasMore: boolean;
   readonly history: readonly ChromeHistoryItem[];
   readonly isLoading: boolean;
   readonly isLoadingMore: boolean;
@@ -48,13 +54,9 @@ export const useHistory = (): UseHistoryReturn => {
   }));
 
   const fetchHistoryData = useCallback(
-    async (params: {
-      readonly clientSearch: boolean;
-      readonly endTime?: number;
-      readonly isSearch: boolean;
-      readonly startTime: number;
-      readonly text: string;
-    }): Promise<void> => {
+    async (params: HistoryQuery): Promise<void> => {
+      const clientSearch = params.isSearch && shouldSearchClientSide(params.text);
+
       setIsLoading(true);
       setError(null);
       setRawHistory([]);
@@ -69,11 +71,11 @@ export const useHistory = (): UseHistoryReturn => {
           endTime: params.endTime,
           maxResults: params.isSearch ? SEARCH_PAGE_SIZE : DAILY_PAGE_SIZE,
           startTime: params.startTime,
-          text: params.clientSearch ? '' : params.text,
+          text: clientSearch ? '' : params.text,
         });
 
         let items: readonly ChromeHistoryItem[] = results.filter((item) => !isBlacklisted(item.url));
-        if (params.clientSearch) {
+        if (clientSearch) {
           const searched = applyClientSideSearch(items, params.text);
           if (searched.error) {
             setError(searched.error);
@@ -106,7 +108,6 @@ export const useHistory = (): UseHistoryReturn => {
     const { startTime, endTime } = getDayBoundaries(selectedDate);
 
     void fetchHistoryData({
-      clientSearch: false,
       endTime,
       isSearch: false,
       startTime,
@@ -116,7 +117,6 @@ export const useHistory = (): UseHistoryReturn => {
 
   const fetchInitialSearchHistory = useCallback((): void => {
     void fetchHistoryData({
-      clientSearch: shouldSearchClientSide(searchQuery),
       isSearch: true,
       startTime: 0,
       text: searchQuery,
@@ -175,17 +175,16 @@ export const useHistory = (): UseHistoryReturn => {
     if (isLoading || isLoadingMore) {
       return;
     }
+    if (searchQuery && (rawHistory.length === 0 || !hasMoreSearchResults)) {
+      return;
+    }
+
     setIsLoadingMore(true);
     const existingIds = new Set(rawHistory.map((item) => item.id));
 
     try {
       if (searchQuery) {
         const lastItem = rawHistory[rawHistory.length - 1];
-        if (!lastItem || !hasMoreSearchResults) {
-          setIsLoadingMore(false);
-          return;
-        }
-
         const clientSearch = shouldSearchClientSide(searchQuery);
 
         const newItems = await search({
@@ -274,13 +273,10 @@ export const useHistory = (): UseHistoryReturn => {
     [rawHistory],
   );
 
-  const hasMore = searchQuery ? hasMoreSearchResults : true;
-
   return {
     deleteHistoryItem,
     deleteHistoryItems,
     error,
-    hasMore,
     history: rawHistory,
     isLoading,
     isLoadingMore,

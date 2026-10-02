@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useHistoryStore } from '../../stores/useHistoryStore';
-import { formatDateForInput } from '../../utilities/date';
+import { formatNumericDate } from '../../utilities/date';
 import { CalendarPopover } from '../shared/CalendarPopover';
 import { Icon } from '../shared/Icon';
 
@@ -84,7 +84,7 @@ export const Header = memo(({ onOpenModal }: HeaderProps): JSX.Element => {
     searchInputRef.current?.focus();
   };
 
-  const formattedDate = formatDateForInput(selectedDate);
+  const formattedDate = formatNumericDate(selectedDate, '/');
 
   const handleToggleCalendar = useCallback(() => {
     setIsCalendarOpen((o) => !o);

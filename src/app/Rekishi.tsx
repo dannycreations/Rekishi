@@ -1,7 +1,7 @@
 import './styles.css';
 
 import { cn } from 'cn';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { BlacklistView } from '../components/blacklist/BlacklistView';
 import { ExportView } from '../components/export/ExportView';
@@ -43,7 +43,7 @@ export const Rekishi = (): JSX.Element => {
     selectedDate: state.selectedDate,
   }));
   const theme = useSettingStore((state) => state.theme);
-  const { deleteHistoryItem, deleteHistoryItems, error, hasMore, history, isLoading, isLoadingMore, loadMore } = useHistory();
+  const { deleteHistoryItem, deleteHistoryItems, error, history, isLoading, isLoadingMore, loadMore } = useHistory();
   const {
     datesWithHistory,
     fetchDatesForMonth,
@@ -97,10 +97,7 @@ export const Rekishi = (): JSX.Element => {
     setActiveModal(null);
   }, []);
 
-  const noHistoryEver = useMemo(
-    () => history.length === 0 && datesWithHistory.size === 0 && !isLoading && !isLoadingDates,
-    [history, datesWithHistory, isLoading, isLoadingDates],
-  );
+  const noHistoryEver = history.length === 0 && datesWithHistory.size === 0 && !isLoading && !isLoadingDates;
 
   const activeView = activeModal ? VIEWS[activeModal] : null;
 
@@ -131,7 +128,6 @@ export const Rekishi = (): JSX.Element => {
           ) : (
             <HistoryView
               deleteHistoryItems={deleteHistoryItems}
-              hasMore={hasMore}
               historyItems={history}
               isLoadingMore={isLoadingMore}
               loadMore={loadMore}
@@ -142,7 +138,7 @@ export const Rekishi = (): JSX.Element => {
         </main>
 
         {activeView && (
-          <Modal containerClassName={cn(activeView.containerClassName, 'max-h-[90vh]')} isOpen onClose={handleCloseModal} title={activeView.title}>
+          <Modal containerClassName={cn(activeView.containerClassName, 'max-h-[90vh]')} onClose={handleCloseModal} title={activeView.title}>
             <activeView.component />
           </Modal>
         )}

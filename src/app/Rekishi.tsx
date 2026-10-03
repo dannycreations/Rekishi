@@ -43,7 +43,7 @@ export const Rekishi = (): JSX.Element => {
     selectedDate: state.selectedDate,
   }));
   const theme = useSettingStore((state) => state.theme);
-  const { deleteHistoryItem, deleteHistoryItems, error, history, isLoading, isLoadingMore, loadMore } = useHistory();
+  const { deleteHistoryItems, error, history, isLoading, isLoadingMore, loadMore } = useHistory();
   const {
     datesWithHistory,
     fetchDatesForMonth,
@@ -131,7 +131,6 @@ export const Rekishi = (): JSX.Element => {
               historyItems={history}
               isLoadingMore={isLoadingMore}
               loadMore={loadMore}
-              onDelete={deleteHistoryItem}
               scrollContainerRef={mainContentRef}
             />
           )}

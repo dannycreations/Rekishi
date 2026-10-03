@@ -6,7 +6,7 @@ import { Icon } from './Icon';
 
 import type { MouseEvent, ReactNode, ReactPortal } from 'react';
 
-export interface ModalProps {
+interface ModalProps {
   readonly children: ReactNode;
   readonly onClose: () => void;
   readonly title: string;

@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { memo } from 'react';
 
-import type { FC, SVGProps } from 'react';
+import type { JSX, SVGProps } from 'react';
 
 const ICONS = {
   AlertCircle,
@@ -55,7 +55,7 @@ interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {
   readonly name: IconName;
 }
 
-export const Icon: FC<IconProps> = memo(({ name, className, ...props }) => {
+export const Icon = memo(({ name, className, ...props }: IconProps): JSX.Element => {
   const LucideIcon = ICONS[name];
 
   return <LucideIcon className={className} {...props} />;

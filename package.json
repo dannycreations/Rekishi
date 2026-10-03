@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "vite build",
     "check": "bun run format && tsc --noEmit",
-    "test": "bun test",
+    "test": "bun run check && bun test",
     "format": "prettier --write .",
     "update": "npm-check-updates -u",
     "prepare": "husky"

@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { DAILY_PAGE_SIZE, SEARCH_PAGE_SIZE } from '../app/constants';
 import { deleteUrl, search } from '../services/chromeApi';
 import { useBlacklistStore } from '../stores/useBlacklistStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
+import { createBlacklistMatchers, isUrlBlacklisted } from '../utilities/blacklist';
 import { getDayBoundaries, isSameDay } from '../utilities/date';
 import { applyClientSideSearch, shouldSearchClientSide } from '../utilities/history';
 
@@ -27,7 +28,6 @@ interface HistoryQuery {
 }
 
 interface UseHistoryReturn {
-  readonly deleteHistoryItem: (id: string) => Promise<void>;
   readonly deleteHistoryItems: (ids: readonly string[]) => Promise<void>;
   readonly error: string | null;
   readonly history: readonly ChromeHistoryItem[];
@@ -44,14 +44,16 @@ export const useHistory = (): UseHistoryReturn => {
   const [hasMoreSearchResults, setHasMoreSearchResults] = useState(true);
   const [lastLoadedDate, setLastLoadedDate] = useState(() => new Date());
 
-  const { isBlacklisted, blacklistedItems } = useBlacklistStore((state) => ({
-    isBlacklisted: state.isBlacklisted,
-    blacklistedItems: state.blacklistedItems,
-  }));
+  const blacklistedItems = useBlacklistStore((state) => state.blacklistedItems);
   const { searchQuery, selectedDate } = useHistoryStore((state) => ({
     searchQuery: state.searchQuery,
     selectedDate: state.selectedDate,
   }));
+
+  // Every history item is matched against the blacklist, and compiling the patterns is the expensive
+  // part, so the compiled form is derived once per item list instead of once per URL.
+  const matchers = useMemo(() => createBlacklistMatchers(blacklistedItems), [blacklistedItems]);
+  const isBlacklisted = useCallback((url: string): boolean => isUrlBlacklisted(url, matchers), [matchers]);
 
   const fetchHistoryData = useCallback(
     async (params: HistoryQuery): Promise<void> => {
@@ -104,32 +106,15 @@ export const useHistory = (): UseHistoryReturn => {
     [isBlacklisted],
   );
 
-  const fetchInitialDailyHistory = useCallback((): void => {
-    const { startTime, endTime } = getDayBoundaries(selectedDate);
-
-    void fetchHistoryData({
-      endTime,
-      isSearch: false,
-      startTime,
-      text: '',
-    });
-  }, [selectedDate, fetchHistoryData]);
-
-  const fetchInitialSearchHistory = useCallback((): void => {
-    void fetchHistoryData({
-      isSearch: true,
-      startTime: 0,
-      text: searchQuery,
-    });
-  }, [searchQuery, fetchHistoryData]);
-
   useEffect(() => {
     if (searchQuery) {
-      fetchInitialSearchHistory();
-    } else {
-      fetchInitialDailyHistory();
+      void fetchHistoryData({ isSearch: true, startTime: 0, text: searchQuery });
+      return;
     }
-  }, [searchQuery, selectedDate, fetchInitialDailyHistory, fetchInitialSearchHistory, blacklistedItems]);
+
+    const { startTime, endTime } = getDayBoundaries(selectedDate);
+    void fetchHistoryData({ endTime, isSearch: false, startTime, text: '' });
+  }, [searchQuery, selectedDate, fetchHistoryData]);
 
   const messageListener = useCallback(
     (message: unknown): void => {
@@ -262,10 +247,7 @@ export const useHistory = (): UseHistoryReturn => {
     [rawHistory],
   );
 
-  const deleteHistoryItem = useCallback((id: string): Promise<void> => deleteHistoryItems([id]), [deleteHistoryItems]);
-
   return {
-    deleteHistoryItem,
     deleteHistoryItems,
     error,
     history: rawHistory,

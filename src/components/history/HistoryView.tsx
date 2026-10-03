@@ -21,12 +21,11 @@ interface HistoryViewProps {
   readonly historyItems: readonly ChromeHistoryItem[];
   readonly isLoadingMore: boolean;
   readonly loadMore: () => void;
-  readonly onDelete: (id: string) => Promise<void>;
   readonly scrollContainerRef: RefObject<HTMLElement | null>;
 }
 
 export const HistoryView = memo(
-  ({ deleteHistoryItems, historyItems, isLoadingMore, loadMore, onDelete, scrollContainerRef }: HistoryViewProps): JSX.Element => {
+  ({ deleteHistoryItems, historyItems, isLoadingMore, loadMore, scrollContainerRef }: HistoryViewProps): JSX.Element => {
     const { selectedItems, toggleSelection, toggleDaySelection, clearSelection } = useSelection();
     const { modal: deleteModal, openModal: openDeleteModal } = useConfirm();
     const { modal: blacklistModal, openModal: openBlacklistModal } = useConfirm();
@@ -106,12 +105,12 @@ export const HistoryView = memo(
       (item: ChromeHistoryItem): void => {
         openDeleteConfirm({
           count: 1,
-          onConfirm: () => onDelete(item.id),
+          onConfirm: () => deleteHistoryItems([item.id]),
           title: 'Delete History Item',
           typeText: item.title || item.url,
         });
       },
-      [onDelete, openDeleteConfirm],
+      [deleteHistoryItems, openDeleteConfirm],
     );
 
     const handleBlacklistRequest = useCallback(

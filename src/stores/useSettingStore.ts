@@ -3,6 +3,7 @@ import { shallow } from 'zustand/shallow';
 import { createWithEqualityFn } from 'zustand/traditional';
 
 import { SETTINGS_STORAGE_KEY } from '../app/constants';
+import { defaultSettings } from '../utilities/setting';
 import { chromeSyncStorage } from '../utilities/storage';
 
 import type { Theme } from '../app/types';
@@ -17,7 +18,7 @@ interface SettingState {
 export const useSettingStore = createWithEqualityFn(
   persist<SettingState>(
     (set) => ({
-      dataRetention: 'disabled',
+      dataRetention: defaultSettings.dataRetention,
       theme: 'system',
       setDataRetention: (retention) => {
         set({ dataRetention: retention });

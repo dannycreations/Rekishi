@@ -5,8 +5,6 @@
 
   --color-background: var(--background);
   --color-background-soft: var(--background-soft);
-  --color-background-raised: var(--background-raised);
-  --color-sidebar: var(--sidebar);
   --color-surface: var(--surface);
   --color-surface-hover: var(--surface-hover);
   --color-primary: var(--primary);
@@ -14,7 +12,6 @@
   --color-text-secondary: var(--text-secondary);
   --color-text-tertiary: var(--text-tertiary);
   --color-danger: #ef4444;
-  --color-separator: var(--separator);
   --color-line: var(--line);
   --color-highlight: var(--highlight);
   --color-overlay: var(--overlay);
@@ -31,15 +28,12 @@
   :root {
     --background: #f1f5f9;
     --background-soft: #ffffff;
-    --background-raised: #f8fafc;
-    --sidebar: #f8fafc;
     --surface: #ffffff;
     --surface-hover: #f1f5f9;
     --primary: #0f172a;
     --text-primary: #1e293b;
     --text-secondary: #475569;
     --text-tertiary: #94a3b8;
-    --separator: rgba(0, 0, 0, 0.05);
     --line: rgba(0, 0, 0, 0.08);
     --highlight: rgba(15, 23, 42, 0.05);
     --overlay: rgba(15, 23, 42, 0.3);
@@ -48,15 +42,12 @@
   [data-theme='dark'] {
     --background: #1a1a1a;
     --background-soft: #212121;
-    --background-raised: #2a2a2a;
-    --sidebar: #121212;
     --surface: #2a2a2a;
     --surface-hover: #3a3a3a;
     --primary: #ffffff;
     --text-primary: #f0f0f0;
     --text-secondary: #c5c5c5;
     --text-tertiary: #8e8e8e;
-    --separator: rgba(255, 255, 255, 0.06);
     --line: rgba(255, 255, 255, 0.12);
     --highlight: rgba(255, 255, 255, 0.2);
     --overlay: rgba(0, 0, 0, 0.6);
@@ -66,15 +57,12 @@
     :root:not([data-theme='light']) {
       --background: #1a1a1a;
       --background-soft: #212121;
-      --background-raised: #2a2a2a;
-      --sidebar: #121212;
       --surface: #2a2a2a;
       --surface-hover: #3a3a3a;
       --primary: #ffffff;
       --text-primary: #f0f0f0;
       --text-secondary: #c5c5c5;
       --text-tertiary: #8e8e8e;
-      --separator: rgba(255, 255, 255, 0.06);
       --line: rgba(255, 255, 255, 0.12);
       --highlight: rgba(255, 255, 255, 0.2);
       --overlay: rgba(0, 0, 0, 0.6);
@@ -153,10 +141,6 @@
 
   .toast-animate-exit {
     animation: toast-exit 200ms ease-in forwards;
-  }
-
-  .hidden-displaced {
-    visibility: hidden;
   }
 }
 
@@ -262,10 +246,6 @@
 
   .icon-xl {
     @apply h-8 w-8 shrink-0;
-  }
-
-  .icon-xxl {
-    @apply h-16 w-16 shrink-0;
   }
 
   /* Buttons */
@@ -488,17 +468,5 @@
 
   .skeleton-base {
     @apply animate-pulse bg-surface-hover;
-  }
-
-  .toggle-switch {
-    @apply flex items-center transition-opacity duration-200;
-  }
-
-  .toggle-switch-track {
-    @apply block h-8 w-14 rounded-full transition-colors;
-  }
-
-  .toggle-switch-thumb {
-    @apply absolute left-1 top-1 h-6 w-6 rounded-full bg-background transition-transform;
   }
 }

@@ -20,7 +20,7 @@
     "useDefineForClassFields": false,
 
     "jsx": "react-jsx",
-    "types": ["vite/client", "chrome"],
+    "types": ["bun", "vite/client", "chrome"],
 
     "strict": true,
     "noUnusedLocals": true,

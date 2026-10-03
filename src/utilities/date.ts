@@ -13,12 +13,16 @@ export const formatDayHeader = (date: Date): string => {
   return `${weekday}, ${formatNumericDate(date, '/')}`;
 };
 
-export const getDayBoundaries = (date: Date): { startTime: number; endTime: number } => {
+export const startOfDay = (date: Date): Date => {
   const start = new Date(date);
   start.setHours(0, 0, 0, 0);
+  return start;
+};
+
+export const getDayBoundaries = (date: Date): { startTime: number; endTime: number } => {
   const end = new Date(date);
   end.setHours(23, 59, 59, 999);
-  return { startTime: start.getTime(), endTime: end.getTime() };
+  return { startTime: startOfDay(date).getTime(), endTime: end.getTime() };
 };
 
 export const parseDateFromInput = (value: string): Date => {

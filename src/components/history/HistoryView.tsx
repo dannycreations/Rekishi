@@ -3,8 +3,9 @@ import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useConfirm } from '../../hooks/useConfirm';
 import { useSelection } from '../../hooks/useSelection';
 import { useBlacklistStore } from '../../stores/useBlacklistStore';
+import { useHistoryStore } from '../../stores/useHistoryStore';
 import { useToastStore } from '../../stores/useToastStore';
-import { getHostnameFromUrl } from '../../utilities/common';
+import { getHostnameFromUrl, isPotentialRegex } from '../../utilities/common';
 import { formatDayHeader } from '../../utilities/date';
 import { groupHistoryByDayAndHour } from '../../utilities/history';
 import { Icon } from '../shared/Icon';
@@ -31,8 +32,12 @@ export const HistoryView = memo(
     const { modal: blacklistModal, openModal: openBlacklistModal } = useConfirm();
     const addToast = useToastStore((state) => state.addToast);
     const addDomain = useBlacklistStore((state) => state.addDomain);
+    const searchQuery = useHistoryStore((state) => state.searchQuery);
 
     const dailyGroups = useMemo(() => groupHistoryByDayAndHour(historyItems), [historyItems]);
+
+    // A regex search has no literal text to mark up.
+    const highlight = isPotentialRegex(searchQuery) ? '' : searchQuery;
 
     const selectedCountByDayKey = useMemo(() => {
       const counts = new Map<string, number>();
@@ -203,6 +208,7 @@ export const HistoryView = memo(
                     <div key={group.time} data-day-key={dayKey} data-hour-key={group.time}>
                       <HistoryItemGroup
                         group={group}
+                        highlight={highlight}
                         onBlacklistRequest={handleBlacklistRequest}
                         onDeleteHourRequest={(items) => handleOpenDeleteAllModal(items, 'hour')}
                         onDeleteRequest={handleDeleteItemRequest}

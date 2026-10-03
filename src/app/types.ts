@@ -11,6 +11,12 @@ export interface HourGroup {
   readonly items: readonly ChromeHistoryItem[];
 }
 
+export interface DayGroup {
+  readonly date: Date;
+  readonly items: readonly ChromeHistoryItem[];
+  readonly hourlyGroups: readonly HourGroup[];
+}
+
 export type ViewType = 'blacklist' | 'export' | 'settings';
 
 export type Theme = 'light' | 'dark' | 'system';

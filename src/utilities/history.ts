@@ -1,7 +1,7 @@
 import { isPotentialRegex, safeRegExp } from './common';
-import { isSameDay } from './date';
+import { isSameDay, startOfDay } from './date';
 
-import type { ChromeHistoryItem, HourGroup } from '../app/types';
+import type { ChromeHistoryItem, DayGroup, HourGroup } from '../app/types';
 
 const REGEX_SEARCH_ERROR = 'Invalid regular expression.';
 
@@ -48,56 +48,44 @@ export const applyClientSideSearch = (
   };
 };
 
-export interface DayGroup {
-  readonly date: Date;
-  readonly items: readonly ChromeHistoryItem[];
-  readonly hourlyGroups: readonly HourGroup[];
-}
-
-interface MutableDayGroup {
-  date: Date;
-  items: ChromeHistoryItem[];
-  hourlyGroups: HourGroup[];
-}
-
 export const groupHistoryByDayAndHour = (items: readonly ChromeHistoryItem[]): readonly DayGroup[] => {
-  if (!items || items.length === 0) {
+  if (items.length === 0) {
     return [];
   }
 
-  const dayGroups: MutableDayGroup[] = [];
-  let currentDayGroup: MutableDayGroup | null = null;
-  let currentHourGroup: { time: string; items: ChromeHistoryItem[] } | null = null;
+  const dayGroups: DayGroup[] = [];
+  let currentDayDate: Date | null = null;
+  let currentDayItems: ChromeHistoryItem[] = [];
+  let currentDayHourlyGroups: HourGroup[] = [];
   let currentHour = -1;
+  let currentHourItems: ChromeHistoryItem[] = [];
 
   for (const item of items) {
     const itemDate = new Date(item.lastVisitTime);
 
-    if (!currentDayGroup || !isSameDay(itemDate, currentDayGroup.date)) {
-      const dayDate = new Date(itemDate);
-      dayDate.setHours(0, 0, 0, 0);
-      currentDayGroup = { date: dayDate, items: [], hourlyGroups: [] };
-      dayGroups.push(currentDayGroup);
+    if (!currentDayDate || !isSameDay(itemDate, currentDayDate)) {
+      currentDayDate = startOfDay(itemDate);
+      currentDayItems = [];
+      currentDayHourlyGroups = [];
+      dayGroups.push({ date: currentDayDate, items: currentDayItems, hourlyGroups: currentDayHourlyGroups });
       currentHour = -1;
     }
 
-    currentDayGroup.items.push(item);
+    currentDayItems.push(item);
 
     const hour = itemDate.getHours();
     if (hour !== currentHour) {
       currentHour = hour;
+      currentHourItems = [];
       const hourDate = new Date(itemDate);
       hourDate.setMinutes(0, 0, 0);
-      currentHourGroup = {
+      currentDayHourlyGroups.push({
         time: hourDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-        items: [],
-      };
-      currentDayGroup.hourlyGroups.push(currentHourGroup);
+        items: currentHourItems,
+      });
     }
 
-    if (currentHourGroup) {
-      currentHourGroup.items.push(item);
-    }
+    currentHourItems.push(item);
   }
 
   return dayGroups;

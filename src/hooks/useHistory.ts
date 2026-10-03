@@ -234,44 +234,35 @@ export const useHistory = (): UseHistoryReturn => {
     }
   }, [isLoading, isLoadingMore, searchQuery, lastLoadedDate, hasMoreSearchResults, error, rawHistory, isBlacklisted]);
 
-  const deleteHistoryItem = useCallback(
-    async (id: string): Promise<void> => {
-      try {
-        const itemToDelete = rawHistory.find((entry) => entry.id === id);
-        if (itemToDelete?.url) {
-          await deleteUrl({ url: itemToDelete.url });
-          setRawHistory((prev) => prev.filter((item) => item.url !== itemToDelete.url));
-        }
-      } catch (error: unknown) {
-        console.error('Failed to delete history item:', error);
-        setError('Failed to delete history item.');
-      }
-    },
-    [rawHistory],
-  );
-
   const deleteHistoryItems = useCallback(
     async (ids: readonly string[]): Promise<void> => {
+      const label = ids.length > 1 ? 'items' : 'item';
+
       try {
         const urlsToDelete = new Set<string>();
         for (const id of ids) {
-          const item = rawHistory.find((entry) => entry.id === id);
-          if (item?.url) {
-            urlsToDelete.add(item.url);
+          const url = rawHistory.find((entry) => entry.id === id)?.url;
+          if (url) {
+            urlsToDelete.add(url);
           }
         }
 
-        const deletePromises = Array.from(urlsToDelete).map((url) => deleteUrl({ url }));
-        await Promise.all(deletePromises);
+        if (urlsToDelete.size === 0) {
+          return;
+        }
+
+        await Promise.all(Array.from(urlsToDelete, (url) => deleteUrl({ url })));
 
         setRawHistory((prev) => prev.filter((item) => !urlsToDelete.has(item.url)));
       } catch (error: unknown) {
-        console.error('Failed to delete history items:', error);
-        setError('Failed to delete history items.');
+        console.error(`Failed to delete history ${label}:`, error);
+        setError(`Failed to delete history ${label}.`);
       }
     },
     [rawHistory],
   );
+
+  const deleteHistoryItem = useCallback((id: string): Promise<void> => deleteHistoryItems([id]), [deleteHistoryItems]);
 
   return {
     deleteHistoryItem,

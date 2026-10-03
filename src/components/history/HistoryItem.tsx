@@ -3,7 +3,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useHistoryStore } from '../../stores/useHistoryStore';
 import { useToastStore } from '../../stores/useToastStore';
-import { escapeRegex, getHostnameFromUrl, isPotentialRegex } from '../../utilities/common';
+import { escapeRegex, getHostnameFromUrl } from '../../utilities/common';
 import { formatTimeShort } from '../../utilities/date';
 import { Icon } from '../shared/Icon';
 
@@ -51,6 +51,7 @@ const HistoryHighlight = memo(({ text, highlight }: HistoryHighlightProps): JSX.
 });
 
 interface HistoryItemProps {
+  readonly highlight: string;
   readonly isChecked: boolean;
   readonly item: ChromeHistoryItem;
   readonly onBlacklistRequest: (item: ChromeHistoryItem) => void;
@@ -58,113 +59,110 @@ interface HistoryItemProps {
   readonly onToggleSelection: (id: string) => void;
 }
 
-export const HistoryItem = memo(({ item, onDeleteRequest, onBlacklistRequest, isChecked, onToggleSelection }: HistoryItemProps): JSX.Element => {
-  const { id, lastVisitTime, title, url } = item;
-  const { searchQuery, setSearchQuery } = useHistoryStore((state) => ({
-    searchQuery: state.searchQuery,
-    setSearchQuery: state.setSearchQuery,
-  }));
-  const [faviconError, setFaviconError] = useState<boolean>(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const addToast = useToastStore((state) => state.addToast);
+export const HistoryItem = memo(
+  ({ item, highlight, onDeleteRequest, onBlacklistRequest, isChecked, onToggleSelection }: HistoryItemProps): JSX.Element => {
+    const { id, lastVisitTime, title, url } = item;
+    const setSearchQuery = useHistoryStore((state) => state.setSearchQuery);
+    const [faviconError, setFaviconError] = useState<boolean>(false);
+    const [isCopied, setIsCopied] = useState(false);
+    const addToast = useToastStore((state) => state.addToast);
 
-  const hostname = useMemo(() => getHostnameFromUrl(url), [url]);
-  const highlight = isPotentialRegex(searchQuery) ? '' : searchQuery;
+    const hostname = useMemo(() => getHostnameFromUrl(url), [url]);
+    const visitTime = useMemo(() => formatTimeShort(lastVisitTime), [lastVisitTime]);
 
-  const visitTime = useMemo(() => formatTimeShort(lastVisitTime), [lastVisitTime]);
+    const handleFaviconError = useCallback((): void => {
+      setFaviconError(true);
+    }, []);
 
-  const handleFaviconError = useCallback((): void => {
-    setFaviconError(true);
-  }, []);
+    const handleToggle = useCallback((): void => {
+      onToggleSelection(id);
+    }, [id, onToggleSelection]);
 
-  const handleToggle = useCallback((): void => {
-    onToggleSelection(id);
-  }, [id, onToggleSelection]);
+    const handleDelete = useCallback(
+      (e: MouseEvent): void => {
+        e.stopPropagation();
+        onDeleteRequest(item);
+      },
+      [item, onDeleteRequest],
+    );
 
-  const handleDelete = useCallback(
-    (e: MouseEvent): void => {
-      e.stopPropagation();
-      onDeleteRequest(item);
-    },
-    [item, onDeleteRequest],
-  );
+    const handleBlacklist = useCallback(
+      (e: MouseEvent): void => {
+        e.stopPropagation();
+        onBlacklistRequest(item);
+      },
+      [item, onBlacklistRequest],
+    );
 
-  const handleBlacklist = useCallback(
-    (e: MouseEvent): void => {
-      e.stopPropagation();
-      onBlacklistRequest(item);
-    },
-    [item, onBlacklistRequest],
-  );
+    const handleSearchSimilar = useCallback(
+      (e: MouseEvent): void => {
+        e.stopPropagation();
+        if (hostname) {
+          setSearchQuery(hostname);
+        }
+      },
+      [hostname, setSearchQuery],
+    );
 
-  const handleSearchSimilar = useCallback(
-    (e: MouseEvent): void => {
-      e.stopPropagation();
-      if (hostname) {
-        setSearchQuery(hostname);
-      }
-    },
-    [hostname, setSearchQuery],
-  );
+    const handleCopyUrl = useCallback(
+      (e: MouseEvent): void => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(url).then(() => {
+          addToast('URL copied to clipboard', 'success');
+          setIsCopied(true);
+          setTimeout(() => setIsCopied(false), 1500);
+        });
+      },
+      [url, addToast],
+    );
 
-  const handleCopyUrl = useCallback(
-    (e: MouseEvent): void => {
-      e.stopPropagation();
-      navigator.clipboard.writeText(url).then(() => {
-        addToast('URL copied to clipboard', 'success');
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 1500);
-      });
-    },
-    [url, addToast],
-  );
-
-  return (
-    <div className={cn('group item-list', isChecked ? 'item-list-selected' : 'item-list-hover')} onClick={handleToggle}>
-      <div className="layout-flex-center">
-        <div className={cn('checkbox-custom', isChecked && 'checkbox-checked')}>
-          {isChecked && <Icon name="Check" className="icon-xs text-primary" />}
+    return (
+      <div className={cn('group item-list', isChecked ? 'item-list-selected' : 'item-list-hover')} onClick={handleToggle}>
+        <div className="layout-flex-center">
+          <div className={cn('checkbox-custom', isChecked && 'checkbox-checked')}>
+            {isChecked && <Icon name="Check" className="icon-xs text-primary" />}
+          </div>
+        </div>
+        {faviconError ? (
+          <Icon name="Globe" className="icon-md text-text-tertiary" />
+        ) : (
+          <img
+            alt=""
+            className="icon-md"
+            loading="lazy"
+            onError={handleFaviconError}
+            src={`https://www.google.com/s2/favicons?sz=32&domain_url=${hostname}`}
+          />
+        )}
+        <div className="min-w-0 flex-1 truncate" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center">
+            <a className="link-standard" href={url} onClick={(e) => e.stopPropagation()} rel="noopener noreferrer" target="_blank">
+              <HistoryHighlight text={title || url} highlight={highlight} />
+            </a>
+            <Icon name="ExternalLink" className="icon-xs ml-1 text-text-tertiary opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+          </div>
+          <p className="truncate txt-muted">
+            <HistoryHighlight text={url} highlight={highlight} />
+          </p>
+        </div>
+        <div className="relative ml-2 flex h-6 w-32 shrink-0 items-center justify-end">
+          <span className="text-right txt-muted group-hover:hidden">{visitTime}</span>
+          <div className="absolute inset-0 hidden items-center justify-end gap-1 group-hover:flex">
+            <button className="btn-ghost" onClick={handleCopyUrl}>
+              {isCopied ? <Icon name="Check" className="icon-sm icon-success" /> : <Icon name="Copy" className="icon-sm" />}
+            </button>
+            <button className="btn-ghost" onClick={handleSearchSimilar}>
+              <Icon name="Search" className="icon-sm" />
+            </button>
+            <button className="btn-ghost" onClick={handleBlacklist}>
+              <Icon name="Link2Off" className="icon-sm" />
+            </button>
+            <button className="btn-danger-ghost" onClick={handleDelete}>
+              <Icon name="Trash2" className="icon-sm" />
+            </button>
+          </div>
         </div>
       </div>
-      {faviconError ? (
-        <Icon name="Globe" className="icon-md text-text-tertiary" />
-      ) : (
-        <img
-          alt=""
-          className="icon-md"
-          loading="lazy"
-          onError={handleFaviconError}
-          src={`https://www.google.com/s2/favicons?sz=32&domain_url=${hostname}`}
-        />
-      )}
-      <div className="min-w-0 flex-1 truncate" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center">
-          <a className="link-standard" href={url} onClick={(e) => e.stopPropagation()} rel="noopener noreferrer" target="_blank">
-            <HistoryHighlight text={title || url} highlight={highlight} />
-          </a>
-          <Icon name="ExternalLink" className="icon-xs ml-1 text-text-tertiary opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-        </div>
-        <p className="truncate txt-muted">
-          <HistoryHighlight text={url} highlight={highlight} />
-        </p>
-      </div>
-      <div className="relative ml-2 flex h-6 w-32 shrink-0 items-center justify-end">
-        <span className="text-right txt-muted group-hover:hidden">{visitTime}</span>
-        <div className="absolute inset-0 hidden items-center justify-end gap-1 group-hover:flex">
-          <button className="btn-ghost" onClick={handleCopyUrl}>
-            {isCopied ? <Icon name="Check" className="icon-sm icon-success" /> : <Icon name="Copy" className="icon-sm" />}
-          </button>
-          <button className="btn-ghost" onClick={handleSearchSimilar}>
-            <Icon name="Search" className="icon-sm" />
-          </button>
-          <button className="btn-ghost" onClick={handleBlacklist}>
-            <Icon name="Link2Off" className="icon-sm" />
-          </button>
-          <button className="btn-danger-ghost" onClick={handleDelete}>
-            <Icon name="Trash2" className="icon-sm" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-});
+    );
+  },
+);

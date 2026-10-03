@@ -5,25 +5,29 @@ import { mapToChromeHistoryItem } from '../utilities/history';
 import { parseRetentionDays, parseSettingsFromJSON } from '../utilities/setting';
 
 import type { ChromeHistoryItem, SearchParams } from '../app/types';
-import type { BlacklistMatchers } from '../utilities/blacklist';
 
-const FAKE_DATA_STORE: Record<string, chrome.history.HistoryItem> = {};
+interface FakeHistoryItem {
+  readonly id: string;
+  readonly url: string;
+  readonly title: string;
+  readonly lastVisitTime: number;
+  readonly visitCount: number;
+}
+
+const FAKE_DATA_STORE: Record<string, FakeHistoryItem> = {};
 let FAKE_DATA_INITIALIZED = false;
 
-let blacklistMatchers: BlacklistMatchers = createBlacklistMatchers([]);
-
 const runFakeBlacklistCleanup = (): void => {
-  const blacklistJson = localStorage.getItem(BLACKLIST_STORAGE_KEY);
-  const blacklistedItems = parseBlacklistFromJSON(blacklistJson);
-  blacklistMatchers = createBlacklistMatchers(blacklistedItems);
-
   if (!FAKE_DATA_INITIALIZED) {
     return;
   }
 
+  const blacklistJson = localStorage.getItem(BLACKLIST_STORAGE_KEY);
+  const blacklistMatchers = createBlacklistMatchers(parseBlacklistFromJSON(blacklistJson));
+
   Object.keys(FAKE_DATA_STORE).forEach((key) => {
     const item = FAKE_DATA_STORE[key];
-    if (item.url && isUrlBlacklisted(item.url, blacklistMatchers)) {
+    if (isUrlBlacklisted(item.url, blacklistMatchers)) {
       delete FAKE_DATA_STORE[key];
     }
   });
@@ -50,7 +54,7 @@ const FAKE_SITES: readonly { readonly domain: string; readonly path: string; rea
   { domain: 'amazon.com', path: '/bestsellers', title: 'Best Sellers' },
 ];
 
-const generateFakeHistoryItem = (timestamp: number): chrome.history.HistoryItem => {
+const generateFakeHistoryItem = (timestamp: number): FakeHistoryItem => {
   const site = FAKE_SITES[Math.floor(Math.random() * FAKE_SITES.length)];
   const query = SEARCH_QUERIES[Math.floor(Math.random() * SEARCH_QUERIES.length)];
 
@@ -83,7 +87,7 @@ const runFakeRetentionCleanup = (): void => {
   const { startTime: cutoffTime } = getDayBoundaries(retentionCutoff);
 
   Object.keys(FAKE_DATA_STORE).forEach((key) => {
-    if (FAKE_DATA_STORE[key].lastVisitTime! < cutoffTime) {
+    if (FAKE_DATA_STORE[key].lastVisitTime < cutoffTime) {
       delete FAKE_DATA_STORE[key];
     }
   });
@@ -124,32 +128,34 @@ if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) {
   });
 }
 
-const getFakeHistory = (params: SearchParams): readonly chrome.history.HistoryItem[] => {
+const getFakeHistory = (params: SearchParams): readonly FakeHistoryItem[] => {
   initializeFakeData();
   runFakeRetentionCleanup();
   runFakeBlacklistCleanup();
   let items = Object.values(FAKE_DATA_STORE);
 
   if (params.startTime) {
+    const startTime = params.startTime;
     items = items.filter((item) => {
-      return item.lastVisitTime! >= params.startTime!;
+      return item.lastVisitTime >= startTime;
     });
   }
   if (params.endTime) {
+    const endTime = params.endTime;
     items = items.filter((item) => {
-      return item.lastVisitTime! < params.endTime!;
+      return item.lastVisitTime < endTime;
     });
   }
 
   if (params.text) {
     const query = params.text.toLowerCase();
     items = items.filter((item) => {
-      return (item.title?.toLowerCase() ?? '').includes(query) || (item.url?.toLowerCase() ?? '').includes(query);
+      return item.title.toLowerCase().includes(query) || item.url.toLowerCase().includes(query);
     });
   }
 
   items.sort((a, b) => {
-    return b.lastVisitTime! - a.lastVisitTime!;
+    return b.lastVisitTime - a.lastVisitTime;
   });
 
   if (params.maxResults && params.maxResults > 0) {

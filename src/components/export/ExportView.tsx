@@ -1,5 +1,5 @@
 import { cn } from 'cn';
-import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 
 import { search } from '../../services/chromeApi';
 import { useToastStore } from '../../stores/useToastStore';
@@ -89,19 +89,10 @@ export const ExportView = (): JSX.Element => {
     }
   }, [startDate, endDate, format, addToast]);
 
-  const activeAnchorEl = useMemo((): HTMLButtonElement | null => {
-    if (activeCalendar === 'start') {
-      return startDateTriggerRef.current;
-    }
-    if (activeCalendar === 'end') {
-      return endDateTriggerRef.current;
-    }
-    return null;
-  }, [activeCalendar]);
-
-  const activeSelectedDate = useMemo((): Date => {
-    return parseDateFromInput(activeCalendar === 'start' ? startDate : endDate);
-  }, [activeCalendar, startDate, endDate]);
+  const activeAnchorEl = activeCalendar === 'start' ? startDateTriggerRef.current : activeCalendar === 'end' ? endDateTriggerRef.current : null;
+  const activeSelectedDate = parseDateFromInput(activeCalendar === 'start' ? startDate : endDate);
+  const minCalendarDate = activeCalendar === 'end' ? parseDateFromInput(startDate) : undefined;
+  const maxCalendarDate = activeCalendar === 'start' ? parseDateFromInput(endDate) : new Date();
 
   const handleDateSelect = useCallback(
     (date: Date): void => {
@@ -115,20 +106,6 @@ export const ExportView = (): JSX.Element => {
     },
     [activeCalendar],
   );
-
-  const minCalendarDate = useMemo((): Date | undefined => {
-    if (activeCalendar === 'end') {
-      return parseDateFromInput(startDate);
-    }
-    return undefined;
-  }, [activeCalendar, startDate]);
-
-  const maxCalendarDate = useMemo((): Date => {
-    if (activeCalendar === 'start') {
-      return parseDateFromInput(endDate);
-    }
-    return new Date();
-  }, [activeCalendar, endDate]);
 
   return (
     <>

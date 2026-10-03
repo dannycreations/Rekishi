@@ -8,6 +8,7 @@ import type { ChromeHistoryItem, HourGroup } from '../../app/types';
 
 interface HistoryItemGroupProps {
   readonly group: HourGroup;
+  readonly highlight: string;
   readonly onBlacklistRequest: (item: ChromeHistoryItem) => void;
   readonly onDeleteRequest: (item: ChromeHistoryItem) => void;
   readonly onDeleteHourRequest: (items: readonly ChromeHistoryItem[]) => void;
@@ -16,7 +17,15 @@ interface HistoryItemGroupProps {
 }
 
 export const HistoryItemGroup = memo(
-  ({ group, onBlacklistRequest, onDeleteRequest, onDeleteHourRequest, onToggleSelection, selectedItems }: HistoryItemGroupProps): JSX.Element => {
+  ({
+    group,
+    highlight,
+    onBlacklistRequest,
+    onDeleteRequest,
+    onDeleteHourRequest,
+    onToggleSelection,
+    selectedItems,
+  }: HistoryItemGroupProps): JSX.Element => {
     const handleOpenDeleteModal = useCallback((): void => {
       onDeleteHourRequest(group.items);
     }, [group.items, onDeleteHourRequest]);
@@ -31,6 +40,7 @@ export const HistoryItemGroup = memo(
           {group.items.map((item) => (
             <HistoryItem
               key={item.id}
+              highlight={highlight}
               isChecked={selectedItems.has(item.id)}
               item={item}
               onBlacklistRequest={onBlacklistRequest}

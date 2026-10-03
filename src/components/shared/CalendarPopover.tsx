@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { DAYS_OF_WEEK } from '../../app/constants';
 import { usePopover } from '../../hooks/usePopover';
 import { useHistoryDateStore } from '../../stores/useHistoryDateStore';
-import { formatNumericDate, isSameDay } from '../../utilities/date';
+import { formatNumericDate, isSameDay, startOfDay } from '../../utilities/date';
 import { CalendarSkeleton } from './CalendarSkeleton';
 import { Icon } from './Icon';
 
@@ -55,11 +55,7 @@ export const CalendarPopover = memo(
       };
     }, [onClose, anchorEl, popoverRef]);
 
-    const today = useMemo((): Date => {
-      const d = new Date();
-      d.setHours(0, 0, 0, 0);
-      return d;
-    }, []);
+    const today = useMemo((): Date => startOfDay(new Date()), []);
 
     const monthName = useMemo((): string => {
       return displayDate.toLocaleString('default', { month: 'long', year: 'numeric' });
@@ -73,9 +69,7 @@ export const CalendarPopover = memo(
       const days: (Date | null)[] = Array.from({ length: firstDayOfMonth }, () => null);
 
       for (let i = 1; i <= daysInMonth; i++) {
-        const dayDate = new Date(year, month, i);
-        dayDate.setHours(0, 0, 0, 0);
-        days.push(dayDate);
+        days.push(startOfDay(new Date(year, month, i)));
       }
 
       return days;
@@ -105,6 +99,9 @@ export const CalendarPopover = memo(
     if (!anchorEl) {
       return null;
     }
+
+    const minBoundary = minDate && startOfDay(minDate);
+    const maxBoundary = maxDate && startOfDay(maxDate);
 
     const popoverElement = (
       <div ref={popoverRef} style={style} className="popover-container popover-animate-enter">
@@ -138,8 +135,8 @@ export const CalendarPopover = memo(
                 }
 
                 const isFuture = date > today;
-                const isBeforeMin = minDate && date < new Date(new Date(minDate).setHours(0, 0, 0, 0));
-                const isAfterMax = maxDate && date > new Date(new Date(maxDate).setHours(0, 0, 0, 0));
+                const isBeforeMin = minBoundary && date < minBoundary;
+                const isAfterMax = maxBoundary && date > maxBoundary;
 
                 if (isFuture || isBeforeMin || isAfterMax) {
                   return (

@@ -11,15 +11,11 @@ const toErrorMessage = (error: unknown): string => (error instanceof Error ? err
 
 let blacklistMatchers = createBlacklistMatchers([]);
 let blacklistedItems: readonly BlacklistItem[] = [];
-let currentSettings: Settings = { ...defaultSettings };
+let currentSettings: Settings = defaultSettings;
 
 const updateBlacklistCache = (items: readonly BlacklistItem[]): void => {
   blacklistedItems = items;
   blacklistMatchers = createBlacklistMatchers(items);
-};
-
-const isBlacklisted = (url: string): boolean => {
-  return isUrlBlacklisted(url, blacklistMatchers);
 };
 
 const runBlacklistCleanup = async (): Promise<void> => {
@@ -36,7 +32,7 @@ const runBlacklistCleanup = async (): Promise<void> => {
 
     const blacklistedUrls = new Set<string>();
     for (const item of historyItems) {
-      if (item.url && isBlacklisted(item.url)) {
+      if (item.url && isUrlBlacklisted(item.url, blacklistMatchers)) {
         blacklistedUrls.add(item.url);
       }
     }
@@ -91,7 +87,7 @@ const handleVisited = async (historyItem: chrome.history.HistoryItem): Promise<v
     return;
   }
 
-  if (isBlacklisted(url)) {
+  if (isUrlBlacklisted(url, blacklistMatchers)) {
     try {
       await chrome.history.deleteUrl({ url });
     } catch (error: unknown) {

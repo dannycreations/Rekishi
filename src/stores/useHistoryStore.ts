@@ -12,8 +12,12 @@ interface HistoryState {
   readonly setSelectedDate: (date: Date) => void;
 }
 
+interface PersistedHistoryState {
+  readonly selectedDate: Date;
+}
+
 export const useHistoryStore = createWithEqualityFn(
-  persist<HistoryState>(
+  persist<HistoryState, [], [], PersistedHistoryState>(
     (set) => ({
       searchQuery: '',
       selectedDate: new Date(),
@@ -28,7 +32,7 @@ export const useHistoryStore = createWithEqualityFn(
     }),
     {
       name: HISTORY_STORAGE_KEY,
-      storage: createJSONStorage(() => chromeLocalStorage, {
+      storage: createJSONStorage<PersistedHistoryState>(() => chromeLocalStorage, {
         reviver: (key: string, value: unknown): unknown => {
           if (key === 'selectedDate' && typeof value === 'string') {
             return new Date(value);
@@ -36,10 +40,7 @@ export const useHistoryStore = createWithEqualityFn(
           return value;
         },
       }),
-      partialize: (state) =>
-        ({
-          selectedDate: state.selectedDate,
-        }) as HistoryState,
+      partialize: (state) => ({ selectedDate: state.selectedDate }),
     },
   ),
   shallow,

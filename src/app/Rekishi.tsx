@@ -18,7 +18,7 @@ import { useHistoryDateStore } from '../stores/useHistoryDateStore';
 import { useHistoryStore } from '../stores/useHistoryStore';
 import { useSettingStore } from '../stores/useSettingStore';
 
-import type { FC, JSX } from 'react';
+import type { FC, JSX, UIEvent } from 'react';
 import type { ViewType } from './types';
 
 interface ViewDefinition {
@@ -70,24 +70,9 @@ export const Rekishi = (): JSX.Element => {
     }
   }, [theme]);
 
-  const handleScroll = useCallback(() => {
-    if (mainContentRef.current) {
-      setShowScrollToTop(mainContentRef.current.scrollTop > 300);
-    }
+  const handleScroll = useCallback((event: UIEvent<HTMLElement>): void => {
+    setShowScrollToTop(event.currentTarget.scrollTop > 300);
   }, []);
-
-  useEffect(() => {
-    const mainContent = mainContentRef.current;
-    if (!mainContent) {
-      return;
-    }
-
-    mainContent.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      mainContent.removeEventListener('scroll', handleScroll);
-    };
-  }, [handleScroll]);
 
   const handleScrollToTop = useCallback(() => {
     mainContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -106,7 +91,7 @@ export const Rekishi = (): JSX.Element => {
       <div className="main-layout">
         <Header onOpenModal={setActiveModal} />
 
-        <main ref={mainContentRef} className="main-content">
+        <main ref={mainContentRef} className="main-content" onScroll={handleScroll}>
           {isLoading ? (
             <HistoryViewSkeleton />
           ) : error ? (

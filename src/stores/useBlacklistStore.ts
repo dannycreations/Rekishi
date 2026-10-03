@@ -18,12 +18,10 @@ interface PersistedBlacklistState {
   readonly blacklistedItems: readonly BlacklistItem[];
 }
 
-const NO_ITEMS: readonly BlacklistItem[] = [];
-
 export const useBlacklistStore = createWithEqualityFn(
   persist<BlacklistState, [], [], PersistedBlacklistState>(
     (set) => ({
-      blacklistedItems: NO_ITEMS,
+      blacklistedItems: [],
       addDomain: (value, isRegex) => {
         set((state) =>
           state.blacklistedItems.some((item) => item.value === value) ? state : { blacklistedItems: [...state.blacklistedItems, { value, isRegex }] },

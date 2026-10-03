@@ -10,7 +10,7 @@ export interface Settings {
 
 export const defaultSettings: Settings = {
   dataRetention: 'disabled',
-} as const;
+};
 
 export const parseRetentionDays = (dataRetention: string): number | null => {
   if (dataRetention === 'disabled') {

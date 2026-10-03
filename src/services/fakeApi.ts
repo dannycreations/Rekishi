@@ -1,21 +1,22 @@
 import { BLACKLIST_STORAGE_KEY, SETTINGS_STORAGE_KEY } from '../app/constants';
 import { createBlacklistMatchers, isUrlBlacklisted, parseBlacklistFromJSON } from '../utilities/blacklist';
 import { getDayBoundaries } from '../utilities/date';
-import { mapToChromeHistoryItem } from '../utilities/history';
 import { parseRetentionDays, parseSettingsFromJSON } from '../utilities/setting';
 
 import type { ChromeHistoryItem, SearchParams } from '../app/types';
 
-interface FakeHistoryItem {
-  readonly id: string;
-  readonly url: string;
-  readonly title: string;
-  readonly lastVisitTime: number;
-  readonly visitCount: number;
-}
-
-const FAKE_DATA_STORE: Record<string, FakeHistoryItem> = {};
+const FAKE_DATA_STORE: Record<string, ChromeHistoryItem> = {};
 let FAKE_DATA_INITIALIZED = false;
+
+// Every deletion path goes through here so the store is only ever mutated in one place. Entries are
+// keyed by their own id, which is what keeps a stored item reachable from its key.
+const deleteFakeHistoryWhere = (predicate: (item: ChromeHistoryItem) => boolean): void => {
+  for (const item of Object.values(FAKE_DATA_STORE)) {
+    if (predicate(item)) {
+      delete FAKE_DATA_STORE[item.id];
+    }
+  }
+};
 
 const runFakeBlacklistCleanup = (): void => {
   if (!FAKE_DATA_INITIALIZED) {
@@ -25,12 +26,7 @@ const runFakeBlacklistCleanup = (): void => {
   const blacklistJson = localStorage.getItem(BLACKLIST_STORAGE_KEY);
   const blacklistMatchers = createBlacklistMatchers(parseBlacklistFromJSON(blacklistJson));
 
-  Object.keys(FAKE_DATA_STORE).forEach((key) => {
-    const item = FAKE_DATA_STORE[key];
-    if (isUrlBlacklisted(item.url, blacklistMatchers)) {
-      delete FAKE_DATA_STORE[key];
-    }
-  });
+  deleteFakeHistoryWhere((item) => isUrlBlacklisted(item.url, blacklistMatchers));
 };
 
 const SEARCH_RESULT_PATH = '/search';
@@ -54,7 +50,7 @@ const FAKE_SITES: readonly { readonly domain: string; readonly path: string; rea
   { domain: 'amazon.com', path: '/bestsellers', title: 'Best Sellers' },
 ];
 
-const generateFakeHistoryItem = (timestamp: number): FakeHistoryItem => {
+const generateFakeHistoryItem = (timestamp: number): ChromeHistoryItem => {
   const site = FAKE_SITES[Math.floor(Math.random() * FAKE_SITES.length)];
   const query = SEARCH_QUERIES[Math.floor(Math.random() * SEARCH_QUERIES.length)];
 
@@ -62,7 +58,7 @@ const generateFakeHistoryItem = (timestamp: number): FakeHistoryItem => {
     site.path === SEARCH_RESULT_PATH ? `https://${site.domain}${site.path}?q=${encodeURIComponent(query)}` : `https://${site.domain}${site.path}`;
 
   return {
-    id: url,
+    id: `${url}-${timestamp}`,
     url,
     title: site.title ?? `Search results for ${query}`,
     lastVisitTime: timestamp,
@@ -86,11 +82,7 @@ const runFakeRetentionCleanup = (): void => {
   retentionCutoff.setDate(retentionCutoff.getDate() - retentionDays);
   const { startTime: cutoffTime } = getDayBoundaries(retentionCutoff);
 
-  Object.keys(FAKE_DATA_STORE).forEach((key) => {
-    if (FAKE_DATA_STORE[key].lastVisitTime < cutoffTime) {
-      delete FAKE_DATA_STORE[key];
-    }
-  });
+  deleteFakeHistoryWhere((item) => item.lastVisitTime < cutoffTime);
 };
 
 const initializeFakeData = (): void => {
@@ -107,7 +99,7 @@ const initializeFakeData = (): void => {
     currentTimestamp -= decrement;
 
     const item = generateFakeHistoryItem(currentTimestamp);
-    FAKE_DATA_STORE[`${item.id}-${item.lastVisitTime}`] = item;
+    FAKE_DATA_STORE[item.id] = item;
   }
   FAKE_DATA_INITIALIZED = true;
 };
@@ -128,7 +120,7 @@ if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) {
   });
 }
 
-const getFakeHistory = (params: SearchParams): readonly FakeHistoryItem[] => {
+const getFakeHistory = (params: SearchParams): readonly ChromeHistoryItem[] => {
   initializeFakeData();
   runFakeRetentionCleanup();
   runFakeBlacklistCleanup();
@@ -167,20 +159,13 @@ const getFakeHistory = (params: SearchParams): readonly FakeHistoryItem[] => {
 
 const deleteFakeHistoryUrl = (details: { readonly url: string }): void => {
   initializeFakeData();
-  const idsToDelete = Object.keys(FAKE_DATA_STORE).filter((id) => {
-    return FAKE_DATA_STORE[id].url === details.url;
-  });
-  for (const id of idsToDelete) {
-    delete FAKE_DATA_STORE[id];
-  }
+  deleteFakeHistoryWhere((item) => item.url === details.url);
 };
 
 export const search = (params: SearchParams): Promise<readonly ChromeHistoryItem[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const historyItems = getFakeHistory(params);
-      const mappedResults: readonly ChromeHistoryItem[] = historyItems.map(mapToChromeHistoryItem);
-      resolve(mappedResults);
+      resolve(getFakeHistory(params));
     }, 150);
   });
 };
@@ -196,9 +181,7 @@ export const deleteUrl = (details: { readonly url: string }): Promise<void> => {
 
 export const deleteAllHistory = (): Promise<void> => {
   return new Promise((resolve) => {
-    Object.keys(FAKE_DATA_STORE).forEach((key) => {
-      delete FAKE_DATA_STORE[key];
-    });
+    deleteFakeHistoryWhere(() => true);
     FAKE_DATA_INITIALIZED = false;
     setTimeout(() => {
       resolve();

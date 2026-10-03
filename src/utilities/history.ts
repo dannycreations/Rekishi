@@ -44,7 +44,7 @@ export const applyClientSideSearch = (
 
   const query = searchQuery.toLowerCase();
   return {
-    items: items.filter((item) => (item.title ?? '').toLowerCase().includes(query) || (item.url ?? '').toLowerCase().includes(query)),
+    items: items.filter((item) => item.title.toLowerCase().includes(query) || item.url.toLowerCase().includes(query)),
   };
 };
 

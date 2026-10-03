@@ -94,6 +94,14 @@ export const Header = memo(({ onOpenModal }: HeaderProps): JSX.Element => {
     setIsCalendarOpen(false);
   }, []);
 
+  const handleDateSelect = useCallback(
+    (date: Date) => {
+      setSelectedDate(date);
+      setIsCalendarOpen(false);
+    },
+    [setSelectedDate],
+  );
+
   return (
     <header className="main-header">
       <div className="logo-group">
@@ -143,10 +151,7 @@ export const Header = memo(({ onOpenModal }: HeaderProps): JSX.Element => {
       <CalendarPopover
         anchorEl={isCalendarOpen ? calendarButtonRef.current : null}
         onClose={handleCloseCalendar}
-        onDateSelect={(date) => {
-          setSelectedDate(date);
-          setIsCalendarOpen(false);
-        }}
+        onDateSelect={handleDateSelect}
         selectedDate={selectedDate}
       />
     </header>

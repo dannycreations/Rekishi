@@ -22,7 +22,6 @@ const isNewHistoryItemMessage = (message: unknown): message is NewHistoryItemMes
 
 interface HistoryQuery {
   readonly endTime?: number;
-  readonly isSearch: boolean;
   readonly startTime: number;
   readonly text: string;
 }
@@ -53,16 +52,17 @@ export const useHistory = (): UseHistoryReturn => {
   // Every history item is matched against the blacklist, and compiling the patterns is the expensive
   // part, so the compiled form is derived once per item list instead of once per URL.
   const matchers = useMemo(() => createBlacklistMatchers(blacklistedItems), [blacklistedItems]);
-  const isBlacklisted = useCallback((url: string): boolean => isUrlBlacklisted(url, matchers), [matchers]);
 
   const fetchHistoryData = useCallback(
     async (params: HistoryQuery): Promise<void> => {
-      const clientSearch = params.isSearch && shouldSearchClientSide(params.text);
+      // A non-empty text means the caller wants search results rather than one day of history.
+      const isSearch = params.text !== '';
+      const clientSearch = isSearch && shouldSearchClientSide(params.text);
 
       setIsLoading(true);
       setError(null);
       setRawHistory([]);
-      if (params.isSearch) {
+      if (isSearch) {
         setHasMoreSearchResults(true);
       } else {
         setLastLoadedDate(new Date(params.startTime));
@@ -71,12 +71,12 @@ export const useHistory = (): UseHistoryReturn => {
       try {
         const results = await search({
           endTime: params.endTime,
-          maxResults: params.isSearch ? SEARCH_PAGE_SIZE : DAILY_PAGE_SIZE,
+          maxResults: isSearch ? SEARCH_PAGE_SIZE : DAILY_PAGE_SIZE,
           startTime: params.startTime,
           text: clientSearch ? '' : params.text,
         });
 
-        let items: readonly ChromeHistoryItem[] = results.filter((item) => !isBlacklisted(item.url));
+        let items: readonly ChromeHistoryItem[] = results.filter((item) => !isUrlBlacklisted(item.url, matchers));
         if (clientSearch) {
           const searched = applyClientSideSearch(items, params.text);
           if (searched.error) {
@@ -86,14 +86,14 @@ export const useHistory = (): UseHistoryReturn => {
         }
 
         const currentState = useHistoryStore.getState();
-        const isStillRelevant = params.isSearch
+        const isStillRelevant = isSearch
           ? currentState.searchQuery === params.text
           : isSameDay(new Date(params.startTime), currentState.selectedDate);
 
         if (isStillRelevant) {
           setRawHistory(items);
           setIsLoading(false);
-          if (params.isSearch && results.length < SEARCH_PAGE_SIZE) {
+          if (isSearch && results.length < SEARCH_PAGE_SIZE) {
             setHasMoreSearchResults(false);
           }
         }
@@ -103,17 +103,17 @@ export const useHistory = (): UseHistoryReturn => {
         setIsLoading(false);
       }
     },
-    [isBlacklisted],
+    [matchers],
   );
 
   useEffect(() => {
     if (searchQuery) {
-      void fetchHistoryData({ isSearch: true, startTime: 0, text: searchQuery });
+      void fetchHistoryData({ startTime: 0, text: searchQuery });
       return;
     }
 
     const { startTime, endTime } = getDayBoundaries(selectedDate);
-    void fetchHistoryData({ endTime, isSearch: false, startTime, text: '' });
+    void fetchHistoryData({ endTime, startTime, text: '' });
   }, [searchQuery, selectedDate, fetchHistoryData]);
 
   const messageListener = useCallback(
@@ -121,7 +121,7 @@ export const useHistory = (): UseHistoryReturn => {
       if (isNewHistoryItemMessage(message)) {
         const newItem = message.payload;
 
-        if (isBlacklisted(newItem.url)) {
+        if (isUrlBlacklisted(newItem.url, matchers)) {
           setRawHistory((prev) => prev.filter((item) => item.id !== newItem.id));
           return;
         }
@@ -143,7 +143,7 @@ export const useHistory = (): UseHistoryReturn => {
         });
       }
     },
-    [isBlacklisted, searchQuery, selectedDate],
+    [matchers, searchQuery, selectedDate],
   );
 
   useEffect(() => {
@@ -183,8 +183,7 @@ export const useHistory = (): UseHistoryReturn => {
           setHasMoreSearchResults(false);
         }
 
-        const uniqueNewItems = newItems.filter((item) => !existingIds.has(item.id));
-        let itemsToAdd: readonly ChromeHistoryItem[] = uniqueNewItems.filter((item) => !isBlacklisted(item.url));
+        let itemsToAdd: readonly ChromeHistoryItem[] = newItems.filter((item) => !existingIds.has(item.id) && !isUrlBlacklisted(item.url, matchers));
 
         if (clientSearch) {
           const searched = applyClientSideSearch(itemsToAdd, searchQuery);
@@ -197,7 +196,7 @@ export const useHistory = (): UseHistoryReturn => {
         setRawHistory((prev) => [...prev, ...itemsToAdd]);
       } else {
         const nextDate = new Date(lastLoadedDate);
-        nextDate.setDate(lastLoadedDate.getDate() - 1);
+        nextDate.setDate(nextDate.getDate() - 1);
 
         const { startTime, endTime } = getDayBoundaries(nextDate);
 
@@ -207,8 +206,8 @@ export const useHistory = (): UseHistoryReturn => {
           startTime,
           text: '',
         });
-        const uniqueNewItems = newItems.filter((item) => !existingIds.has(item.id));
-        setRawHistory((prev) => [...prev, ...uniqueNewItems.filter((item) => !isBlacklisted(item.url))]);
+        const itemsToAdd = newItems.filter((item) => !existingIds.has(item.id) && !isUrlBlacklisted(item.url, matchers));
+        setRawHistory((prev) => [...prev, ...itemsToAdd]);
         setLastLoadedDate(nextDate);
       }
     } catch (error: unknown) {
@@ -217,18 +216,16 @@ export const useHistory = (): UseHistoryReturn => {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoading, isLoadingMore, searchQuery, lastLoadedDate, hasMoreSearchResults, error, rawHistory, isBlacklisted]);
+  }, [isLoading, isLoadingMore, searchQuery, lastLoadedDate, hasMoreSearchResults, error, rawHistory, matchers]);
 
   const deleteHistoryItems = useCallback(
     async (ids: readonly string[]): Promise<void> => {
-      const label = ids.length > 1 ? 'items' : 'item';
-
       try {
+        const idsToDelete = new Set(ids);
         const urlsToDelete = new Set<string>();
-        for (const id of ids) {
-          const url = rawHistory.find((entry) => entry.id === id)?.url;
-          if (url) {
-            urlsToDelete.add(url);
+        for (const item of rawHistory) {
+          if (idsToDelete.has(item.id)) {
+            urlsToDelete.add(item.url);
           }
         }
 
@@ -240,6 +237,7 @@ export const useHistory = (): UseHistoryReturn => {
 
         setRawHistory((prev) => prev.filter((item) => !urlsToDelete.has(item.url)));
       } catch (error: unknown) {
+        const label = ids.length > 1 ? 'items' : 'item';
         console.error(`Failed to delete history ${label}:`, error);
         setError(`Failed to delete history ${label}.`);
       }

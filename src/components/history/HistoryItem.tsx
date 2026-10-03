@@ -107,11 +107,17 @@ export const HistoryItem = memo(
     const handleCopyUrl = useCallback(
       (e: MouseEvent): void => {
         e.stopPropagation();
-        navigator.clipboard.writeText(url).then(() => {
-          addToast('URL copied to clipboard', 'success');
-          setIsCopied(true);
-          setTimeout(() => setIsCopied(false), 1500);
-        });
+        navigator.clipboard
+          .writeText(url)
+          .then(() => {
+            addToast('URL copied to clipboard', 'success');
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 1500);
+          })
+          .catch((error: unknown) => {
+            console.error('Failed to copy URL:', error);
+            addToast('Failed to copy URL to clipboard', 'error');
+          });
       },
       [url, addToast],
     );

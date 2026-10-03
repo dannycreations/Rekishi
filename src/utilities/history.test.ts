@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { groupHistoryByDayAndHour } from './history';
+import { applyClientSideSearch, groupHistoryByDayAndHour } from './history';
 
 import type { ChromeHistoryItem } from '../app/types';
 
@@ -10,6 +10,27 @@ const item = (id: string, date: Date): ChromeHistoryItem => ({
   title: id,
   lastVisitTime: date.getTime(),
   visitCount: 1,
+});
+
+describe('applyClientSideSearch', () => {
+  const items: readonly ChromeHistoryItem[] = [
+    { id: '1', url: 'https://alpha.test/docs', title: 'Alpha Guide', lastVisitTime: 1, visitCount: 1 },
+    { id: '2', url: 'https://beta.test/docs', title: 'Beta Notes', lastVisitTime: 2, visitCount: 1 },
+  ];
+
+  test('matches title and URL case-insensitively on a plain query', () => {
+    expect(applyClientSideSearch(items, 'guide').items.map((entry) => entry.id)).toEqual(['1']);
+    expect(applyClientSideSearch(items, 'BETA.TEST').items.map((entry) => entry.id)).toEqual(['2']);
+    expect(applyClientSideSearch(items, 'nothing-here').items).toEqual([]);
+  });
+
+  test('matches a delimited query as a regular expression', () => {
+    expect(applyClientSideSearch(items, '/^https:\\/\\/alpha\\.test/').items.map((entry) => entry.id)).toEqual(['1']);
+  });
+
+  test('reports an error instead of throwing when the regular expression is invalid', () => {
+    expect(applyClientSideSearch(items, '/[unclosed/')).toEqual({ items: [], error: 'Invalid regular expression.' });
+  });
 });
 
 describe('groupHistoryByDayAndHour', () => {
